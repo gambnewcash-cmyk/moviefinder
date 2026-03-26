@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang or 'en' }}">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -42,6 +42,9 @@
     .fade-in { animation: fadeIn .4s ease forwards; }
     @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(229,9,20,.4); } 50% { box-shadow: 0 0 0 8px rgba(229,9,20,0); } }
     .pulse-glow { animation: pulse-glow 2s infinite; }
+    .lang-btn { font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; border: 1px solid #2a2a2a; cursor: pointer; transition: all .2s; background: transparent; color: #aaa; }
+    .lang-btn.active { background: #e50914; color: #fff; border-color: #e50914; }
+    .lang-btn:not(.active):hover { border-color: #aaa; color: #fff; }
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -56,14 +59,19 @@
     </a>
     <div class="flex-1 max-w-md hidden md:block">
       <form action="/search" method="get">
-        <input name="q" placeholder="Search movies, shows…"
+        <input name="q" placeholder="{{ t.search_placeholder_nav if t else 'Search movies, shows…' }}"
                class="w-full bg-card border border-border rounded-full px-4 py-1.5 text-sm text-white placeholder-muted focus:outline-none focus:border-accent transition"
                autocomplete="off"/>
       </form>
     </div>
     <div class="ml-auto flex items-center gap-3">
-      <a href="/search" class="text-sm text-muted hover:text-white transition">Search</a>
-      <a href="/?section=trending" class="text-sm text-muted hover:text-white transition hidden sm:block">Trending</a>
+      <a href="/search" class="text-sm text-muted hover:text-white transition">{{ t.search if t else 'Search' }}</a>
+      <a href="/?section=trending" class="text-sm text-muted hover:text-white transition hidden sm:block">{{ t.trending if t else 'Trending' }}</a>
+      <!-- Language Switcher -->
+      <div class="flex items-center gap-1">
+        <button class="lang-btn {% if lang == 'en' %}active{% endif %}" onclick="setLang('en')">🇬🇧 EN</button>
+        <button class="lang-btn {% if lang == 'ru' %}active{% endif %}" onclick="setLang('ru')">🇷🇺 RU</button>
+      </div>
     </div>
   </div>
 </nav>
@@ -74,12 +82,32 @@
 <footer class="border-t border-border mt-24 py-12 text-center text-muted text-sm">
   <div class="max-w-7xl mx-auto px-4">
     <p class="font-bold text-white text-lg mb-2"><span class="text-accent">▶</span> MovieFinder</p>
-    <p class="mb-4">Find where to watch any movie or TV show — streaming & more.</p>
-    <p class="text-xs text-border">Movie data provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    <p class="mb-4">{{ t.footer_desc if t else 'Find where to watch any movie or TV show — streaming & more.' }}</p>
+    <p class="text-xs text-border">{{ t.footer_api if t else 'Movie data provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.' }}</p>
   </div>
 </footer>
 
 <script src="/static/js/app.js"></script>
+<script>
+// Language switcher
+function setLang(lang) {
+  // Save to localStorage as UI hint
+  localStorage.setItem('mf_lang', lang);
+  // Set cookie via API then reload
+  fetch('/api/set-language?lang=' + lang)
+    .then(() => location.reload());
+}
+
+// On first load: check localStorage preference vs server lang
+(function() {
+  var storedLang = localStorage.getItem('mf_lang');
+  var serverLang = '{{ lang or "en" }}';
+  if (storedLang && storedLang !== serverLang) {
+    // Sync with stored preference
+    fetch('/api/set-language?lang=' + storedLang).then(() => location.reload());
+  }
+})();
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

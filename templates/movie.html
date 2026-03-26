@@ -35,7 +35,7 @@
         <h1 class="text-4xl md:text-5xl font-black leading-tight mb-2">{{ movie.title }}</h1>
         <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-muted">
           {% if movie.year %}<span class="text-white font-medium">{{ movie.year }}</span>{% endif %}
-          {% if movie.runtime %}<span>· {{ movie.runtime }} min</span>{% endif %}
+          {% if movie.runtime %}<span>· {{ movie.runtime }} {{ t.min if t else 'min' }}</span>{% endif %}
           {% if movie.genres_list %}
           {% for g in movie.genres_list %}
           <span class="bg-card border border-border px-2 py-0.5 rounded-full text-xs">{{ g }}</span>
@@ -55,7 +55,7 @@
         {% if movie.trailer_key %}
         <a href="https://www.youtube.com/watch?v={{ movie.trailer_key }}" target="_blank" rel="noopener"
            class="inline-flex items-center gap-2 mt-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium">
-          ▶ Watch Trailer
+          ▶ {{ t.trailer if t else 'Watch Trailer' }}
         </a>
         {% endif %}
       </div>
@@ -72,13 +72,13 @@
       <!-- WHERE TO WATCH -->
       <section>
         <h2 class="text-2xl font-bold mb-5 flex items-center gap-2">
-          📺 Where to Watch
+          📺 {{ t.where_to_watch if t else 'Where to Watch' }}
         </h2>
 
         <!-- Premium Streaming -->
         <div class="mb-6">
           <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="text-green-400">💎</span> Premium Streaming
+            <span class="text-green-400">💎</span> {{ t.premium if t else 'Premium' }}
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% for s in sources.streaming %}
@@ -104,7 +104,7 @@
         <!-- Free / Pirate Sources -->
         <div class="mb-4">
           <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="text-accent">🆓</span> Free Online
+            <span class="text-accent">🆓</span> {{ t.free_online if t else 'Free Online' }}
             <span class="text-xs text-muted font-normal normal-case">(search results)</span>
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -119,7 +119,7 @@
                 </div>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-muted text-xs">Click to search →</span>
+                <span class="text-muted text-xs">{{ t.watch_now if t else 'Watch Now' }} →</span>
                 <span class="text-accent text-lg group-hover:translate-x-1 transition-transform">→</span>
               </div>
             </a>
@@ -151,7 +151,7 @@
       <!-- CAST -->
       {% if movie.cast %}
       <section>
-        <h2 class="text-xl font-bold mb-4">🎭 Cast</h2>
+        <h2 class="text-xl font-bold mb-4">🎭 {{ t.cast if t else 'Cast' }}</h2>
         <div class="flex gap-3 overflow-x-auto pb-2 section-scroll">
           {% for person in movie.cast %}
           <div class="shrink-0 w-24 text-center">
@@ -174,7 +174,7 @@
 
     <!-- RIGHT: Similar movies -->
     <div>
-      <h2 class="text-xl font-bold mb-4">🎬 Similar Movies</h2>
+      <h2 class="text-xl font-bold mb-4">🎬 {{ t.similar if t else 'Similar Movies' }}</h2>
       {% if movie.similar %}
       <div class="space-y-3">
         {% for s in movie.similar %}
@@ -198,7 +198,7 @@
         {% endfor %}
       </div>
       {% else %}
-      <p class="text-muted text-sm">No similar movies found.</p>
+      <p class="text-muted text-sm">{{ t.no_sources if t else 'No similar movies found.' }}</p>
       {% endif %}
     </div>
 

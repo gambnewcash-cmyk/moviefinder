@@ -14,6 +14,12 @@ GENRE_MAP = {
     53: "Thriller", 10752: "War", 37: "Western"
 }
 
+LANG_TO_TMDB = {
+    "ru": "ru-RU",
+    "en": "en-US",
+}
+
+
 def format_movie(m: dict) -> dict:
     genres = [GENRE_MAP.get(g, "") for g in m.get("genre_ids", [])]
     genre_str = ", ".join([g for g in genres if g])
@@ -35,8 +41,10 @@ def format_movie(m: dict) -> dict:
         "backdrop_path": m.get("backdrop_path"),
     }
 
-async def fetch_tmdb(endpoint: str, params: dict = None) -> dict:
-    p = {"api_key": TMDB_API_KEY, "language": "en-US"}
+
+async def fetch_tmdb(endpoint: str, params: dict = None, lang: str = "en") -> dict:
+    tmdb_lang = LANG_TO_TMDB.get(lang, "en-US")
+    p = {"api_key": TMDB_API_KEY, "language": tmdb_lang}
     if params:
         p.update(params)
     async with httpx.AsyncClient(timeout=10) as client:
@@ -44,17 +52,19 @@ async def fetch_tmdb(endpoint: str, params: dict = None) -> dict:
         resp.raise_for_status()
         return resp.json()
 
-async def search_movies(query: str, page: int = 1) -> List[dict]:
-    data = await fetch_tmdb("/search/multi", {"query": query, "page": page, "include_adult": False})
+
+async def search_movies(query: str, page: int = 1, lang: str = "en") -> List[dict]:
+    data = await fetch_tmdb("/search/multi", {"query": query, "page": page, "include_adult": False}, lang=lang)
     results = []
     for m in data.get("results", []):
         if m.get("media_type") in ("movie", "tv") or "title" in m or "name" in m:
             results.append(format_movie(m))
     return results
 
-async def get_movie_details(tmdb_id: int, media_type: str = "movie") -> Optional[dict]:
+
+async def get_movie_details(tmdb_id: int, media_type: str = "movie", lang: str = "en") -> Optional[dict]:
     try:
-        data = await fetch_tmdb(f"/{media_type}/{tmdb_id}", {"append_to_response": "credits,similar,videos"})
+        data = await fetch_tmdb(f"/{media_type}/{tmdb_id}", {"append_to_response": "credits,similar,videos"}, lang=lang)
         m = format_movie(data)
         m["runtime"] = data.get("runtime")
         # Cast
@@ -75,25 +85,30 @@ async def get_movie_details(tmdb_id: int, media_type: str = "movie") -> Optional
         print(f"Error fetching movie details: {e}")
         return None
 
-async def get_trending(media_type: str = "all", time_window: str = "day") -> List[dict]:
-    data = await fetch_tmdb(f"/trending/{media_type}/{time_window}")
+
+async def get_trending(media_type: str = "all", time_window: str = "day", lang: str = "en") -> List[dict]:
+    data = await fetch_tmdb(f"/trending/{media_type}/{time_window}", lang=lang)
     return [format_movie(m) for m in data.get("results", [])[:20]]
 
-async def get_top_rated(media_type: str = "movie") -> List[dict]:
-    data = await fetch_tmdb(f"/{media_type}/top_rated")
+
+async def get_top_rated(media_type: str = "movie", lang: str = "en") -> List[dict]:
+    data = await fetch_tmdb(f"/{media_type}/top_rated", lang=lang)
     return [format_movie(m) for m in data.get("results", [])[:20]]
 
-async def get_now_playing() -> List[dict]:
-    data = await fetch_tmdb("/movie/now_playing")
+
+async def get_now_playing(lang: str = "en") -> List[dict]:
+    data = await fetch_tmdb("/movie/now_playing", lang=lang)
     return [format_movie(m) for m in data.get("results", [])[:20]]
 
-async def get_upcoming() -> List[dict]:
-    data = await fetch_tmdb("/movie/upcoming")
+
+async def get_upcoming(lang: str = "en") -> List[dict]:
+    data = await fetch_tmdb("/movie/upcoming", lang=lang)
     return [format_movie(m) for m in data.get("results", [])[:20]]
 
-async def get_popular_movies(pages: int = 3) -> List[dict]:
+
+async def get_popular_movies(pages: int = 3, lang: str = "en") -> List[dict]:
     all_movies = []
-    tasks = [fetch_tmdb("/movie/popular", {"page": p}) for p in range(1, pages+1)]
+    tasks = [fetch_tmdb("/movie/popular", {"page": p}, lang=lang) for p in range(1, pages+1)]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     for data in results:
         if isinstance(data, dict):

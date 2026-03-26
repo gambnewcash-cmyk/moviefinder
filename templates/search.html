@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if query %}{{ query }} — {% endif %}Search · MovieFinder{% endblock %}
+{% block title %}{% if query %}{{ query }} — {% endif %}{{ t.search_results if t else 'Search' }} · MovieFinder{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10">
@@ -12,12 +12,12 @@
         <button id="toggleRegular"
           onclick="setSearchMode('regular')"
           class="search-toggle-btn {% if not smart_mode %}active-toggle{% else %}text-muted{% endif %} px-5 py-1.5 rounded-full text-sm font-medium transition-all">
-          🔍 Regular
+          {{ t.regular_search_btn if t else '🔍 Regular' }}
         </button>
         <button id="toggleSmart"
           onclick="setSearchMode('smart')"
           class="search-toggle-btn {% if smart_mode %}active-toggle{% else %}text-muted{% endif %} px-5 py-1.5 rounded-full text-sm font-medium transition-all">
-          🤖 Smart Search
+          {{ t.smart_search_btn if t else '🤖 Smart Search' }}
         </button>
       </div>
     </div>
@@ -27,11 +27,11 @@
           class="{% if smart_mode %}hidden{% endif %} relative">
       <div class="relative flex items-center">
         <input name="q" value="{{ query if not smart_mode else '' }}"
-          placeholder="Search movies, TV shows…" autocomplete="off"
+          placeholder="{{ t.search_placeholder_main if t else 'Search movies, TV shows…' }}" autocomplete="off"
           class="w-full bg-card border-2 border-border rounded-full px-6 py-4 text-base text-white placeholder-muted focus:outline-none focus:border-accent transition-all pr-28"/>
         <button type="submit"
           class="absolute right-2 bg-accent hover:bg-accent-hover text-white font-semibold px-5 py-2.5 rounded-full transition-colors">
-          Search
+          {{ t.search_btn if t else 'Search' }}
         </button>
       </div>
     </form>
@@ -40,12 +40,12 @@
     <form id="smartSearchForm" action="/smart-search" method="get"
           class="{% if not smart_mode %}hidden{% endif %} relative">
       <textarea name="q" rows="2"
-        placeholder="Describe what you want… e.g. &quot;horror 2020 with monster&quot;"
+        placeholder="{{ t.smart_placeholder if t else 'Describe what you want…' }}"
         class="w-full bg-card border-2 border-border rounded-2xl px-6 py-4 text-base text-white placeholder-muted focus:outline-none focus:border-accent transition-all resize-none"
       >{{ query if smart_mode else '' }}</textarea>
       <button type="submit"
         class="mt-2 w-full bg-accent hover:bg-accent-hover text-white font-semibold py-3 rounded-full transition-colors">
-        🤖 Find with AI
+        🤖 {{ t.smart_search_label if t else 'Smart Search' }}
       </button>
     </form>
   </div>
@@ -56,7 +56,7 @@
     <div class="mb-6 text-center">
       <div class="inline-flex items-center gap-2 bg-card border border-border px-5 py-2 rounded-full">
         <span class="text-accent font-bold">🤖</span>
-        <span class="text-white font-medium">AI found <strong>{{ smart_count }}</strong> movies</span>
+        <span class="text-white font-medium">{{ t.smart_found if t else 'Found' }} <strong>{{ smart_count }}</strong> {{ t.smart_movies if t else 'movies' }}</span>
         {% if smart_description %}
         <span class="text-muted">· {{ smart_description }}</span>
         {% endif %}
@@ -65,7 +65,7 @@
     {% else %}
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-2xl font-bold">
-        Results for "<span class="text-accent">{{ query }}</span>"
+        {{ t.results_for if t else 'Results for' }} "<span class="text-accent">{{ query }}</span>"
         <span class="text-muted text-lg font-normal ml-2">{{ results|length }} found</span>
       </h1>
     </div>
@@ -132,7 +132,7 @@
         {% endif %}
         <div class="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black to-transparent"></div>
         <div class="find-btn absolute bottom-10 left-0 right-0 flex justify-center px-3">
-          <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ Find sources</span>
+          <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ {{ t.find_btn if t else 'Find' }}</span>
         </div>
         <div class="absolute bottom-0 left-0 right-0 p-3">
           <p class="text-white text-sm font-semibold line-clamp-2 leading-tight">{{ m.title }}</p>
@@ -149,17 +149,17 @@
   {% elif query %}
   <div class="text-center py-24">
     <div class="text-6xl mb-4">🔍</div>
-    <h2 class="text-2xl font-bold mb-2">Nothing found for "{{ query }}"</h2>
-    <p class="text-muted mb-6">Try different keywords or use Smart Search</p>
+    <h2 class="text-2xl font-bold mb-2">{{ t.no_results if t else 'Nothing found' }} "{{ query }}"</h2>
+    <p class="text-muted mb-6">{{ t.try_different if t else 'Try different keywords or use Smart Search' }}</p>
     <button onclick="setSearchMode('smart')"
       class="bg-accent hover:bg-accent-hover text-white font-bold px-8 py-3 rounded-full transition-colors">
-      Try 🤖 Smart Search
+      {{ t.smart_search_btn if t else '🤖 Smart Search' }}
     </button>
   </div>
   {% else %}
   <div class="text-center py-24 text-muted">
     <div class="text-6xl mb-4">🎬</div>
-    <p class="text-xl">Search for any movie or TV show above</p>
+    <p class="text-xl">{{ t.search_placeholder_main if t else 'Search for any movie or TV show above' }}</p>
   </div>
   {% endif %}
 
