@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}MovieFinder — Watch Anything, Anywhere{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0f0f0f',
+            card: '#1a1a1a',
+            accent: '#e50914',
+            'accent-hover': '#c40812',
+            border: '#2a2a2a',
+            muted: '#aaaaaa',
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #0f0f0f; color: #fff; font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f0f0f; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    .movie-card { transition: transform .25s ease, box-shadow .25s ease; }
+    .movie-card:hover { transform: scale(1.04); box-shadow: 0 16px 48px rgba(0,0,0,.7); }
+    .movie-card:hover .find-btn { opacity: 1; transform: translateY(0); }
+    .find-btn { opacity: 0; transform: translateY(8px); transition: all .2s ease; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .section-scroll { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+    .section-scroll::-webkit-scrollbar { height: 4px; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .fade-in { animation: fadeIn .4s ease forwards; }
+    @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(229,9,20,.4); } 50% { box-shadow: 0 0 0 8px rgba(229,9,20,0); } }
+    .pulse-glow { animation: pulse-glow 2s infinite; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-bg/95 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-4 h-14 flex items-center gap-6">
+    <a href="/" class="flex items-center gap-2 font-black text-xl tracking-tight">
+      <span class="text-accent">▶</span>
+      <span>Movie<span class="text-accent">Finder</span></span>
+    </a>
+    <div class="flex-1 max-w-md hidden md:block">
+      <form action="/search" method="get">
+        <input name="q" placeholder="Search movies, shows…"
+               class="w-full bg-card border border-border rounded-full px-4 py-1.5 text-sm text-white placeholder-muted focus:outline-none focus:border-accent transition"
+               autocomplete="off"/>
+      </form>
+    </div>
+    <div class="ml-auto flex items-center gap-3">
+      <a href="/search" class="text-sm text-muted hover:text-white transition">Search</a>
+      <a href="/?section=trending" class="text-sm text-muted hover:text-white transition hidden sm:block">Trending</a>
+    </div>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer class="border-t border-border mt-24 py-12 text-center text-muted text-sm">
+  <div class="max-w-7xl mx-auto px-4">
+    <p class="font-bold text-white text-lg mb-2"><span class="text-accent">▶</span> MovieFinder</p>
+    <p class="mb-4">Find where to watch any movie or TV show — streaming & more.</p>
+    <p class="text-xs text-border">Movie data provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+  </div>
+</footer>
+
+<script src="/static/js/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

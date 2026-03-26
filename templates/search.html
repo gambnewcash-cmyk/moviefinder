@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}{% if query %}{{ query }} — {% endif %}Search · MovieFinder{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 py-10">
+
+  <!-- Search bar with mode toggle -->
+  <div class="max-w-2xl mx-auto mb-10">
+    <!-- Toggle -->
+    <div class="flex justify-center mb-4">
+      <div class="inline-flex bg-card border border-border rounded-full p-1 gap-1">
+        <button id="toggleRegular"
+          onclick="setSearchMode('regular')"
+          class="search-toggle-btn {% if not smart_mode %}active-toggle{% else %}text-muted{% endif %} px-5 py-1.5 rounded-full text-sm font-medium transition-all">
+          🔍 Regular
+        </button>
+        <button id="toggleSmart"
+          onclick="setSearchMode('smart')"
+          class="search-toggle-btn {% if smart_mode %}active-toggle{% else %}text-muted{% endif %} px-5 py-1.5 rounded-full text-sm font-medium transition-all">
+          🤖 Smart Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Regular Search -->
+    <form id="regularSearchForm" action="/search" method="get"
+          class="{% if smart_mode %}hidden{% endif %} relative">
+      <div class="relative flex items-center">
+        <input name="q" value="{{ query if not smart_mode else '' }}"
+          placeholder="Search movies, TV shows…" autocomplete="off"
+          class="w-full bg-card border-2 border-border rounded-full px-6 py-4 text-base text-white placeholder-muted focus:outline-none focus:border-accent transition-all pr-28"/>
+        <button type="submit"
+          class="absolute right-2 bg-accent hover:bg-accent-hover text-white font-semibold px-5 py-2.5 rounded-full transition-colors">
+          Search
+        </button>
+      </div>
+    </form>
+
+    <!-- Smart Search -->
+    <form id="smartSearchForm" action="/smart-search" method="get"
+          class="{% if not smart_mode %}hidden{% endif %} relative">
+      <textarea name="q" rows="2"
+        placeholder="Describe what you want… e.g. &quot;horror 2020 with monster&quot;"
+        class="w-full bg-card border-2 border-border rounded-2xl px-6 py-4 text-base text-white placeholder-muted focus:outline-none focus:border-accent transition-all resize-none"
+      >{{ query if smart_mode else '' }}</textarea>
+      <button type="submit"
+        class="mt-2 w-full bg-accent hover:bg-accent-hover text-white font-semibold py-3 rounded-full transition-colors">
+        🤖 Find with AI
+      </button>
+    </form>
+  </div>
+
+  <!-- Results header -->
+  {% if query %}
+    {% if smart_mode %}
+    <div class="mb-6 text-center">
+      <div class="inline-flex items-center gap-2 bg-card border border-border px-5 py-2 rounded-full">
+        <span class="text-accent font-bold">🤖</span>
+        <span class="text-white font-medium">AI found <strong>{{ smart_count }}</strong> movies</span>
+        {% if smart_description %}
+        <span class="text-muted">· {{ smart_description }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="mb-6 flex items-center justify-between">
+      <h1 class="text-2xl font-bold">
+        Results for "<span class="text-accent">{{ query }}</span>"
+        <span class="text-muted text-lg font-normal ml-2">{{ results|length }} found</span>
+      </h1>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  <!-- Filters bar -->
+  <div class="flex flex-wrap gap-3 mb-8" id="filtersBar">
+    <select id="filterGenre" onchange="applyFilters()"
+      class="bg-card border border-border text-sm text-muted rounded-full px-4 py-2 focus:outline-none focus:border-accent cursor-pointer">
+      <option value="">All Genres</option>
+      <option value="Action">Action</option>
+      <option value="Comedy">Comedy</option>
+      <option value="Drama">Drama</option>
+      <option value="Horror">Horror</option>
+      <option value="Sci-Fi">Sci-Fi</option>
+      <option value="Thriller">Thriller</option>
+      <option value="Animation">Animation</option>
+      <option value="Romance">Romance</option>
+      <option value="Crime">Crime</option>
+      <option value="Adventure">Adventure</option>
+    </select>
+    <select id="filterYear" onchange="applyFilters()"
+      class="bg-card border border-border text-sm text-muted rounded-full px-4 py-2 focus:outline-none focus:border-accent cursor-pointer">
+      <option value="">All Years</option>
+      <option value="2020s">2020s</option>
+      <option value="2010s">2010s</option>
+      <option value="2000s">2000s</option>
+      <option value="1990s">1990s</option>
+      <option value="1980s">1980s</option>
+    </select>
+    <select id="filterRating" onchange="applyFilters()"
+      class="bg-card border border-border text-sm text-muted rounded-full px-4 py-2 focus:outline-none focus:border-accent cursor-pointer">
+      <option value="">Any Rating</option>
+      <option value="8">8+ ⭐⭐⭐⭐</option>
+      <option value="7">7+</option>
+      <option value="6">6+</option>
+    </select>
+    <button onclick="clearFilters()" class="text-sm text-muted hover:text-white transition-colors px-2">Clear</button>
+  </div>
+
+  <!-- Results grid -->
+  {% if results %}
+  <div id="resultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    {% for m in results %}
+    <a href="/movie/{{ m.tmdb_id }}"
+       class="movie-card relative rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block fade-in"
+       data-genre="{{ m.genre or '' }}"
+       data-year="{{ m.year or '' }}"
+       data-rating="{{ m.rating or 0 }}"
+       style="animation-delay: {{ loop.index0 * 30 }}ms">
+      <div class="relative w-full" style="padding-bottom:150%">
+        {% if m.poster_url %}
+        <img src="{{ m.poster_url }}" alt="{{ m.title }}"
+             class="absolute inset-0 w-full h-full object-cover" loading="lazy"
+             onerror="this.src='/static/img/no-poster.svg'"/>
+        {% else %}
+        <div class="absolute inset-0 flex items-center justify-center bg-card text-muted text-4xl">🎬</div>
+        {% endif %}
+        {% if m.rating and m.rating > 0 %}
+        <div class="absolute top-2 right-2 bg-black/80 text-yellow-400 text-xs font-bold px-2 py-0.5 rounded-full">
+          ⭐ {{ "%.1f"|format(m.rating) }}
+        </div>
+        {% endif %}
+        <div class="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black to-transparent"></div>
+        <div class="find-btn absolute bottom-10 left-0 right-0 flex justify-center px-3">
+          <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ Find sources</span>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-3">
+          <p class="text-white text-sm font-semibold line-clamp-2 leading-tight">{{ m.title }}</p>
+          <div class="flex items-center gap-2 mt-1">
+            {% if m.year %}<span class="text-muted text-xs">{{ m.year }}</span>{% endif %}
+            {% if m.genre %}<span class="text-muted text-xs truncate">{{ m.genre.split(',')[0] }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% elif query %}
+  <div class="text-center py-24">
+    <div class="text-6xl mb-4">🔍</div>
+    <h2 class="text-2xl font-bold mb-2">Nothing found for "{{ query }}"</h2>
+    <p class="text-muted mb-6">Try different keywords or use Smart Search</p>
+    <button onclick="setSearchMode('smart')"
+      class="bg-accent hover:bg-accent-hover text-white font-bold px-8 py-3 rounded-full transition-colors">
+      Try 🤖 Smart Search
+    </button>
+  </div>
+  {% else %}
+  <div class="text-center py-24 text-muted">
+    <div class="text-6xl mb-4">🎬</div>
+    <p class="text-xl">Search for any movie or TV show above</p>
+  </div>
+  {% endif %}
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .active-toggle { background: #e50914; color: white; }
+  .search-toggle-btn:not(.active-toggle):hover { color: white; }
+</style>
+<script>
+function setSearchMode(mode) {
+  const regular = document.getElementById('regularSearchForm');
+  const smart = document.getElementById('smartSearchForm');
+  const btnR = document.getElementById('toggleRegular');
+  const btnS = document.getElementById('toggleSmart');
+  if (mode === 'smart') {
+    regular.classList.add('hidden');
+    smart.classList.remove('hidden');
+    btnS.classList.add('active-toggle'); btnS.classList.remove('text-muted');
+    btnR.classList.remove('active-toggle'); btnR.classList.add('text-muted');
+  } else {
+    smart.classList.add('hidden');
+    regular.classList.remove('hidden');
+    btnR.classList.add('active-toggle'); btnR.classList.remove('text-muted');
+    btnS.classList.remove('active-toggle'); btnS.classList.add('text-muted');
+  }
+}
+
+function applyFilters() {
+  const genre = document.getElementById('filterGenre').value;
+  const year = document.getElementById('filterYear').value;
+  const rating = parseFloat(document.getElementById('filterRating').value) || 0;
+  const cards = document.querySelectorAll('#resultsGrid [data-genre]');
+  let visible = 0;
+  cards.forEach(card => {
+    const cGenre = card.dataset.genre || '';
+    const cYear = parseInt(card.dataset.year) || 0;
+    const cRating = parseFloat(card.dataset.rating) || 0;
+    let show = true;
+    if (genre && !cGenre.includes(genre)) show = false;
+    if (year) {
+      const decade = parseInt(year);
+      if (cYear < decade || cYear >= decade + 10) show = false;
+    }
+    if (rating && cRating < rating) show = false;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+}
+
+function clearFilters() {
+  document.getElementById('filterGenre').value = '';
+  document.getElementById('filterYear').value = '';
+  document.getElementById('filterRating').value = '';
+  applyFilters();
+}
+</script>
+{% endblock %}

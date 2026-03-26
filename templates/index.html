@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}MovieFinder — Watch Anything, Anywhere{% endblock %}
+
+{% block content %}
+
+<!-- HERO SEARCH -->
+<section class="relative py-20 px-4 overflow-hidden">
+  <!-- Background gradient blobs -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-20 right-0 w-72 h-72 bg-purple-900/20 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative max-w-3xl mx-auto text-center">
+    <h1 class="text-5xl md:text-6xl font-black mb-3 leading-tight">
+      Find where to<br/><span class="text-accent">watch anything</span>
+    </h1>
+    <p class="text-muted text-lg mb-10">Streaming services, free sites & more — all in one place.</p>
+
+    <!-- Search Mode Toggle -->
+    <div class="flex justify-center mb-4">
+      <div class="inline-flex bg-card border border-border rounded-full p-1 gap-1">
+        <button id="toggleRegular"
+          onclick="setSearchMode('regular')"
+          class="search-toggle-btn active-toggle px-5 py-1.5 rounded-full text-sm font-medium transition-all">
+          🔍 Regular
+        </button>
+        <button id="toggleSmart"
+          onclick="setSearchMode('smart')"
+          class="search-toggle-btn px-5 py-1.5 rounded-full text-sm font-medium text-muted transition-all">
+          🤖 Smart Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Regular Search Form -->
+    <form id="regularSearchForm" action="/search" method="get" class="relative">
+      <div class="relative flex items-center">
+        <input id="mainSearchInput" name="q"
+          placeholder="Search movies, TV shows…"
+          autocomplete="off"
+          class="w-full bg-card border-2 border-border rounded-full px-7 py-5 text-lg text-white placeholder-muted focus:outline-none focus:border-accent transition-all pr-36"
+        />
+        <button type="submit"
+          class="absolute right-2 bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors pulse-glow">
+          Search
+        </button>
+      </div>
+      <!-- Autocomplete dropdown -->
+      <div id="autocompleteDropdown"
+        class="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-2xl z-50 hidden">
+      </div>
+    </form>
+
+    <!-- Smart Search Form -->
+    <form id="smartSearchForm" action="/smart-search" method="get" class="hidden relative">
+      <div class="relative">
+        <textarea name="q" id="smartInput" rows="3"
+          placeholder="Describe what you want…&#10;e.g. &quot;horror movie from 2020 with a monster&quot;&#10;or &quot;comedy with Will Smith from the 90s&quot;"
+          class="w-full bg-card border-2 border-border rounded-3xl px-7 py-5 text-base text-white placeholder-muted focus:outline-none focus:border-accent transition-all resize-none"
+        ></textarea>
+        <button type="submit"
+          class="mt-3 w-full bg-accent hover:bg-accent-hover text-white font-semibold py-3.5 rounded-full transition-colors text-base">
+          🤖 Find with AI
+        </button>
+      </div>
+      <p class="mt-3 text-xs text-muted">Understands genres, years, decades, actors, themes — no OpenAI costs!</p>
+    </form>
+
+    <!-- Smart Search Examples -->
+    <div id="smartExamples" class="hidden mt-4 flex flex-wrap justify-center gap-2">
+      {% set examples = [
+        "horror movie 2020 with monster",
+        "comedy with Will Smith 90s",
+        "sci-fi space adventure",
+        "thriller good rating",
+        "animated family film",
+        "crime drama best rated",
+      ] %}
+      {% for ex in examples %}
+      <button onclick="fillSmartExample('{{ ex }}')"
+        class="text-xs bg-card border border-border px-3 py-1.5 rounded-full text-muted hover:text-white hover:border-accent transition-all">
+        {{ ex }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- TRENDING SEARCHES -->
+{% if trending_searches %}
+<section class="max-w-7xl mx-auto px-4 mb-10">
+  <h2 class="text-lg font-bold mb-3 text-muted flex items-center gap-2">🔥 Trending Searches</h2>
+  <div class="flex flex-wrap gap-2">
+    {% for s in trending_searches %}
+    <a href="/search?q={{ s.query | urlencode }}"
+      class="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-full text-sm hover:border-accent hover:text-accent transition-all">
+      <span class="text-accent font-bold text-xs">{{ loop.index }}</span>
+      <span>{{ s.query }}</span>
+      <span class="text-muted text-xs">{{ s.count }}×</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- VPN BANNER -->
+<section class="max-w-7xl mx-auto px-4 mb-12">
+  <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#1a1a2e] via-[#16213e] to-[#0f3460] border border-border p-6 flex flex-col md:flex-row items-center gap-4">
+    <div class="text-4xl">🛡️</div>
+    <div class="flex-1">
+      <p class="font-bold text-white text-lg">Watch geo-blocked content from anywhere</p>
+      <p class="text-muted text-sm mt-1">A VPN lets you access Netflix US, BBC iPlayer, and more — fast & secure.</p>
+    </div>
+    <a href="#" class="shrink-0 bg-accent hover:bg-accent-hover text-white font-bold px-6 py-3 rounded-full transition-colors text-sm">
+      Get VPN — 70% off →
+    </a>
+  </div>
+</section>
+
+<!-- TRENDING TODAY -->
+{% if trending %}
+<section class="max-w-7xl mx-auto px-4 mb-12">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-2xl font-bold flex items-center gap-2">🔥 <span>Trending Today</span></h2>
+  </div>
+  <div class="section-scroll pb-4">
+    <div class="flex gap-4 w-max">
+      {% for m in trending %}
+      {{ _movie_card(m) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- TOP RATED -->
+{% if top_rated %}
+<section class="max-w-7xl mx-auto px-4 mb-12">
+  <h2 class="text-2xl font-bold mb-5">⭐ Top Rated</h2>
+  <div class="section-scroll pb-4">
+    <div class="flex gap-4 w-max">
+      {% for m in top_rated %}
+      {{ _movie_card(m) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- NOW IN THEATERS -->
+{% if now_playing %}
+<section class="max-w-7xl mx-auto px-4 mb-12">
+  <h2 class="text-2xl font-bold mb-5">🎬 Now in Theaters</h2>
+  <div class="section-scroll pb-4">
+    <div class="flex gap-4 w-max">
+      {% for m in now_playing %}
+      {{ _movie_card(m) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- COMING SOON ONLINE -->
+{% if upcoming %}
+<section class="max-w-7xl mx-auto px-4 mb-12">
+  <h2 class="text-2xl font-bold mb-5">📅 Coming Soon Online</h2>
+  <div class="section-scroll pb-4">
+    <div class="flex gap-4 w-max">
+      {% for m in upcoming %}
+      {{ _movie_card(m) }}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% macro _movie_card(m) %}
+<a href="/movie/{{ m.tmdb_id }}" class="movie-card relative w-44 shrink-0 rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block">
+  <!-- Poster -->
+  <div class="relative w-full" style="padding-bottom:150%">
+    {% if m.poster_url %}
+    <img src="{{ m.poster_url }}" alt="{{ m.title }}"
+      class="absolute inset-0 w-full h-full object-cover"
+      loading="lazy"
+      onerror="this.src='/static/img/no-poster.svg'"/>
+    {% else %}
+    <div class="absolute inset-0 flex items-center justify-center bg-card text-muted text-3xl">🎬</div>
+    {% endif %}
+    <!-- Rating badge -->
+    {% if m.rating and m.rating > 0 %}
+    <div class="absolute top-2 right-2 bg-black/80 text-yellow-400 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+      ⭐ {{ "%.1f"|format(m.rating) }}
+    </div>
+    {% endif %}
+    <!-- Gradient overlay -->
+    <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent"></div>
+    <!-- Hover: Find sources button -->
+    <div class="find-btn absolute bottom-10 left-0 right-0 flex justify-center px-3">
+      <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ Find sources</span>
+    </div>
+    <!-- Title overlay -->
+    <div class="absolute bottom-0 left-0 right-0 p-2">
+      <p class="text-white text-xs font-semibold line-clamp-2 leading-tight">{{ m.title }}</p>
+      {% if m.year %}<p class="text-muted text-xs mt-0.5">{{ m.year }}</p>{% endif %}
+    </div>
+  </div>
+</a>
+{% endmacro %}
+
+{% block scripts %}
+<style>
+  .active-toggle { background: #e50914; color: white; }
+  .search-toggle-btn:not(.active-toggle):hover { color: white; }
+</style>
+<script>
+function setSearchMode(mode) {
+  const regular = document.getElementById('regularSearchForm');
+  const smart = document.getElementById('smartSearchForm');
+  const examples = document.getElementById('smartExamples');
+  const btnR = document.getElementById('toggleRegular');
+  const btnS = document.getElementById('toggleSmart');
+  if (mode === 'smart') {
+    regular.classList.add('hidden');
+    smart.classList.remove('hidden');
+    examples.classList.remove('hidden');
+    btnS.classList.add('active-toggle');
+    btnS.classList.remove('text-muted');
+    btnR.classList.remove('active-toggle');
+    btnR.classList.add('text-muted');
+  } else {
+    smart.classList.add('hidden');
+    examples.classList.add('hidden');
+    regular.classList.remove('hidden');
+    btnR.classList.add('active-toggle');
+    btnR.classList.remove('text-muted');
+    btnS.classList.remove('active-toggle');
+    btnS.classList.add('text-muted');
+  }
+}
+
+function fillSmartExample(text) {
+  document.getElementById('smartInput').value = text;
+  document.getElementById('smartInput').focus();
+}
+
+// Autocomplete for regular search
+let acTimer;
+const input = document.getElementById('mainSearchInput');
+const dropdown = document.getElementById('autocompleteDropdown');
+
+input?.addEventListener('input', () => {
+  clearTimeout(acTimer);
+  const q = input.value.trim();
+  if (q.length < 2) { dropdown.classList.add('hidden'); return; }
+  acTimer = setTimeout(() => fetchSuggestions(q), 300);
+});
+
+input?.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') dropdown.classList.add('hidden');
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#regularSearchForm')) dropdown.classList.add('hidden');
+});
+
+async function fetchSuggestions(q) {
+  try {
+    const res = await fetch(`/api/suggestions?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    const suggestions = data.suggestions || [];
+    if (!suggestions.length) { dropdown.classList.add('hidden'); return; }
+    dropdown.innerHTML = suggestions.map(s => `
+      <a href="/movie/${s.tmdb_id}" class="flex items-center gap-3 px-4 py-3 hover:bg-border transition-colors first:rounded-t-2xl last:rounded-b-2xl cursor-pointer">
+        ${s.poster_url ? `<img src="${s.poster_url}" class="w-8 h-12 object-cover rounded shrink-0"/>` : '<div class="w-8 h-12 bg-border rounded shrink-0 flex items-center justify-center text-xs">🎬</div>'}
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-medium truncate">${s.title}</p>
+          <p class="text-muted text-xs">${s.year || ''} · ${s.media_type}</p>
+        </div>
+      </a>
+    `).join('');
+    dropdown.classList.remove('hidden');
+  } catch(e) { dropdown.classList.add('hidden'); }
+}
+</script>
+{% endblock %}

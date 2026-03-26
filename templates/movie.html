@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}{{ movie.title }} ({{ movie.year }}) · MovieFinder{% endblock %}
+
+{% block head %}
+{% if movie.backdrop_path %}
+<style>
+  .hero-backdrop {
+    background-image: linear-gradient(to bottom, rgba(15,15,15,0.3) 0%, rgba(15,15,15,0.8) 60%, #0f0f0f 100%),
+                      url('https://image.tmdb.org/t/p/w1280{{ movie.backdrop_path }}');
+    background-size: cover;
+    background-position: center top;
+  }
+</style>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="hero-backdrop min-h-[420px] flex items-end pb-0">
+  <div class="max-w-7xl mx-auto px-4 w-full">
+    <div class="flex flex-col md:flex-row gap-8 pb-0 pt-10">
+      <!-- Poster -->
+      <div class="shrink-0">
+        <div class="w-52 rounded-2xl overflow-hidden shadow-2xl border border-border">
+          {% if movie.poster_url %}
+          <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-auto"/>
+          {% else %}
+          <div class="w-52 h-80 flex items-center justify-center bg-card text-muted text-5xl">🎬</div>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="flex-1 pb-8">
+        <h1 class="text-4xl md:text-5xl font-black leading-tight mb-2">{{ movie.title }}</h1>
+        <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-muted">
+          {% if movie.year %}<span class="text-white font-medium">{{ movie.year }}</span>{% endif %}
+          {% if movie.runtime %}<span>· {{ movie.runtime }} min</span>{% endif %}
+          {% if movie.genres_list %}
+          {% for g in movie.genres_list %}
+          <span class="bg-card border border-border px-2 py-0.5 rounded-full text-xs">{{ g }}</span>
+          {% endfor %}
+          {% endif %}
+        </div>
+        {% if movie.rating and movie.rating > 0 %}
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-yellow-400 text-2xl">⭐</span>
+          <span class="text-3xl font-black text-white">{{ "%.1f"|format(movie.rating) }}</span>
+          <span class="text-muted text-sm">/ 10 · TMDB</span>
+        </div>
+        {% endif %}
+        {% if movie.description %}
+        <p class="text-muted leading-relaxed max-w-2xl text-base">{{ movie.description }}</p>
+        {% endif %}
+        {% if movie.trailer_key %}
+        <a href="https://www.youtube.com/watch?v={{ movie.trailer_key }}" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 mt-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium">
+          ▶ Watch Trailer
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-10">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+    <!-- LEFT: WHERE TO WATCH -->
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- WHERE TO WATCH -->
+      <section>
+        <h2 class="text-2xl font-bold mb-5 flex items-center gap-2">
+          📺 Where to Watch
+        </h2>
+
+        <!-- Premium Streaming -->
+        <div class="mb-6">
+          <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span class="text-green-400">💎</span> Premium Streaming
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for s in sources.streaming %}
+            <a href="{{ s.url }}" target="_blank" rel="noopener"
+               class="flex items-center gap-4 bg-card border border-border hover:border-accent rounded-xl p-4 transition-all group">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
+                   style="background: {{ s.color }}">
+                {{ s.icon }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold text-sm">{{ s.source_name }}</p>
+                <p class="text-muted text-xs">Search on {{ s.source_name }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs bg-green-900/40 text-green-400 border border-green-800 px-2 py-0.5 rounded-full">{{ s.quality }}</span>
+                <span class="text-muted group-hover:text-white transition-colors">→</span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Free / Pirate Sources -->
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span class="text-accent">🆓</span> Free Online
+            <span class="text-xs text-muted font-normal normal-case">(search results)</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {% for s in sources.pirate %}
+            <a href="{{ s.url }}" target="_blank" rel="noopener"
+               class="flex flex-col gap-2 bg-card border border-border hover:border-accent rounded-xl p-4 transition-all group">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">{{ s.icon }}</span>
+                <div>
+                  <p class="text-white font-semibold text-sm">{{ s.source_name }}</p>
+                  <span class="text-xs bg-accent/20 text-accent border border-accent/30 px-2 py-0.5 rounded-full">{{ s.quality }}</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-muted text-xs">Click to search →</span>
+                <span class="text-accent text-lg group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- JustWatch link -->
+        {% for s in sources.justwatch %}
+        <a href="{{ s.url }}" target="_blank" rel="noopener"
+           class="flex items-center gap-3 text-sm text-muted hover:text-white transition-colors mt-2">
+          <span>📋</span> See all streaming options on JustWatch →
+        </a>
+        {% endfor %}
+      </section>
+
+      <!-- VPN PROMO -->
+      <div class="rounded-2xl bg-gradient-to-r from-[#1a1a2e] to-[#0f3460] border border-border p-5 flex items-center gap-4">
+        <span class="text-4xl shrink-0">🛡️</span>
+        <div class="flex-1">
+          <p class="font-bold text-white">Content not available in your region?</p>
+          <p class="text-muted text-sm mt-0.5">Use a VPN to unlock Netflix US, BBC iPlayer & more.</p>
+        </div>
+        <a href="#" class="shrink-0 bg-accent hover:bg-accent-hover text-white text-sm font-bold px-4 py-2 rounded-full transition-colors">
+          Get VPN →
+        </a>
+      </div>
+
+      <!-- CAST -->
+      {% if movie.cast %}
+      <section>
+        <h2 class="text-xl font-bold mb-4">🎭 Cast</h2>
+        <div class="flex gap-3 overflow-x-auto pb-2 section-scroll">
+          {% for person in movie.cast %}
+          <div class="shrink-0 w-24 text-center">
+            <div class="w-16 h-16 rounded-full overflow-hidden mx-auto mb-2 bg-card border border-border">
+              {% if person.profile %}
+              <img src="{{ person.profile }}" alt="{{ person.name }}" class="w-full h-full object-cover" loading="lazy"/>
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center text-2xl">👤</div>
+              {% endif %}
+            </div>
+            <p class="text-white text-xs font-medium leading-tight">{{ person.name }}</p>
+            {% if person.character %}<p class="text-muted text-xs mt-0.5 truncate">{{ person.character }}</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+    </div>
+
+    <!-- RIGHT: Similar movies -->
+    <div>
+      <h2 class="text-xl font-bold mb-4">🎬 Similar Movies</h2>
+      {% if movie.similar %}
+      <div class="space-y-3">
+        {% for s in movie.similar %}
+        <a href="/movie/{{ s.tmdb_id }}"
+           class="flex gap-3 bg-card border border-border hover:border-accent rounded-xl p-3 transition-all group">
+          <div class="shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-border">
+            {% if s.poster_url %}
+            <img src="{{ s.poster_url }}" alt="{{ s.title }}" class="w-full h-full object-cover" loading="lazy"/>
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center text-lg">🎬</div>
+            {% endif %}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-white text-sm font-medium line-clamp-2 leading-tight group-hover:text-accent transition-colors">{{ s.title }}</p>
+            <div class="flex items-center gap-2 mt-1">
+              {% if s.year %}<span class="text-muted text-xs">{{ s.year }}</span>{% endif %}
+              {% if s.rating and s.rating > 0 %}<span class="text-yellow-400 text-xs">⭐ {{ "%.1f"|format(s.rating) }}</span>{% endif %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted text-sm">No similar movies found.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
