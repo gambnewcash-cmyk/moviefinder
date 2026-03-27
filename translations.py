@@ -6,13 +6,19 @@ TRANSLATIONS = {
     "en": {
         # Nav
         "search": "Search",
+        "ai_search": "AI Search",
+        "new_2026": "New in 2026",
+        "popular_tv": "Popular TV Shows",
+        "oscar_winners": "Oscar Winners",
+        "romance_comedy": "Romance & Comedy",
+        "top_horror": "Best Horror",
         "trending": "Trending",
         "search_placeholder_nav": "Search movies, shows…",
 
         # Hero
-        "hero_title": "Find where to",
-        "hero_title_accent": "watch anything",
-        "hero_subtitle": "Streaming services, free sites & more — all in one place.",
+        "hero_title": "One search —",
+        "hero_title_accent": "every platform",
+        "hero_subtitle": "No more searching through sketchy links. Type a movie — we show you where to watch it: Netflix, HBO, HDRezka, Filmix and more.",
         "regular_search_btn": "🔍 Regular",
         "smart_search_btn": "🤖 Smart Search",
         "search_placeholder_main": "Search movies, TV shows…",
@@ -32,6 +38,14 @@ TRANSLATIONS = {
         # Movie card / page
         "where_to_watch": "Where to Watch",
         "free_online": "Free Online",
+        "subscription": "Subscription",
+        "rent": "Rent",
+        "buy": "Buy",
+        "checking_sources": "Checking availability...",
+        "sources_error": "Could not load streaming info.",
+        "no_sources_found": "No streaming sources found.",
+        "seasons": "seasons",
+        "episodes": "episodes",
         "premium": "Premium",
         "trailer": "Watch Trailer",
         "similar": "Similar Movies",
@@ -64,6 +78,28 @@ TRANSLATIONS = {
         "footer_desc": "Find where to watch any movie or TV show — streaming & more.",
         "footer_api": "Movie data provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.",
 
+
+        # Tagline
+        "tagline": "No more clicking through sketchy search engine links — all official and free platforms in one place.",
+
+        # How it works
+        "how_step1_title": "Enter a title",
+        "how_step1_desc": "Movie, TV show, or use AI smart search",
+        "how_step2_title": "See platforms",
+        "how_step2_desc": "See which platforms have the movie or show for free — Netflix, HDRezka, Filmix and 20+ sites",
+        "how_step3_title": "Enjoy",
+        "how_step3_desc": "Direct link — one click and you're watching",
+
+        # Buttons
+        "add_to_favorites": "Add to favorites",
+        "mark_watched": "Mark as watched",
+
+        # Toast messages
+        "toast_removed_fav": "Removed from favorites",
+        "toast_added_fav": "❤️ Added to favorites!",
+        "toast_removed_watched": "Removed from watched",
+        "toast_added_watched": "✅ Marked as watched!",
+
         # Language switcher
         "lang_en": "🇬🇧 EN",
         "lang_ru": "🇷🇺 RU",
@@ -72,13 +108,19 @@ TRANSLATIONS = {
     "ru": {
         # Nav
         "search": "Поиск",
+        "ai_search": "Поиск через AI",
+        "new_2026": "Новинки 2026",
+        "popular_tv": "Популярные сериалы",
+        "oscar_winners": "Победители Оскара",
+        "romance_comedy": "Топ романтика и комедии",
+        "top_horror": "Лучшие ужасы",
         "trending": "Популярное",
         "search_placeholder_nav": "Поиск фильмов, сериалов…",
 
         # Hero
-        "hero_title": "Найди где",
-        "hero_title_accent": "смотреть всё",
-        "hero_subtitle": "Стриминги, бесплатные сайты и многое другое — в одном месте.",
+        "hero_title": "Один поиск —",
+        "hero_title_accent": "все платформы сразу",
+        "hero_subtitle": "Введи название или воспользуйся умным AI поиском — получи все платформы где можно посмотреть фильм бесплатно или легально",
         "regular_search_btn": "🔍 Обычный",
         "smart_search_btn": "🤖 Умный поиск",
         "search_placeholder_main": "Поиск фильмов, сериалов…",
@@ -98,6 +140,14 @@ TRANSLATIONS = {
         # Movie card / page
         "where_to_watch": "Где посмотреть",
         "free_online": "Бесплатно онлайн",
+        "subscription": "Подписка",
+        "rent": "Аренда",
+        "buy": "Купить",
+        "checking_sources": "Проверяем наличие...",
+        "sources_error": "Не удалось загрузить источники.",
+        "no_sources_found": "Источники не найдены.",
+        "seasons": "сез.",
+        "episodes": "эп.",
         "premium": "Премиум",
         "trailer": "Смотреть трейлер",
         "similar": "Похожие фильмы",
@@ -129,6 +179,28 @@ TRANSLATIONS = {
         # Footer
         "footer_desc": "Найди где смотреть любой фильм или сериал — стриминги и не только.",
         "footer_api": "Данные о фильмах предоставлены TMDB. Этот продукт использует API TMDB, но не одобрен и не сертифицирован TMDB.",
+
+
+        # Tagline
+        "tagline": "No more clicking through sketchy search engine links — all official and free platforms in one place.",
+
+        # How it works
+        "how_step1_title": "Enter a title",
+        "how_step1_desc": "Movie, TV show, or use AI smart search",
+        "how_step2_title": "See platforms",
+        "how_step2_desc": "See which platforms have the movie or show for free — Netflix, HDRezka, Filmix and 20+ sites",
+        "how_step3_title": "Enjoy",
+        "how_step3_desc": "Direct link — one click and you're watching",
+
+        # Buttons
+        "add_to_favorites": "Add to favorites",
+        "mark_watched": "Mark as watched",
+
+        # Toast messages
+        "toast_removed_fav": "Removed from favorites",
+        "toast_added_fav": "❤️ Added to favorites!",
+        "toast_removed_watched": "Removed from watched",
+        "toast_added_watched": "✅ Marked as watched!",
 
         # Language switcher
         "lang_en": "🇬🇧 EN",

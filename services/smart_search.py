@@ -3,9 +3,15 @@ Smart Search - Natural language movie discovery without external AI APIs.
 Uses keyword extraction + TMDB /discover/movie endpoint.
 """
 import re
+import os
 import httpx
 from typing import Optional, List, Dict, Any
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 from services.tmdb import TMDB_API_KEY, BASE_URL, IMAGE_BASE, GENRE_MAP, format_movie
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 # Reverse map: keyword -> genre_id
 GENRE_KEYWORDS: Dict[str, int] = {
@@ -18,9 +24,9 @@ GENRE_KEYWORDS: Dict[str, int] = {
     "horror": 27, "scary": 27, "monster": 27, "zombie": 27, "ghost": 27,
     "music": 10402, "musical": 10402, "mystery": 9648,
     "romance": 10749, "romantic": 10749, "love": 10749,
-    "sci-fi": 878, "scifi": 878, "science fiction": 878, "space": 878,
+    "sci-fi": 878, "scifi": 878, "science fiction": 878, "sci fi": 878, "space": 878,
     "thriller": 53, "suspense": 53, "war": 10752, "western": 37,
-    # Russian
+    # Russian - base forms
     "боевик": 28, "приключения": 12, "мультфильм": 16, "мультик": 16,
     "комедия": 35, "смешной": 35, "криминал": 80, "документальный": 99,
     "драма": 18, "семейный": 10751, "фэнтези": 14, "магия": 14,
@@ -28,6 +34,24 @@ GENRE_KEYWORDS: Dict[str, int] = {
     "монстр": 27, "зомби": 27, "музыкальный": 10402, "мистика": 9648,
     "романтика": 10749, "мелодрама": 10749, "фантастика": 878,
     "триллер": 53, "война": 10752, "вестерн": 37,
+    # Russian - inflections (plurals, genitive)
+    "боевики": 28, "боевиков": 28,
+    "комедии": 35, "комедий": 35, "комедию": 35,
+    "драмы": 18, "драм": 18, "драму": 18,
+    "ужасов": 27, "хоррор": 27,
+    "триллеры": 53, "триллеров": 53,
+    "романтические": 10749, "мелодрамы": 10749,
+    "фантастики": 878,
+    "мультфильмы": 16, "аниме": 16, "анимация": 16,
+    "криминальные": 80, "криминального": 80, "детектив": 80, "детективы": 80,
+    "приключений": 12, "приключенческие": 12,
+    "мистики": 9648,
+    "документальные": 99, "документалки": 99,
+    "семейные": 10751,
+    "исторические": 36,
+    "музыкальные": 10402,
+    "военный": 10752, "военные": 10752, "войны": 10752,
+    "вестерны": 37,
 }
 
 DECADE_MAP = {
@@ -102,6 +126,15 @@ def extract_params(query: str) -> Dict[str, Any]:
         if actor_match:
             actor_found = actor_match.group(1)
 
+    # Russian actor detection: "фильмы с [Имя Фамилия]", "с участием [Имя]"
+    if not actor_found:
+        ru_actor_match = re.search(
+            r'(?:с\s+|с участием\s+)([А-ЯЁа-яёA-Za-z][а-яёa-z]+(?:\s+[А-ЯЁа-яёA-Za-z][а-яёa-z]+)?)',
+            query
+        )
+        if ru_actor_match:
+            actor_found = ru_actor_match.group(1)
+
     params["_actor_name"] = actor_found  # store for async lookup
 
     # Extract keywords for fallback text search
@@ -135,83 +168,331 @@ async def lookup_actor_id(actor_name: str) -> Optional[int]:
     return None
 
 
+async def parse_query_with_ai(query: str) -> Optional[dict]:
+    """Use Groq LLM to parse natural language search query into structured params."""
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": GROQ_MODEL,
+                    "messages": [
+                        {"role": "system", "content": """You are a movie/TV show search assistant. Extract search parameters from the user's query and return ONLY valid JSON, nothing else.
+
+Return this JSON structure:
+{
+  "search_type": "similar|title|discover|actor",
+  "title": "exact movie/show title if searching by title",
+  "similar_to": "reference title for похожие на queries",
+  "genres": [],
+  "year_gte": null,
+  "year_lte": null,
+  "year_exact": null,
+  "actor": null,
+  "min_rating": null,
+  "media_type": "movie|tv|any",
+  "description": "human-readable description"
+}
+
+Rules:
+- search_type similar: похожие на X, как X, в стиле X, similar to X
+- search_type title: searching specific movie/show by name  
+- search_type discover: genre/year/mood browsing
+- search_type actor: фильмы с X, movies with X
+- search_type description: user describes plot/characters without knowing title - YOU must identify the movie and set title field
+- genres from: action, comedy, drama, horror, thriller, romance, sci-fi, animation, crime, adventure, fantasy, mystery, documentary, family, history, war, western
+- year_gte: year FROM which (не старше 2020 = year_gte=2020, вышедшие после 2015 = year_gte=2015, после 2020 = year_gte=2020, от 2020 = year_gte=2020, начиная с = year_gte)
+- year_lte: year BEFORE which (до 2020 = year_lte=2020, вышедшие до 2020 = year_lte=2020, старше 2000 = year_lte=2000)
+- CRITICAL: "не старше 2020" means year_gte=2020 (films from 2020 onwards, NOT older than 2020)
+- CRITICAL: "после 2020", "от 2020", "не старше 2020" ALL mean year_gte=2020
+- min_rating: numeric only (6.5, 7.0, 8.0) - if user says хороший/good rating use 6.5, очень хороший use 7.0, отличный/excellent use 8.0
+- IMPORTANT: If user describes a plot ("фильм где...", "там где...", "про то как..."), use search_type=description and identify the movie. Set title to the movie name you identified.
+- Example: "фильм где здоровый и маленький убегали от полиции" -> {"search_type": "description", "title": "Central Intelligence", "description": "Полтора шпиона - комедия с Дуэйном Джонсоном и Кевином Хартом"}
+- Return ONLY JSON, no explanation"""},
+                        {"role": "user", "content": query}
+                    ],
+                    "max_tokens": 300,
+                    "temperature": 0.1
+                }
+            )
+            if r.status_code == 200:
+                content_str = r.json()["choices"][0]["message"]["content"].strip()
+                import json as json_lib
+                start = content_str.find("{")
+                end = content_str.rfind("}") + 1
+                if start >= 0 and end > start:
+                    return json_lib.loads(content_str[start:end])
+    except Exception as e:
+        print(f"[smart_search] Groq error: {e}")
+    return None
+
+
+
 async def smart_search(query: str) -> Dict[str, Any]:
     """
-    Parse natural language query and return TMDB discover results.
+    Parse natural language query using Groq AI, then search TMDB.
     Returns: {"results": [...], "params_used": {...}, "description": "..."}
     """
-    params = extract_params(query)
-    actor_name = params.pop("_actor_name", None)
-    keywords_hint = params.pop("_keywords", [])
+    # Try AI parsing first
+    ai_params = await parse_query_with_ai(query)
 
-    # Resolve actor to TMDB person ID
-    if actor_name:
-        actor_id = await lookup_actor_id(actor_name)
-        if actor_id:
-            params["with_cast"] = actor_id
+    if ai_params:
+        search_type = ai_params.get("search_type", "title")
 
-    # Build discover request
-    discover_params = {
-        "api_key": TMDB_API_KEY,
-        "language": "en-US",
-        "sort_by": "vote_average.desc",
-        "vote_count.gte": params.pop("vote_count.gte", 50),
-        "include_adult": False,
-        "page": 1,
-    }
-    discover_params.update(params)
+        # Handle "similar to" queries
+        if search_type == "similar" and ai_params.get("similar_to"):
+            ref_title = ai_params["similar_to"]
+            year_gte = ai_params.get("year_gte")
+            year_lte = ai_params.get("year_lte")
 
-    results = []
-    description_parts = []
+            try:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    r = await client.get(
+                        f"{BASE_URL}/search/multi",
+                        params={"api_key": TMDB_API_KEY, "query": ref_title, "language": "ru-RU"}
+                    )
+                    ref_results = r.json().get("results", [])
+                    if ref_results:
+                        # Pick most popular movie (not TV show) from results
+                        req_media_type = ai_params.get("media_type", "any")
+                        movie_results = [x for x in ref_results if x.get("media_type") == "movie"] if req_media_type == "movie" else ref_results
+                        # Sort by popularity to get most well-known title
+                        movie_results.sort(key=lambda x: x.get("popularity", 0), reverse=True)
+                        ref_item = movie_results[0] if movie_results else ref_results[0]
+                        # C1 FIX: if popularity too low, retry with original query words
+                        if ref_item.get('popularity', 0) < 5.0:
+                            query_words = ' '.join([w for w in query.split() if len(w) > 3 and w not in ['похожие', 'найди', 'фильм', 'сериал', 'как', 'на', 'по']])
+                            if query_words:
+                                r2 = await client.get(
+                                    f"{BASE_URL}/search/multi",
+                                    params={"api_key": TMDB_API_KEY, "query": query_words, "language": "ru-RU"}
+                                )
+                                r2_results = r2.json().get("results", [])
+                                r2_movies = [x for x in r2_results if x.get("media_type") == "movie"]
+                                r2_movies.sort(key=lambda x: x.get("popularity", 0), reverse=True)
+                                if r2_movies and r2_movies[0].get("popularity", 0) > ref_item.get("popularity", 0):
+                                    ref_item = r2_movies[0]
+                        ref_id = ref_item.get("id")
+                        ref_media = ref_item.get("media_type", "movie")
+                        ref_name = ref_item.get("title") or ref_item.get("name", ref_title)
 
+                        rec_r = await client.get(f"{BASE_URL}/{ref_media}/{ref_id}/recommendations",
+                            params={"api_key": TMDB_API_KEY, "language": "ru-RU"})
+                        sim_r = await client.get(f"{BASE_URL}/{ref_media}/{ref_id}/similar",
+                            params={"api_key": TMDB_API_KEY, "language": "ru-RU"})
+
+                        recs = rec_r.json().get("results", [])
+                        similar = sim_r.json().get("results", [])
+
+                        seen = set()
+                        combined = []
+                        for item in recs + similar:
+                            iid = item.get("id")
+                            if iid and iid not in seen:
+                                seen.add(iid)
+                                if item.get("media_type") == "tv" or ref_media == "tv":
+                                    item["title"] = item.get("name", item.get("title", ""))
+                                    item["release_date"] = item.get("first_air_date", item.get("release_date", ""))
+                                combined.append(item)
+
+                        # Filter by year AND rating AND media_type
+                        min_rating = ai_params.get("min_rating")
+                        req_media = ai_params.get("media_type", "any")
+                        filtered = []
+                        for item in combined:
+                            rd = item.get("release_date") or item.get("first_air_date", "")
+                            item_year = int(rd[:4]) if rd and len(rd) >= 4 else None
+                            item_rating = item.get("vote_average", 0)
+                            item_media = item.get("media_type", "movie")
+                            # Year filter
+                            if item_year:
+                                if year_gte and item_year < year_gte: continue
+                                if year_lte and item_year > year_lte: continue
+                            # Rating filter
+                            try:
+                                if min_rating and item_rating < float(min_rating): continue
+                            except (TypeError, ValueError): pass  # skip invalid rating
+                            # Media type filter
+                            if req_media == "movie" and item_media == "tv": continue
+                            if req_media == "tv" and item_media == "movie": continue
+                            # Exclude animation if movie requested (genre_id 16)
+                            if req_media == "movie":
+                                genre_ids = item.get("genre_ids", [])
+                                if 16 in genre_ids: continue  # skip animation
+                            filtered.append(item)
+                        if filtered:
+                            combined = filtered
+
+                        # Sort by rating (best first)
+                        combined.sort(key=lambda x: x.get("vote_average", 0), reverse=True)
+                        if combined:
+                            desc = f"Похожие на «{ref_name}»"
+                            if year_lte: desc += f" не старше {year_lte}"
+                            if year_gte: desc += f" после {year_gte}"
+                            return {
+                                "results": [format_movie(m) for m in combined[:20]],
+                                "params_used": {"similar_to": ref_name},
+                                "description": desc,
+                                "count": len(combined[:20]),
+                            }
+            except Exception as e:
+                print(f"[smart_search] Similar-to AI error: {e}")
+
+        # Handle direct title search
+        elif search_type in ("title", "description") and ai_params.get("title"):
+            try:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    r_multi = await client.get(
+                        f"{BASE_URL}/search/multi",
+                        params={"api_key": TMDB_API_KEY, "query": ai_params["title"], "language": "ru-RU"}
+                    )
+                    results = r_multi.json().get("results", [])
+                    combined = []
+                    seen = set()
+                    for m in results:
+                        mid = m.get("id")
+                        media = m.get("media_type", "movie")
+                        if mid and mid not in seen and media in ("movie", "tv"):
+                            seen.add(mid)
+                            if media == "tv":
+                                m["title"] = m.get("name", m.get("title", ""))
+                                m["release_date"] = m.get("first_air_date", "")
+                            combined.append(m)
+                    if combined:
+                        return {
+                            "results": [format_movie(m) for m in combined[:20]],
+                            "params_used": {"direct_search": ai_params["title"]},
+                            "description": f"Результаты для «{ai_params['title']}»",
+                            "count": len(combined),
+                        }
+            except Exception as e:
+                print(f"[smart_search] Title AI error: {e}")
+
+        # Handle actor search
+        elif search_type == "actor" and ai_params.get("actor"):
+            actor_id = await lookup_actor_id(ai_params["actor"])
+            if actor_id:
+                try:
+                    async with httpx.AsyncClient(timeout=15) as client:
+                        actor_params = {
+                            "api_key": TMDB_API_KEY,
+                            "language": "ru-RU",
+                            "with_cast": actor_id,
+                            "sort_by": "vote_average.desc",
+                            "vote_count.gte": 50,
+                        }
+                        # Fetch 3 pages for more results
+                        import asyncio as _asyncio
+                        pages = await _asyncio.gather(
+                            client.get(f"{BASE_URL}/discover/movie", params={**actor_params, "page": 1}),
+                            client.get(f"{BASE_URL}/discover/movie", params={**actor_params, "page": 2}),
+                            client.get(f"{BASE_URL}/discover/movie", params={**actor_params, "page": 3}),
+                        )
+                        results = []
+                        seen = set()
+                        for page in pages:
+                            for m in page.json().get("results", []):
+                                if m.get("id") not in seen:
+                                    seen.add(m.get("id"))
+                                    results.append(m)
+                        if results:
+                            return {
+                                "results": [format_movie(m) for m in results[:60]],
+                                "params_used": {"actor": ai_params["actor"]},
+                                "description": f"Фильмы с {ai_params['actor']}",
+                                "count": len(results),
+                            }
+                except Exception as e:
+                    print(f"[smart_search] Actor AI error: {e}")
+
+        # Handle discover (genre/year based)
+        elif search_type == "discover":
+            genre_map_local = {
+                "action": 28, "comedy": 35, "drama": 18, "horror": 27,
+                "thriller": 53, "romance": 10749, "sci-fi": 878, "animation": 16,
+                "crime": 80, "adventure": 12, "fantasy": 14, "mystery": 9648,
+                "documentary": 99, "family": 10751, "history": 36, "war": 10752,
+                "western": 37, "music": 10402,
+            }
+            discover_p = {
+                "api_key": TMDB_API_KEY,
+                "language": "ru-RU",
+                "sort_by": "vote_average.desc",
+                "vote_count.gte": 100,
+                "include_adult": False,
+            }
+            genres = ai_params.get("genres", [])
+            if genres:
+                genre_ids = [str(genre_map_local[g]) for g in genres if g in genre_map_local]
+                if genre_ids:
+                    discover_p["with_genres"] = ",".join(genre_ids)
+            if ai_params.get("year_exact"):
+                discover_p["primary_release_year"] = ai_params["year_exact"]
+            elif ai_params.get("year_gte"):
+                discover_p["primary_release_date.gte"] = f"{ai_params['year_gte']}-01-01"
+            if ai_params.get("year_lte"):
+                discover_p["primary_release_date.lte"] = f"{ai_params['year_lte']}-12-31"
+            if ai_params.get("min_rating"):
+                discover_p["vote_average.gte"] = ai_params["min_rating"]
+
+            try:
+                async with httpx.AsyncClient(timeout=20) as client:
+                    import asyncio as _aio
+                    pages = await _aio.gather(*[
+                        client.get(f"{BASE_URL}/discover/movie", params={**discover_p, "page": p})
+                        for p in range(1, 6)
+                    ])
+                    results = []
+                    seen = set()
+                    for page in pages:
+                        for m in page.json().get("results", []):
+                            if m.get("id") not in seen:
+                                seen.add(m.get("id"))
+                                results.append(m)
+                    if results:
+                        return {
+                            "results": [format_movie(m) for m in results[:100]],
+                            "params_used": discover_p,
+                            "description": ai_params.get("description") or "Результаты поиска",
+                            "count": len(results),
+                        }
+            except Exception as e:
+                print(f"[smart_search] Discover AI error: {e}")
+
+    # Fallback: direct TMDB search with original query
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(
-                f"{BASE_URL}/discover/movie",
-                params=discover_params
+            r = await client.get(
+                f"{BASE_URL}/search/multi",
+                params={"api_key": TMDB_API_KEY, "query": query, "language": "ru-RU"}
             )
-            data = resp.json()
-            results = [format_movie(m) for m in data.get("results", [])[:20]]
+            results = r.json().get("results", [])
+            combined = []
+            seen = set()
+            for m in results:
+                mid = m.get("id")
+                media = m.get("media_type", "movie")
+                if mid and mid not in seen and media in ("movie", "tv"):
+                    seen.add(mid)
+                    if media == "tv":
+                        m["title"] = m.get("name", m.get("title", ""))
+                        m["release_date"] = m.get("first_air_date", "")
+                    combined.append(m)
+            if combined:
+                return {
+                    "results": [format_movie(m) for m in combined[:20]],
+                    "params_used": {"fallback": query},
+                    "description": f"Результаты для «{query}»",
+                    "count": len(combined),
+                }
     except Exception as e:
-        print(f"Discover error: {e}")
+        print(f"[smart_search] Fallback error: {e}")
 
-    # If discover returned nothing, fall back to keyword search
-    if not results and keywords_hint:
-        fallback_query = " ".join(keywords_hint[:3])
-        try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                resp = await client.get(
-                    f"{BASE_URL}/search/movie",
-                    params={"api_key": TMDB_API_KEY, "query": fallback_query, "language": "en-US"}
-                )
-                data = resp.json()
-                results = [format_movie(m) for m in data.get("results", [])[:20]]
-        except Exception:
-            pass
-
-    # Build human-readable description of what we searched for
-    if "with_genres" in discover_params:
-        genre_ids = [int(g) for g in str(discover_params["with_genres"]).split(",")]
-        genre_names = [GENRE_MAP.get(gid, str(gid)) for gid in genre_ids]
-        description_parts.append(f"{', '.join(genre_names)}")
-    if "primary_release_year" in discover_params:
-        description_parts.append(f"from {discover_params['primary_release_year']}")
-    if "primary_release_date.gte" in discover_params:
-        yr = discover_params["primary_release_date.gte"][:4]
-        description_parts.append(f"from the {yr}s")
-    if actor_name:
-        description_parts.append(f"with {actor_name.title()}")
-    if "vote_average.gte" in discover_params:
-        description_parts.append(f"rating ≥ {discover_params['vote_average.gte']}")
-
-    desc = ", ".join(description_parts) if description_parts else "your description"
-
-    return {
-        "results": results,
-        "count": len(results),
-        "description": desc,
-        "params_used": {k: v for k, v in discover_params.items() if k != "api_key"},
-    }
+    return {"results": [], "params_used": {}, "description": "", "count": 0}
 
 
 async def get_typo_suggestions(query: str, limit: int = 5) -> List[dict]:

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Избранное — MovieFinder{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-black mb-2">❤️ Избранное</h1>
+  <p class="text-muted mb-8" id="fav-count">Загрузка...</p>
+  
+  <div id="fav-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <!-- filled by JS -->
+  </div>
+  
+  <div id="fav-empty" class="hidden text-center py-20">
+    <div class="text-6xl mb-4">💔</div>
+    <p class="text-white text-xl font-bold mb-2">Избранное пусто</p>
+    <p class="text-muted mb-6">Добавляй фильмы нажимая ❤️ на карточке</p>
+    <a href="/" class="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors">На главную</a>
+  </div>
+  
+  <div id="watched-section" class="mt-12">
+    <h2 class="text-2xl font-bold mb-2">✅ Просмотренные</h2>
+    <p class="text-muted mb-6" id="watched-count"></p>
+    <div id="watched-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+function getFavorites() { return JSON.parse(localStorage.getItem('mf_favorites') || '[]'); }
+function getWatched() { return JSON.parse(localStorage.getItem('mf_watched') || '[]'); }
+
+function renderFavorites() {
+  const favs = getFavorites();
+  const grid = document.getElementById('fav-grid');
+  const empty = document.getElementById('fav-empty');
+  const count = document.getElementById('fav-count');
+  
+  if (favs.length === 0) {
+    grid.classList.add('hidden');
+    empty.classList.remove('hidden');
+    count.textContent = '';
+    return;
+  }
+  
+  count.textContent = favs.length + ' фильмов';
+  grid.innerHTML = favs.map(f => `
+    <div class="relative group">
+      <a href="/movie/${f.id}${f.mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-border">
+        <div style="padding-bottom:150%; position:relative;">
+          ${f.poster ? `<img src="${f.poster}" class="absolute inset-0 w-full h-full object-cover" loading="lazy"/>` : 
+            `<div class="absolute inset-0 flex items-center justify-center" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)"><span class="text-3xl">🎬</span></div>`}
+          <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black">
+            <p class="text-white text-xs font-semibold line-clamp-2">${f.title}</p>
+            ${f.year ? `<p class="text-white/50 text-xs">${f.year}</p>` : ''}
+          </div>
+        </div>
+      </a>
+      <button onclick="removeFav('${f.id}')" class="absolute top-2 right-2 w-7 h-7 bg-black/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeFav(id) {
+  let favs = getFavorites().filter(f => String(f.id) !== String(id));
+  localStorage.setItem('mf_favorites', JSON.stringify(favs));
+  renderFavorites();
+}
+
+function renderWatched() {
+  const watched = getWatched();
+  const el = document.getElementById('watched-count');
+  const list = document.getElementById('watched-list');
+  el.textContent = watched.length + ' фильмов';
+  if (watched.length === 0) {
+    list.innerHTML = '<p class="text-muted text-sm">Нет просмотренных фильмов</p>';
+    return;
+  }
+  list.innerHTML = watched.map(w => {
+    const id = w.id || w;
+    const title = w.title || ('ID: ' + id);
+    const poster = w.poster || '';
+    const year = w.year || '';
+    const mediaType = w.mediaType || 'movie';
+    return `
+    <div class="relative group">
+      <a href="/movie/${id}${mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-green-800/40">
+        <div style="padding-bottom:150%; position:relative;">
+          ${poster ? `<img src="${poster}" class="absolute inset-0 w-full h-full object-cover" loading="lazy"/>` :
+            `<div class="absolute inset-0 flex items-center justify-center" style="background:linear-gradient(135deg,#1a2e1a,#0f3d0f)"><span class="text-3xl">✅</span></div>`}
+          <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black">
+            <p class="text-white text-xs font-semibold line-clamp-2">${title}</p>
+            ${year ? `<p class="text-white/50 text-xs">${year}</p>` : ''}
+          </div>
+          <div class="absolute top-2 left-2 bg-green-600/90 rounded-full w-6 h-6 flex items-center justify-center text-xs">✓</div>
+        </div>
+      </a>
+      <button onclick="removeWatched('${id}')" class="absolute top-2 right-2 w-7 h-7 bg-black/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function removeWatched(id) {
+  let w = getWatched().filter(x => String(x.id || x) !== String(id));
+  localStorage.setItem('mf_watched', JSON.stringify(w));
+  renderWatched();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderFavorites();
+  renderWatched();
+});
+</script>
+{% endblock %}
+{% endblock %}

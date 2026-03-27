@@ -2,7 +2,7 @@ import sqlite3
 import os
 from contextlib import contextmanager
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "data", "moviefinder.db")
+DB_PATH = os.environ.get("DB_PATH", os.path.join(os.path.dirname(__file__), "data", "moviefinder.db"))
 
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -56,12 +56,13 @@ def log_search(query: str):
     with get_db() as conn:
         conn.execute("INSERT INTO search_log (query) VALUES (?)", (query,))
 
-def get_trending_searches(limit=10):
+def get_trending_searches(limit: int = 10) -> list:
+    """Get top N search queries from last 24 hours."""
     with get_db() as conn:
         rows = conn.execute("""
             SELECT query, COUNT(*) as count
             FROM search_log
-            WHERE searched_at > datetime('now', '-7 days')
+            WHERE searched_at > datetime('now', '-1 day')
             GROUP BY LOWER(query)
             ORDER BY count DESC
             LIMIT ?
