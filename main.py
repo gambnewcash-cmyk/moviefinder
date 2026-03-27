@@ -373,35 +373,64 @@ Sitemap: https://moviefinders.net/sitemap-index.xml
 
 
 
+async def fetch_tmdb_discover(sort_by: str, lang: str, page: int, extra_params: dict = {}) -> dict:
+    """Fetch discover/movie from TMDB directly."""
+    tmdb_lang = "ru-RU" if lang == "ru" else "en-US"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": tmdb_lang,
+        "sort_by": sort_by,
+        "page": min(page, 50),
+        **extra_params,
+    }
+    if sort_by == "vote_average.desc":
+        params.setdefault("vote_count.gte", 500)
+    async with httpx.AsyncClient() as client:
+        r = await client.get("https://api.themoviedb.org/3/discover/movie", params=params, timeout=10)
+        if r.status_code != 200:
+            return {"movies": [], "total_pages": 1}
+        data = r.json()
+        movies = []
+        for m in data.get("results", []):
+            poster = m.get("poster_path", "")
+            movies.append({
+                "tmdb_id": m.get("id"),
+                "title": m.get("title", ""),
+                "title_ru": m.get("title", ""),
+                "display_title": m.get("title", ""),
+                "year": (m.get("release_date") or "")[:4],
+                "rating": m.get("vote_average", 0),
+                "poster_url": f"{TMDB_IMAGE_BASE}{poster}" if poster else "",
+                "media_type": "movie",
+            })
+        return {"movies": movies, "total_pages": min(data.get("total_pages", 1), 50)}
+
+
 @app.get("/top", response_class=HTMLResponse)
-async def top_movies_page(request: Request, page: int = 1, sort: str = "new"):
+async def top_movies_page(request: Request, page: int = 1, sort: str = "popular"):
     lang = get_lang(request)
     t = get_translations(lang)
     page = max(1, page)
     if sort not in ("new", "rating", "popular"):
-        sort = "new"
+        sort = "popular"
+    sort_map = {
+        "popular":  ("popularity.desc",        {"primary_release_date.gte": "2024-01-01", "vote_count.gte": 50}),
+        "rating":   ("vote_average.desc",       {"primary_release_date.gte": "2024-01-01", "vote_count.gte": 500}),
+        "new":      ("primary_release_date.desc", {"primary_release_date.gte": "2024-01-01", "vote_count.gte": 10}),
+    }
+    sort_by, extra = sort_map[sort]
     try:
-        result = await get_top_2025_2026(page=page, lang=lang)
+        result = await fetch_tmdb_discover(sort_by, lang, page, extra)
         movies = result["movies"]
         total_pages = result["total_pages"]
-        for m in movies:
-            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
-        if sort == "rating":
-            movies = sorted(movies, key=lambda x: x.get("rating") or 0, reverse=True)
-        elif sort == "popular":
-            movies = sorted(movies, key=lambda x: x.get("vote_count") or x.get("rating") or 0, reverse=True)
     except Exception as e:
         print(f"Top page error: {e}")
         movies = []
         total_pages = 1
     return templates.TemplateResponse(request, "top.html", {
-        "movies": movies,
-        "lang": lang,
-        "t": t,
-        "current_page": page,
-        "total_pages": total_pages,
-        "current_sort": sort,
-        "base_url": "/top",
+        "movies": movies, "lang": lang, "t": t,
+        "current_page": page, "total_pages": total_pages,
+        "current_sort": sort, "base_url": "/top",
     })
 
 
@@ -412,24 +441,24 @@ async def films_2026_page(request: Request, page: int = 1, sort: str = "new"):
     page = max(1, page)
     if sort not in ("new", "rating", "popular"):
         sort = "new"
+    sort_map = {
+        "popular":  ("popularity.desc",         {"primary_release_year": 2026, "vote_count.gte": 5}),
+        "rating":   ("vote_average.desc",        {"primary_release_year": 2026, "vote_count.gte": 100}),
+        "new":      ("primary_release_date.desc", {"primary_release_year": 2026, "vote_count.gte": 5}),
+    }
+    sort_by, extra = sort_map[sort]
     try:
-        result = get_movies_2026_db(page=page, sort=sort)
+        result = await fetch_tmdb_discover(sort_by, lang, page, extra)
         movies = result["movies"]
         total_pages = result["total_pages"]
     except Exception as e:
-        print(f"Films 2026 page DB error: {e}")
+        print(f"Films 2026 error: {e}")
         movies = []
         total_pages = 1
-    for m in movies:
-        m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     return templates.TemplateResponse(request, "films_2026.html", {
-        "movies": movies,
-        "lang": lang,
-        "t": t,
-        "current_page": page,
-        "total_pages": total_pages,
-        "current_sort": sort,
-        "base_url": "/films/2026",
+        "movies": movies, "lang": lang, "t": t,
+        "current_page": page, "total_pages": total_pages,
+        "current_sort": sort, "base_url": "/films/2026",
     })
 
 
