@@ -627,7 +627,9 @@ async def sitemap_static():
         ("/favorites", "0.5", "monthly"),
         ("/genres", "0.8", "weekly"),
         ("/films/vecher", "0.8", "weekly"),
-    ] + [("/genre/" + slug, "0.8", "weekly") for slug in GENRE_MAP.keys()]
+        ("/en/top", "0.8", "weekly"),
+        ("/en/films/2026", "0.8", "daily"),
+    ] + [("/genre/" + slug, "0.8", "weekly") for slug in GENRE_MAP.keys()] + [("/en/genre/" + slug, "0.7", "weekly") for slug in GENRE_MAP.keys()]
     
     urls = []
     for path, priority, changefreq in static_pages:
@@ -669,13 +671,22 @@ async def sitemap_movies(chunk: int):
     urls = []
     for (tmdb_id,) in rows:
         url = f"{BASE_URL}/movie/{tmdb_id}"
+        url_en = f"{BASE_URL}/en/movie/{tmdb_id}"
         urls.append(f"""  <url>
     <loc>{url}</loc>
     <lastmod>{today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ru" href="{url}?lang=ru"/>
-    <xhtml:link rel="alternate" hreflang="en" href="{url}?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="{url}"/>
+    <xhtml:link rel="alternate" hreflang="en" href="{url_en}"/>
+  </url>""")
+        urls.append(f"""  <url>
+    <loc>{url_en}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ru" href="{url}"/>
+    <xhtml:link rel="alternate" hreflang="en" href="{url_en}"/>
   </url>""")
     
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -743,3 +754,110 @@ async def kp_url(tmdb_id: int, title: str = "", title_ru: str = "", year: int = 
     if result:
         return {"url": result["url"]}
     return {"url": f"https://www.kinopoisk.ru/index.php?first=yes&what=&kp_query={title}"}
+
+
+# ============================================================
+# ENGLISH ROUTES - /en/ prefix for EN SEO
+# ============================================================
+
+@app.get("/en/movie/{tmdb_id}", response_class=HTMLResponse)
+async def en_movie_page(request: Request, tmdb_id: int, media_type: str = "movie"):
+    lang = "en"
+    t = get_translations(lang)
+    try:
+        movie = await get_movie_details(tmdb_id, media_type, lang=lang)
+        if not movie:
+            return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
+        db_movie = get_movie_by_tmdb(tmdb_id)
+        if db_movie and db_movie.get("title_en"):
+            movie["display_title"] = db_movie["title_en"]
+        sources = await get_all_sources(tmdb_id, movie["title"], movie.get("year"), title_ru=movie.get("title_ru"), media_type=media_type)
+        return templates.TemplateResponse(request, "movie.html", {
+            "movie": movie, "sources": sources, "lang": lang, "t": t,
+            "hreflang_ru": f"https://moviefinders.net/movie/{tmdb_id}",
+            "hreflang_en": f"https://moviefinders.net/en/movie/{tmdb_id}",
+        })
+    except Exception as e:
+        return HTMLResponse(f"Error: {e}", status_code=500)
+
+
+@app.get("/en/genre/{slug}", response_class=HTMLResponse)
+async def en_genre_page(request: Request, slug: str, page: int = 1, sort: str = "popular"):
+    lang = "en"
+    t = get_translations(lang)
+    genre_info = GENRE_MAP.get(slug)
+    if not genre_info:
+        return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
+    page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "popular"
+    sort_by = TMDB_SORT_MAP[sort]
+    try:
+        result = await fetch_genre_from_tmdb(genre_info["tmdb_id"], page=page, sort_by=sort_by, lang=lang)
+        movies = result["movies"]
+        total_pages = result["total_pages"]
+    except:
+        movies = []; total_pages = 1
+    return templates.TemplateResponse(request, "genre.html", {
+        "movies": movies, "lang": lang, "t": t,
+        "genre_info": genre_info, "genre_name": genre_info["en"],
+        "slug": slug, "current_page": page, "total_pages": total_pages,
+        "total": total_pages * 20, "base_url": f"/en/genre/{slug}",
+        "current_sort": sort,
+        "hreflang_ru": f"https://moviefinders.net/genre/{slug}",
+        "hreflang_en": f"https://moviefinders.net/en/genre/{slug}",
+    })
+
+
+@app.get("/en/top", response_class=HTMLResponse)
+async def en_top_page(request: Request, page: int = 1, sort: str = "popular"):
+    lang = "en"
+    t = get_translations(lang)
+    page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "popular"
+    sort_map = {
+        "popular": ("popularity.desc", {"primary_release_date.gte": "2024-01-01", "vote_count.gte": 50}),
+        "rating":  ("vote_average.desc", {"primary_release_date.gte": "2024-01-01", "vote_count.gte": 500}),
+        "new":     ("primary_release_date.desc", {"primary_release_date.gte": "2024-01-01", "vote_count.gte": 10}),
+    }
+    sort_by, extra = sort_map[sort]
+    try:
+        result = await fetch_tmdb_discover(sort_by, lang, page, extra)
+        movies = result["movies"]; total_pages = result["total_pages"]
+    except:
+        movies = []; total_pages = 1
+    return templates.TemplateResponse(request, "top.html", {
+        "movies": movies, "lang": lang, "t": t,
+        "current_page": page, "total_pages": total_pages,
+        "current_sort": sort, "base_url": "/en/top",
+        "hreflang_ru": "https://moviefinders.net/top",
+        "hreflang_en": "https://moviefinders.net/en/top",
+    })
+
+
+@app.get("/en/films/2026", response_class=HTMLResponse)
+async def en_films_2026_page(request: Request, page: int = 1, sort: str = "new"):
+    lang = "en"
+    t = get_translations(lang)
+    page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "new"
+    sort_map = {
+        "popular": ("popularity.desc", {"primary_release_year": 2026, "vote_count.gte": 5}),
+        "rating":  ("vote_average.desc", {"primary_release_year": 2026, "vote_count.gte": 100}),
+        "new":     ("primary_release_date.desc", {"primary_release_year": 2026, "vote_count.gte": 5}),
+    }
+    sort_by, extra = sort_map[sort]
+    try:
+        result = await fetch_tmdb_discover(sort_by, lang, page, extra)
+        movies = result["movies"]; total_pages = result["total_pages"]
+    except:
+        movies = []; total_pages = 1
+    return templates.TemplateResponse(request, "films_2026.html", {
+        "movies": movies, "lang": lang, "t": t,
+        "current_page": page, "total_pages": total_pages,
+        "current_sort": sort, "base_url": "/en/films/2026",
+        "hreflang_ru": "https://moviefinders.net/films/2026",
+        "hreflang_en": "https://moviefinders.net/en/films/2026",
+    })

@@ -11,8 +11,8 @@
 {% block twitter_description %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. Все платформы на одной странице.{% endblock %}
 {% block twitter_image %}{{ movie.poster_url or 'https://moviefinders.net/static/img/og-default.jpg' }}{% endblock %}
 {% block canonical %}https://moviefinders.net/movie/{{ movie.tmdb_id }}{% endblock %}
-{% block hreflang_ru %}https://moviefinders.net/movie/{{ movie.tmdb_id }}?lang=ru{% endblock %}
-{% block hreflang_en %}https://moviefinders.net/movie/{{ movie.tmdb_id }}?lang=en{% endblock %}
+{% block hreflang_ru %}https://moviefinders.net/movie/{{ movie.tmdb_id }}{% endblock %}
+{% block hreflang_en %}https://moviefinders.net/en/movie/{{ movie.tmdb_id }}{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
