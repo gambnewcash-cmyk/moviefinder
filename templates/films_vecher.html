@@ -50,6 +50,12 @@
     <p class="text-muted text-sm mt-2">{{ movies | length }} {{ t.genre_count if t else 'фильмов' }}</p>
   </div>
 
+<!-- SEO Text -->
+{% if lang == "ru" %}
+<p class="text-muted text-sm leading-relaxed max-w-2xl mt-3 mb-4">Подборка лучших фильмов для уютного вечера дома: комедии, драмы и романтические истории с рейтингом выше 7.0. Ничего лишнего — только проверенные фильмы которые приятно смотреть вечером.</p>
+{% else %}
+<p class="text-muted text-sm leading-relaxed max-w-2xl mt-3 mb-4">The best movies for a cozy evening: comedies, dramas and romance with ratings above 7.0. Only proven quality films perfect for an evening at home.</p>
+{% endif %}
   <!-- Movie Grid -->
   {% if movies %}
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

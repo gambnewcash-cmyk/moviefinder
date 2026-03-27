@@ -31,7 +31,12 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 
 def get_lang(request: Request) -> str:
-    """Determine language: cookie first, then Accept-Language header."""
+    """Determine language: query param first (for hreflang), then cookie, then Accept-Language header."""
+    # Check query param first (for Google hreflang crawling)
+    lang = request.query_params.get("lang")
+    if lang in ("ru", "en"):
+        return lang
+    # Then cookie
     lang = request.cookies.get("lang")
     if lang in ("en", "ru"):
         return lang

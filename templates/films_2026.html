@@ -48,6 +48,12 @@
     </p>
   </div>
 
+<!-- SEO Text -->
+{% if lang == "ru" %}
+<p class="text-muted text-sm leading-relaxed max-w-2xl mt-3 mb-4">Все фильмы вышедшие в 2026 году — актуальные новинки кино с реальными рейтингами зрителей. Обновляется по мере выхода новых фильмов. Смотреть новинки 2026 онлайн бесплатно.</p>
+{% else %}
+<p class="text-muted text-sm leading-relaxed max-w-2xl mt-3 mb-4">All movies released in 2026 with real audience ratings. Updated as new films arrive. Watch new 2026 movies online free.</p>
+{% endif %}
   <!-- Movie Grid -->
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     {% for m in movies %}
