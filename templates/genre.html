@@ -64,7 +64,7 @@
       } %}
       {% if lang == "ru" %}Узнай на каких платформах посмотреть {{ genre_acc.get(slug, genre_name | lower) }} бесплатно и без регистрации в один клик с MovieFinders.{% else %}Find out where to watch {{ genre_name | lower }} free without registration in one click with MovieFinders.{% endif %}
     </p>
-    <p class="text-muted text-sm mt-2 mx-auto">{{ movies | length }} {{ t.genre_count if t else 'фильмов' }} • Страница {{ current_page }} из {{ total_pages }}</p>
+
   </div>
 
 
