@@ -48,14 +48,7 @@
     </p>
   </div>
 
-<!-- SEO Text -->
-{% if lang == "ru" %}
-<p class="text-muted text-sm leading-relaxed max-w-2xl mt-3 mb-4">2026 год уже пишет свою историю в кино. Громкие премьеры, неожиданные дебюты и продолжения любимых франшиз — всё здесь, с первых дней выхода.</p>
-{% else %}
-<p class="text-muted text-sm leading-relaxed max-w-2xl mt-3 mb-4">2026 is already writing its own chapter in cinema. Big premieres, unexpected debuts and beloved franchise sequels — all here from day one.</p>
-{% endif %}
-
-  <!-- Sort buttons -->
+<!-- Sort buttons -->
   <div class="flex gap-2 mb-6 flex-wrap">
     <a href="/films/2026?sort=new"
        class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'new' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
@@ -70,6 +63,13 @@
       🔥 {% if lang == 'ru' %}Популярные{% else %}Popular{% endif %}
     </a>
   </div>
+
+<!-- SEO Text -->
+{% if lang == "ru" %}
+<p class="text-muted text-sm leading-relaxed max-w-2xl mx-auto text-center mb-6">2026 год уже пишет свою историю в кино. Громкие премьеры, неожиданные дебюты и продолжения любимых франшиз — всё здесь, с первых дней выхода.</p>
+{% else %}
+<p class="text-muted text-sm leading-relaxed max-w-2xl mx-auto text-center mb-6">2026 is already writing its own chapter in cinema. Big premieres, unexpected debuts and beloved franchise sequels — all here from day one.</p>
+{% endif %}
 
   <!-- Movie Grid -->
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
