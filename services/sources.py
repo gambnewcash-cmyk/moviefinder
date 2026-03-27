@@ -1062,12 +1062,12 @@ async def fetch_sources(
 # Legacy: keep get_all_sources for backwards compat with movie.html template
 # ---------------------------------------------------------------------------
 
-async def get_all_sources(tmdb_id: int, title: str, year: Optional[int] = None, title_ru: Optional[str] = None) -> dict:
+async def get_all_sources(tmdb_id: int, title: str, year: Optional[int] = None, title_ru: Optional[str] = None, media_type: str = "movie") -> dict:
     """
     Legacy wrapper - returns sources in old format for the Jinja template.
     Now also triggers live lookup and returns structured data.
     """
-    result = await get_watch_sources(title, year or 0, tmdb_id, title_ru=title_ru)
+    result = await get_watch_sources(title, year or 0, tmdb_id, title_ru=title_ru, media_type=media_type)
     sources = result.get("sources", [])
 
     # Split by type for template

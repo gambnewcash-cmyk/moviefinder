@@ -168,7 +168,7 @@ async def movie_page(request: Request, tmdb_id: int, media_type: str = "movie"):
         if not movie:
             return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
 
-        sources = await get_all_sources(tmdb_id, movie["title"], movie.get("year"), title_ru=movie.get("title_ru"))
+        sources = await get_all_sources(tmdb_id, movie["title"], movie.get("year"), title_ru=movie.get("title_ru"), media_type=media_type)
 
         return templates.TemplateResponse(request, "movie.html", {
             "movie": movie,
