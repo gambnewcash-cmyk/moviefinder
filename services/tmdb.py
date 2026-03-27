@@ -368,7 +368,7 @@ async def get_top_2025_2026(lang: str = "en") -> List[dict]:
     """Top 100 movies from 2025-2026 by rating."""
     params = {
         "sort_by": "vote_average.desc",
-        "vote_count.gte": 100,
+        "vote_count.gte": 10,
         "primary_release_date.gte": "2025-01-01",
         "include_adult": False,
     }
