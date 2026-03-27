@@ -370,33 +370,7 @@ async def top_movies_page(request: Request):
     lang = get_lang(request)
     t = get_translations(lang)
     try:
-        from database import get_db_connection
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
-            FROM movies 
-            WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != ''
-            ORDER BY rating DESC, year DESC
-            LIMIT 100
-        """)
-        rows = cur.fetchall()
-        conn.close()
-        movies = []
-        for r in rows:
-            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
-            display_title = title_ru if lang == "ru" and title_ru else title
-            movies.append({
-                "tmdb_id": tmdb_id,
-                "title": title,
-                "title_ru": title_ru,
-                "display_title": display_title,
-                "year": year,
-                "rating": rating,
-                "poster_url": poster_url,
-                "genre": genre,
-                "media_type": media_type or "movie"
-            })
+        movies = await get_top_2025_2026(lang=lang)
     except Exception as e:
         print(f"Top page error: {e}")
         movies = []
@@ -412,33 +386,7 @@ async def films_2026_page(request: Request):
     lang = get_lang(request)
     t = get_translations(lang)
     try:
-        from database import get_db_connection
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
-            FROM movies 
-            WHERE year = 2026 AND poster_url IS NOT NULL AND poster_url != ''
-            ORDER BY rating DESC
-            LIMIT 100
-        """)
-        rows = cur.fetchall()
-        conn.close()
-        movies = []
-        for r in rows:
-            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
-            display_title = title_ru if lang == "ru" and title_ru else title
-            movies.append({
-                "tmdb_id": tmdb_id,
-                "title": title,
-                "title_ru": title_ru,
-                "display_title": display_title,
-                "year": year,
-                "rating": rating,
-                "poster_url": poster_url,
-                "genre": genre,
-                "media_type": media_type or "movie"
-            })
+        movies = await get_new_2026(lang=lang)
     except Exception as e:
         print(f"Films 2026 page error: {e}")
         movies = []
@@ -468,27 +416,7 @@ async def genre_page(request: Request, slug: str):
         return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
 
     try:
-        from database import get_db_connection
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
-            FROM movies
-            WHERE genre LIKE ? AND poster_url IS NOT NULL AND poster_url != ""
-            ORDER BY rating DESC, year DESC
-            LIMIT 200
-        """, (f'%{genre_info["tmdb"]}%',))
-        rows = cur.fetchall()
-        conn.close()
-        movies = []
-        for r in rows:
-            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
-            display_title = title_ru if lang == "ru" and title_ru else title
-            movies.append({
-                "tmdb_id": tmdb_id, "title": title, "title_ru": title_ru,
-                "display_title": display_title, "year": year, "rating": rating,
-                "poster_url": poster_url, "genre": genre, "media_type": media_type or "movie"
-            })
+        movies = await get_movies_by_genre(slug, pages=5, lang=lang)
     except Exception as e:
         print(f"Genre page error: {e}")
         movies = []
@@ -507,28 +435,7 @@ async def films_vecher_page(request: Request):
     lang = get_lang(request)
     t = get_translations(lang)
     try:
-        from database import get_db_connection
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
-            FROM movies
-            WHERE (genre LIKE '%Comedy%' OR genre LIKE '%Drama%' OR genre LIKE '%Romance%')
-            AND rating >= 7.5 AND poster_url IS NOT NULL AND poster_url != ""
-            ORDER BY rating DESC
-            LIMIT 100
-        """)
-        rows = cur.fetchall()
-        conn.close()
-        movies = []
-        for r in rows:
-            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
-            display_title = title_ru if lang == "ru" and title_ru else title
-            movies.append({
-                "tmdb_id": tmdb_id, "title": title, "title_ru": title_ru,
-                "display_title": display_title, "year": year, "rating": rating,
-                "poster_url": poster_url, "genre": genre, "media_type": media_type or "movie"
-            })
+        movies = await get_vecher_movies(lang=lang)
     except Exception as e:
         print(f"Vecher page error: {e}")
         movies = []
