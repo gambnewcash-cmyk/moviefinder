@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+import httpx
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -342,20 +343,22 @@ async def api_sources(
 BASE_URL = "https://moviefinders.net"
 SITEMAP_CHUNK_SIZE = 10000
 
+TMDB_API_KEY = "8265bd1679663a7ea12ac168da84d2e8"
+
 GENRE_MAP = {
-    "drama": {"tmdb": "Drama", "ru": "Драмы", "en": "Drama Films", "slug": "drama"},
-    "comedy": {"tmdb": "Comedy", "ru": "Комедии", "en": "Comedy Films", "slug": "comedy"},
-    "horror": {"tmdb": "Horror", "ru": "Фильмы ужасов", "en": "Horror Films", "slug": "horror"},
-    "action": {"tmdb": "Action", "ru": "Боевики", "en": "Action Films", "slug": "action"},
-    "thriller": {"tmdb": "Thriller", "ru": "Триллеры", "en": "Thrillers", "slug": "thriller"},
-    "romance": {"tmdb": "Romance", "ru": "Романтические фильмы", "en": "Romance Films", "slug": "romance"},
-    "animation": {"tmdb": "Animation", "ru": "Мультфильмы", "en": "Animation Films", "slug": "animation"},
-    "documentary": {"tmdb": "Documentary", "ru": "Документальные фильмы", "en": "Documentary Films", "slug": "documentary"},
-    "voennye": {"tmdb": "War", "ru": "Военные фильмы", "en": "War Films", "slug": "voennye"},
-    "fantastika": {"tmdb": "Sci-Fi", "ru": "Фантастика", "en": "Sci-Fi Films", "slug": "fantastika"},
-    "istoricheskie": {"tmdb": "History", "ru": "Исторические фильмы", "en": "Historical Films", "slug": "istoricheskie"},
-    "muzyka": {"tmdb": "Music", "ru": "Музыкальные фильмы", "en": "Music Films", "slug": "muzyka"},
-    "crime": {"tmdb": "Crime", "ru": "Криминальные фильмы", "en": "Crime Films", "slug": "crime"},
+    "drama":         {"tmdb": "Drama",       "tmdb_id": 18,   "ru": "Драмы",                  "en": "Drama Films",       "slug": "drama"},
+    "comedy":        {"tmdb": "Comedy",      "tmdb_id": 35,   "ru": "Комедии",                 "en": "Comedy Films",      "slug": "comedy"},
+    "horror":        {"tmdb": "Horror",      "tmdb_id": 27,   "ru": "Фильмы ужасов",           "en": "Horror Films",      "slug": "horror"},
+    "action":        {"tmdb": "Action",      "tmdb_id": 28,   "ru": "Боевики",                 "en": "Action Films",      "slug": "action"},
+    "thriller":      {"tmdb": "Thriller",    "tmdb_id": 53,   "ru": "Триллеры",                "en": "Thrillers",         "slug": "thriller"},
+    "romance":       {"tmdb": "Romance",     "tmdb_id": 10749,"ru": "Романтические фильмы",    "en": "Romance Films",     "slug": "romance"},
+    "animation":     {"tmdb": "Animation",   "tmdb_id": 16,   "ru": "Мультфильмы",             "en": "Animation Films",   "slug": "animation"},
+    "documentary":   {"tmdb": "Documentary", "tmdb_id": 99,   "ru": "Документальные фильмы",   "en": "Documentary Films", "slug": "documentary"},
+    "voennye":       {"tmdb": "War",         "tmdb_id": 10752,"ru": "Военные фильмы",          "en": "War Films",         "slug": "voennye"},
+    "fantastika":    {"tmdb": "Sci-Fi",      "tmdb_id": 878,  "ru": "Фантастика",              "en": "Sci-Fi Films",      "slug": "fantastika"},
+    "istoricheskie": {"tmdb": "History",     "tmdb_id": 36,   "ru": "Исторические фильмы",     "en": "Historical Films",  "slug": "istoricheskie"},
+    "muzyka":        {"tmdb": "Music",       "tmdb_id": 10402,"ru": "Музыкальные фильмы",      "en": "Music Films",       "slug": "muzyka"},
+    "crime":         {"tmdb": "Crime",       "tmdb_id": 80,   "ru": "Криминальные фильмы",     "en": "Crime Films",       "slug": "crime"},
 }
 
 
@@ -439,8 +442,55 @@ async def genres_page(request: Request):
     })
 
 
+# TMDB sort map for genre pages
+TMDB_SORT_MAP = {
+    "popular": "popularity.desc",
+    "rating":  "vote_average.desc",
+    "new":     "primary_release_date.desc",
+}
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
+
+async def fetch_genre_from_tmdb(genre_id: int, page: int, sort_by: str, lang: str) -> dict:
+    """Fetch genre movies directly from TMDB API."""
+    tmdb_lang = "ru-RU" if lang == "ru" else "en-US"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": tmdb_lang,
+        "sort_by": sort_by,
+        "with_genres": genre_id,
+        "vote_count.gte": 10,
+        "page": min(page, 50),  # TMDB max 500 pages but we limit to 50 (1000 movies)
+    }
+    if sort_by == "vote_average.desc":
+        params["vote_count.gte"] = 200  # avoid low-vote trash in rating sort
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            "https://api.themoviedb.org/3/discover/movie",
+            params=params, timeout=10
+        )
+        if r.status_code != 200:
+            return {"movies": [], "total_pages": 1}
+        data = r.json()
+        movies = []
+        for m in data.get("results", []):
+            poster = m.get("poster_path", "")
+            movies.append({
+                "tmdb_id": m.get("id"),
+                "title": m.get("title", ""),
+                "title_ru": m.get("title", ""),  # ru-RU response already has Russian title
+                "display_title": m.get("title", ""),
+                "year": (m.get("release_date") or "")[:4],
+                "rating": m.get("vote_average", 0),
+                "poster_url": f"{TMDB_IMAGE_BASE}{poster}" if poster else "",
+                "media_type": "movie",
+            })
+        return {
+            "movies": movies,
+            "total_pages": min(data.get("total_pages", 1), 50),
+        }
+
 @app.get("/genre/{slug}", response_class=HTMLResponse)
-async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "new"):
+async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "popular"):
     lang = get_lang(request)
     t = get_translations(lang)
 
@@ -450,20 +500,23 @@ async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "ne
 
     page = max(1, page)
     if sort not in ("new", "rating", "popular"):
-        sort = "new"
+        sort = "popular"
+
+    sort_by = TMDB_SORT_MAP[sort]
     try:
-        result = get_movies_by_genre_db(genre_info["tmdb"], page=page, sort=sort)
+        result = await fetch_genre_from_tmdb(genre_info["tmdb_id"], page=page, sort_by=sort_by, lang=lang)
         movies = result["movies"]
         total_pages = result["total_pages"]
-        total = result["total"]
     except Exception as e:
-        print(f"Genre page DB error: {e}")
-        movies = []
-        total_pages = 1
-        total = 0
-
-    for m in movies:
-        m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
+        print(f"Genre TMDB error: {e}")
+        # Fallback to DB
+        try:
+            result = get_movies_by_genre_db(genre_info["tmdb"], page=page, sort=sort)
+            movies = result["movies"]
+            total_pages = result["total_pages"]
+        except:
+            movies = []
+            total_pages = 1
 
     genre_name = genre_info["ru"] if lang == "ru" else genre_info["en"]
 
@@ -473,7 +526,7 @@ async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "ne
         "slug": slug,
         "current_page": page,
         "total_pages": total_pages,
-        "total": total,
+        "total": total_pages * 20,
         "base_url": f"/genre/{slug}",
         "current_sort": sort,
     })
@@ -649,7 +702,6 @@ async def clear_source_cache(tmdb_id: int, secret: str = Query("")):
 async def kp_url(tmdb_id: int, title: str = "", title_ru: str = "", year: int = 0):
     """Get direct Kinopoisk URL for a movie."""
     from services.sources import _fetch_kinopoisk
-    import httpx
     async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
         result = await _fetch_kinopoisk(client, title, title_ru or None, year)
     if result:
