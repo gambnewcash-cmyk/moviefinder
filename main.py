@@ -295,15 +295,17 @@ async def api_sources(
     Returns all streaming options from JustWatch + pirate sites.
     Results cached for 7 days in DB.
     """
-    if not title:
-        # Try to get title from DB
-        movie = get_movie_by_tmdb(tmdb_id)
-        if movie:
-            title = movie.get("title", "")
-            title_ru = movie.get("title_ru", "")
-            year = movie.get("year", 0) or 0
-            if not imdb_id:
-                imdb_id = movie.get("imdb_id", "") or ""
+    # Always try to enrich with DB data (title_ru is critical for RU scrapers)
+    movie_db = get_movie_by_tmdb(tmdb_id)
+    if movie_db:
+        if not title:
+            title = movie_db.get("title", "")
+        if not title_ru:
+            title_ru = movie_db.get("title_ru", "") or ""
+        if not year:
+            year = movie_db.get("year", 0) or 0
+        if not imdb_id:
+            imdb_id = movie_db.get("imdb_id", "") or ""
 
     result = await get_watch_sources(
         title=title,
