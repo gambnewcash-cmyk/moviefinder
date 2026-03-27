@@ -516,12 +516,13 @@ async def get_typo_suggestions(query: str, limit: int = 5) -> List[dict]:
             suggestions = []
             for r in results:
                 title = r.get("title") or r.get("name", "")
-                if title and title.lower() != query.lower():
+                media_type = r.get("media_type", "movie")
+                if title and media_type in ("movie", "tv"):
                     suggestions.append({
                         "tmdb_id": r.get("id"),
                         "title": title,
                         "year": (r.get("release_date") or r.get("first_air_date") or "")[:4],
-                        "media_type": r.get("media_type", "movie"),
+                        "media_type": media_type,
                         "poster_url": f"https://image.tmdb.org/t/p/w92{r['poster_path']}" if r.get("poster_path") else None,
                     })
             return suggestions
