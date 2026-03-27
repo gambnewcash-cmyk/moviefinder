@@ -17,9 +17,9 @@ TRANSLATIONS = {
         "search_placeholder_nav": "Search movies, shows…",
 
         # Hero
-        "hero_title": "Watch Movies",
-        "hero_title_accent": "Online Free",
-        "hero_subtitle": "Find where to watch movies 2025 and 2026 online free without registration. Kinopoisk, Okko, IVI, Netflix and 20+ sources. AI search by plot.",
+        "hero_title": "One search —",
+        "hero_title_accent": "all platforms at once",
+        "hero_subtitle": "Streaming services, free sites and more — all sources in one place. No registration.",
         "regular_search_btn": "🔍 Regular",
         "smart_search_btn": "🤖 Smart Search",
         "search_placeholder_main": "Search movies, TV shows…",
@@ -254,9 +254,9 @@ TRANSLATIONS = {
         "search_placeholder_nav": "Поиск фильмов, сериалов…",
 
         # Hero
-        "hero_title": "Смотри фильмы",
-        "hero_title_accent": "онлайн бесплатно",
-        "hero_subtitle": "Найди где смотреть фильмы 2025 и 2026 онлайн бесплатно без регистрации. Кинопоиск, Okko, IVI, Netflix и 20+ источников. AI поиск по сюжету.",
+        "hero_title": "Один поиск —",
+        "hero_title_accent": "все платформы сразу",
+        "hero_subtitle": "Стриминги, бесплатные сайты и пиратские — все источники в одном месте. Без регистрации.",
         "regular_search_btn": "🔍 Обычный",
         "smart_search_btn": "🤖 Умный поиск",
         "search_placeholder_main": "Поиск фильмов, сериалов…",
