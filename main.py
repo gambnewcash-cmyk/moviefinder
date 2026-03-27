@@ -366,18 +366,25 @@ Sitemap: https://moviefinders.net/sitemap-index.xml
 
 
 @app.get("/top", response_class=HTMLResponse)
-async def top_movies_page(request: Request):
+async def top_movies_page(request: Request, page: int = 1):
     lang = get_lang(request)
     t = get_translations(lang)
+    page = max(1, page)
     try:
-        movies = await get_top_2025_2026(lang=lang)
+        result = await get_top_2025_2026(page=page, lang=lang)
+        movies = result["movies"]
+        total_pages = result["total_pages"]
     except Exception as e:
         print(f"Top page error: {e}")
         movies = []
+        total_pages = 1
     return templates.TemplateResponse(request, "top.html", {
         "movies": movies,
         "lang": lang,
         "t": t,
+        "current_page": page,
+        "total_pages": total_pages,
+        "base_url": "/top",
     })
 
 
@@ -394,6 +401,9 @@ async def films_2026_page(request: Request):
         "movies": movies,
         "lang": lang,
         "t": t,
+        "current_page": 1,
+        "total_pages": 1,
+        "base_url": "/films/2026",
     })
 
 
@@ -407,7 +417,7 @@ async def genres_page(request: Request):
 
 
 @app.get("/genre/{slug}", response_class=HTMLResponse)
-async def genre_page(request: Request, slug: str):
+async def genre_page(request: Request, slug: str, page: int = 1):
     lang = get_lang(request)
     t = get_translations(lang)
 
@@ -415,11 +425,15 @@ async def genre_page(request: Request, slug: str):
     if not genre_info:
         return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
 
+    page = max(1, page)
     try:
-        movies = await get_movies_by_genre(slug, pages=5, lang=lang)
+        result = await get_movies_by_genre(slug, page=page, lang=lang)
+        movies = result["movies"]
+        total_pages = result["total_pages"]
     except Exception as e:
         print(f"Genre page error: {e}")
         movies = []
+        total_pages = 1
 
     genre_name = genre_info["ru"] if lang == "ru" else genre_info["en"]
 
@@ -427,20 +441,30 @@ async def genre_page(request: Request, slug: str):
         "movies": movies, "lang": lang, "t": t,
         "genre_info": genre_info, "genre_name": genre_name,
         "slug": slug,
+        "current_page": page,
+        "total_pages": total_pages,
+        "base_url": f"/genre/{slug}",
     })
 
 
 @app.get("/films/vecher", response_class=HTMLResponse)
-async def films_vecher_page(request: Request):
+async def films_vecher_page(request: Request, page: int = 1):
     lang = get_lang(request)
     t = get_translations(lang)
+    page = max(1, page)
     try:
-        movies = await get_vecher_movies(lang=lang)
+        result = await get_vecher_movies(page=page, lang=lang)
+        movies = result["movies"]
+        total_pages = result["total_pages"]
     except Exception as e:
         print(f"Vecher page error: {e}")
         movies = []
+        total_pages = 1
     return templates.TemplateResponse(request, "films_vecher.html", {
         "movies": movies, "lang": lang, "t": t,
+        "current_page": page,
+        "total_pages": total_pages,
+        "base_url": "/films/vecher",
     })
 
 @app.get("/sitemap-index.xml")

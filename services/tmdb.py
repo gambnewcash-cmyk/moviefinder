@@ -330,73 +330,62 @@ TMDB_GENRE_IDS = {
 }
 
 
-async def get_movies_by_genre(genre_slug: str, pages: int = 5, lang: str = "en") -> List[dict]:
-    """Get movies by genre slug using TMDB discover API."""
+async def get_movies_by_genre(genre_slug: str, page: int = 1, lang: str = "en") -> dict:
+    """Get movies by genre slug using TMDB discover API. Returns dict with pagination info."""
     genre_id = TMDB_GENRE_IDS.get(genre_slug)
     if not genre_id:
-        return []
-    all_movies = []
+        return {"movies": [], "total_pages": 1, "current_page": 1}
     params = {
         "with_genres": genre_id,
         "sort_by": "vote_average.desc",
         "vote_count.gte": 200,
         "include_adult": False,
+        "page": page,
     }
-    if lang == "ru":
-        for page in range(1, pages + 1):
-            p = dict(params)
-            p["page"] = page
-            try:
-                ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", p)
-                en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
-                all_movies.extend([format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])])
-            except Exception:
-                break
-        return all_movies[:100]
-    for page in range(1, pages + 1):
-        p = dict(params)
-        p["page"] = page
-        try:
-            data = await fetch_tmdb("/discover/movie", p, lang=lang)
-            all_movies.extend([format_movie(m) for m in data.get("results", [])])
-        except Exception:
-            break
-    return all_movies[:100]
+    try:
+        if lang == "ru":
+            ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", params)
+            en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
+            movies = [format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])]
+            total_pages = min(ru_data.get("total_pages", 1), 50)
+        else:
+            data = await fetch_tmdb("/discover/movie", params, lang=lang)
+            movies = [format_movie(m) for m in data.get("results", [])]
+            total_pages = min(data.get("total_pages", 1), 50)
+    except Exception as e:
+        print(f"Genre API error: {e}")
+        movies = []
+        total_pages = 1
+    return {"movies": movies, "total_pages": total_pages, "current_page": page}
 
 
-async def get_top_2025_2026(lang: str = "en") -> List[dict]:
-    """Top 100 movies from 2025-2026 by rating."""
+async def get_top_2025_2026(page: int = 1, lang: str = "en") -> dict:
+    """Top movies from 2025-2026 by rating with pagination."""
     params = {
         "sort_by": "vote_average.desc",
         "vote_count.gte": 10,
         "primary_release_date.gte": "2025-01-01",
         "include_adult": False,
+        "page": page,
     }
-    all_movies = []
-    if lang == "ru":
-        for page in range(1, 6):
-            p = dict(params)
-            p["page"] = page
-            try:
-                ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", p)
-                en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
-                all_movies.extend([format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])])
-            except Exception:
-                break
-        return all_movies[:100]
-    for page in range(1, 6):
-        p = dict(params)
-        p["page"] = page
-        try:
-            data = await fetch_tmdb("/discover/movie", p, lang=lang)
-            all_movies.extend([format_movie(m) for m in data.get("results", [])])
-        except Exception:
-            break
-    return all_movies[:100]
+    try:
+        if lang == "ru":
+            ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", params)
+            en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
+            movies = [format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])]
+            total_pages = min(ru_data.get("total_pages", 1), 50)
+        else:
+            data = await fetch_tmdb("/discover/movie", params, lang=lang)
+            movies = [format_movie(m) for m in data.get("results", [])]
+            total_pages = min(data.get("total_pages", 1), 50)
+    except Exception as e:
+        movies = []
+        total_pages = 1
+    return {"movies": movies, "total_pages": total_pages, "current_page": page}
 
 
-async def get_vecher_movies(lang: str = "en") -> List[dict]:
-    """Cozy evening movies: Comedy + Drama + Romance, rating 7+."""
+async def get_vecher_movies(page: int = 1, lang: str = "en") -> dict:
+    """Cozy evening movies: Comedy + Drama + Romance, with pagination."""
     all_movies = []
     for genre_id in [35, 18, 10749]:  # Comedy, Drama, Romance
         params = {
@@ -423,4 +412,11 @@ async def get_vecher_movies(lang: str = "en") -> List[dict]:
         if m.get("tmdb_id") not in seen:
             seen.add(m.get("tmdb_id"))
             result.append(m)
-    return result[:100]
+    # Manual pagination
+    per_page = 20
+    total = len(result)
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page = max(1, min(page, total_pages))
+    start = (page - 1) * per_page
+    movies = result[start:start + per_page]
+    return {"movies": movies, "total_pages": total_pages, "current_page": page}
