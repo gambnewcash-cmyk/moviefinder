@@ -47,7 +47,22 @@
   <div class="mb-8">
     <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">{{ genre_name }}</h1>
     <p class="text-muted text-base max-w-2xl">
-      {% if lang == "ru" %}{{ genre_name }} — узнайте где смотреть каждый фильм бесплатно и без регистрации.{% else %}{{ genre_name }} — find out where to watch each film free without registration.{% endif %}
+      {% set genre_acc = {
+        "horror": "фильмы ужасов",
+        "comedy": "комедии",
+        "action": "боевики",
+        "drama": "драмы",
+        "thriller": "триллеры",
+        "romance": "романтические фильмы",
+        "animation": "мультфильмы",
+        "documentary": "документальные фильмы",
+        "voennye": "военные фильмы",
+        "fantastika": "фантастику",
+        "istoricheskie": "исторические фильмы",
+        "muzyka": "музыкальные фильмы",
+        "crime": "криминальные фильмы"
+      } %}
+      {% if lang == "ru" %}Узнай на каких платформах посмотреть {{ genre_acc.get(slug, genre_name | lower) }} бесплатно и без регистрации в один клик с MovieFinders.{% else %}Find out where to watch {{ genre_name | lower }} free without registration in one click with MovieFinders.{% endif %}
     </p>
     <p class="text-muted text-sm mt-2">{{ movies | length }} {{ t.genre_count if t else 'фильмов' }} • Страница {{ current_page }} из {{ total_pages }}</p>
   </div>
@@ -55,34 +70,34 @@
 
 <!-- SEO Text -->
 {% set genre_seo_texts_ru = {
-  "horror": "10 000+ фильмов ужасов. MovieFinder показывает на каких платформах их можно смотреть бесплатно и без регистрации .",
-  "comedy": "26 000+ комедий. Выберите фильм — MovieFinder покажет где его смотреть бесплатно и без регистрации на Кинопоиске, IVI, Okko и других платформах.",
-  "action": "11 000+ боевиков. MovieFinder находит каждый фильм на легальных платформах, где можно смотреть бесплатно и без регистрации.",
-  "drama": "37 000+ драм — крупнейшая подборка жанра. Найдите фильм и узнайте на каких платформах он доступен бесплатно и без регистрации.",
-  "thriller": "13 000+ триллеров. MovieFinder покажет на каком сервисе доступен нужный фильм — бесплатно и без регистрации.",
-  "romance": "12 000+ романтических фильмов. Найдите романтику для вечера — MovieFinder покажет где смотреть бесплатно и без регистрации.",
-  "animation": "6 000+ мультфильмов: Disney, Pixar, Studio Ghibli и аниме. Узнайте на каких платформах смотреть бесплатно и без регистрации.",
-  "documentary": "9 000+ документальных фильмов. MovieFinder покажет на каком сервисе доступна каждая документалка — бесплатно и без регистрации.",
-  "voennye": "2 000+ военных фильмов. Выберите фильм — MovieFinder найдёт где смотреть бесплатно и без регистрации на легальных платформах.",
-  "fantastika": "5 000+ фантастических фильмов. Узнайте где смотреть каждый фильм бесплатно и без регистрации .",
-  "istoricheskie": "3 000+ исторических фильмов. MovieFinder покажет на каких платформах доступен каждый фильм бесплатно и без регистрации.",
-  "muzyka": "3 000+ музыкальных фильмов. Найдите фильм — MovieFinder покажет где смотреть бесплатно и без регистрации.",
-  "crime": "8 000+ криминальных фильмов: нуар, гангстерские саги, полицейские драмы. Узнайте на каких платформах смотреть бесплатно и без регистрации.",
+  "horror": "Раздел ужасов — это место, где страх оживает на экране и держит в напряжении до последней минуты. Здесь собраны самые пугающие, атмосферные и захватывающие фильмы, которые не дадут тебе спокойно уснуть.",
+  "comedy": "Раздел комедий — здесь смех заразителен, а настроение поднимается с первых минут. Лёгкие и остроумные истории, которые идеально подходят для любого вечера в хорошей компании.",
+  "action": "Раздел боевиков — адреналин, погони и эпические схватки от первого кадра до финальных титров. Здесь каждый фильм — это взрыв эмоций и незабываемые сцены, от которых захватывает дух.",
+  "drama": "Раздел драм — фильмы о настоящей жизни, сложных выборах и человеческих судьбах. Истории, которые заставляют задуматься, сопереживать и видеть мир немного иначе.",
+  "thriller": "Раздел триллеров — атмосфера напряжения нарастает с каждой сценой. Непредсказуемые повороты, скрытые мотивы и развязки, которые никогда не угадаешь заранее.",
+  "romance": "Раздел романтики — истории о любви, судьбоносных встречах и чувствах, которые меняют жизнь. Фильмы, которые заставляют верить в то, что настоящая любовь существует.",
+  "animation": "Раздел мультфильмов — магия анимации для всех возрастов. Здесь живут герои детства, мудрые истории и целые миры, созданные из воображения талантливых художников.",
+  "documentary": "Раздел документального кино — реальные истории, которые поражают не меньше выдуманных. Природа, наука, люди и события, которые изменили мир — всё это здесь.",
+  "voennye": "Раздел военных фильмов — истории о мужестве, потерях и человечности в самых тяжёлых условиях. Фильмы, которые заставляют ценить мир и помнить о тех, кто его защищал.",
+  "fantastika": "Раздел фантастики — вселенные без границ, технологии будущего и вечные вопросы о смысле существования. Фильмы, которые уносят за пределы реального мира.",
+  "istoricheskie": "Раздел исторических фильмов — окно в прошлое, где оживают эпохи, битвы и великие личности. Истории, которые напоминают откуда мы пришли и что пережило человечество.",
+  "muzyka": "Раздел музыкальных фильмов — истории о страсти, таланте и пути к признанию. Фильмы, которые вдохновляют и заставляют слышать музыку по-новому.",
+  "crime": "Раздел криминального кино — мир теней, тайных сделок и изощрённых схем. Детективы, гангстерские саги и полицейские драмы, где каждый подозреваемый может оказаться виновным."
 } %}
 {% set genre_seo_texts_en = {
-  "horror": "10,000+ horror films. MovieFinder shows which platforms have each film available to watch free without registration — Netflix, HBO Max, Prime and more.",
-  "comedy": "26,000+ comedies. Choose a film — MovieFinder shows where to watch it free without registration on Netflix, Prime, Hulu and other platforms.",
-  "action": "11,000+ action films. MovieFinder finds each film on legal platforms where you can watch free without registration.",
-  "drama": "37,000+ dramas — the largest collection of the genre. Find a film and discover which platforms have it available free without registration.",
-  "thriller": "13,000+ thrillers. MovieFinder shows which streaming service has the film you're looking for — free without registration.",
-  "romance": "12,000+ romance films. Find the right film — MovieFinder shows where to watch it free without registration.",
-  "animation": "6,000+ animated films: Disney, Pixar, Studio Ghibli and anime. Discover which platforms have them available free without registration.",
-  "documentary": "9,000+ documentaries. MovieFinder shows which service has each documentary available — free without registration.",
-  "voennye": "2,000+ war films. Choose a film — MovieFinder finds where to watch it free without registration on legal platforms.",
-  "fantastika": "5,000+ sci-fi films. Discover where to stream each film free without registration — Netflix, HBO Max, Prime and more.",
-  "istoricheskie": "3,000+ historical films. MovieFinder shows which platforms have each film available free without registration.",
-  "muzyka": "3,000+ music films. Find a film — MovieFinder shows where to watch it free without registration.",
-  "crime": "8,000+ crime films: noir, gangster sagas, police dramas. Discover which platforms have them free without registration.",
+  "horror": "The horror section — where fear comes alive on screen and keeps you on edge until the very last minute. The scariest, most atmospheric films that won't let you sleep.",
+  "comedy": "The comedy section — where laughter is contagious from the very first scene. Light and witty stories perfect for any evening in good company.",
+  "action": "The action section — adrenaline, chases and epic battles from the first frame to the final credits. Every film is an explosion of emotion and breathtaking sequences.",
+  "drama": "The drama section — films about real life, difficult choices and human destinies. Stories that make you reflect, empathize and see the world a little differently.",
+  "thriller": "The thriller section — tension builds with every scene. Unpredictable twists, hidden motives and endings you'll never see coming.",
+  "romance": "The romance section — stories about love, fateful meetings and feelings that change lives. Films that make you believe that true love really exists.",
+  "animation": "The animation section — the magic of animation for all ages. Here live the heroes of childhood, wise stories and entire worlds born from imagination.",
+  "documentary": "The documentary section — real stories that amaze no less than fictional ones. Nature, science, people and events that changed the world — all here.",
+  "voennye": "The war films section — stories of courage, loss and humanity under the hardest conditions. Films that make you value peace and remember those who defended it.",
+  "fantastika": "The sci-fi section — boundless universes, future technologies and eternal questions about existence. Films that take you beyond the real world.",
+  "istoricheskie": "The historical films section — a window into the past where eras, battles and great personalities come alive. Stories that remind us where we came from.",
+  "muzyka": "The music films section — stories of passion, talent and the path to recognition. Films that inspire and make you hear music in a new way.",
+  "crime": "The crime section — a world of shadows, secret deals and elaborate schemes. Detectives, gangster sagas and police dramas where every suspect could be guilty."
 } %}
 {% if lang == "ru" %}
   {% set seo_text = genre_seo_texts_ru.get(slug, '') %}
