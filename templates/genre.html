@@ -47,7 +47,7 @@
   <div class="mb-8">
     <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">{{ genre_name }}</h1>
     <p class="text-muted text-base max-w-2xl">
-      {% if lang == "ru" %}{{ t.genre_seo_prefix if t else 'Лучшие' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— смотреть онлайн бесплатно без регистрации на MovieFinder.' }}{% else %}{{ t.genre_seo_prefix if t else 'Best' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— watch online free without registration on MovieFinder.' }}{% endif %}
+      {% if lang == "ru" %}{{ genre_name }} — MovieFinder показывает на каких платформах каждый фильм доступен бесплатно и без регистрации.{% else %}{{ genre_name }} — MovieFinder shows which platforms have each film available free without registration.{% endif %}
     </p>
     <p class="text-muted text-sm mt-2">{{ movies | length }} {{ t.genre_count if t else 'фильмов' }} • Страница {{ current_page }} из {{ total_pages }}</p>
   </div>
