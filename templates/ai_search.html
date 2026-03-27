@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}AI Поиск Фильмов — Опиши фильм своими словами | MovieFinder{% endblock %}
+
+{% block meta_description %}Не помнишь название фильма? Опиши его своими словами — AI найдёт и покажет где смотреть. Поиск по сюжету, актёрам, настроению. Бесплатно, без регистрации.{% endblock %}
+
+{% block og_type %}website{% endblock %}
+{% block og_title_inner %}AI Поиск Фильмов — Опиши своими словами | MovieFinder{% endblock %}
+{% block og_description %}Не помнишь название фильма? Опиши его AI — найдёт за секунды и покажет где смотреть онлайн.{% endblock %}
+{% block twitter_title %}AI Поиск Фильмов — MovieFinder{% endblock %}
+{% block twitter_description %}Опиши фильм своими словами — AI найдёт название и покажет где смотреть онлайн{% endblock %}
+{% block canonical %}https://moviefinder-production.up.railway.app/ai-search{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Как найти фильм если не помнишь название?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Опиши сюжет, персонажей или сцены своими словами в поле поиска. AI поиск MovieFinder проанализирует описание и найдёт нужный фильм из базы 100 000+ фильмов."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Как найти похожие фильмы?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Напиши похожие на [название фильма] — AI подберёт 20 похожих по жанру, стилю и атмосфере. Можно добавить фильтры по году и рейтингу."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Можно ли искать фильмы на русском языке?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Да, AI поиск MovieFinder полностью понимает русский язык. Вводи запросы как привык — комедии, боевики, фильмы с любым актёром."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "AI поиск фильмов бесплатный?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Да, AI поиск фильмов на MovieFinder полностью бесплатный. Без регистрации, без ограничений на количество поисков."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="relative py-16 px-4 overflow-hidden">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-20 right-0 w-72 h-72 bg-purple-900/20 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative max-w-3xl mx-auto text-center">
+    <h1 class="text-4xl md:text-5xl font-black mb-4 leading-tight">
+      Умный AI поиск<br/><span class="text-accent">фильмов и сериалов</span>
+    </h1>
+    <p class="text-white/60 text-lg mb-8 max-w-2xl mx-auto">
+      Не помнишь название? Опиши сюжет, персонажей или настроение —
+      AI поймёт что ты ищешь и найдёт нужный фильм за секунды
+    </p>
+
+    <!-- Search Form -->
+    <form action="/smart-search" method="get" class="relative max-w-2xl mx-auto">
+      <div class="relative flex items-center">
+        <input name="q"
+          value="{{ query }}"
+          placeholder="Например: фильм где здоровый и маленький убегали от полиции..."
+          autocomplete="off"
+          class="w-full bg-card border-2 border-border rounded-full px-7 py-5 text-lg text-white placeholder-muted focus:outline-none focus:border-accent transition-all pr-36"
+        />
+        <button type="submit"
+          class="absolute right-2 bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors">
+          🔍 Найти
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="max-w-5xl mx-auto px-4 mb-16">
+  <h2 class="text-2xl font-black text-center mb-10">Что умеет AI поиск?</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <div class="text-3xl mb-3">🧠</div>
+      <h3 class="font-bold text-white mb-2">Поиск по описанию</h3>
+      <p class="text-muted text-sm">Опиши сюжет своими словами — AI найдёт фильм даже если ты не помнишь название</p>
+      <div class="mt-3 bg-bg rounded-xl p-3 text-xs text-white/50 italic">
+        "там где здоровый и маленький учились вместе..."
+      </div>
+    </div>
+
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <div class="text-3xl mb-3">🎭</div>
+      <h3 class="font-bold text-white mb-2">Похожие фильмы</h3>
+      <p class="text-muted text-sm">Назови фильм который понравился — получи 20 похожих с учётом жанра и стиля</p>
+      <div class="mt-3 bg-bg rounded-xl p-3 text-xs text-white/50 italic">
+        "похожие на Интерстеллар не старше 2020"
+      </div>
+    </div>
+
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <div class="text-3xl mb-3">🎬</div>
+      <h3 class="font-bold text-white mb-2">Фильмы с актёром</h3>
+      <p class="text-muted text-sm">Ищи по любому актёру — на русском или английском языке</p>
+      <div class="mt-3 bg-bg rounded-xl p-3 text-xs text-white/50 italic">
+        "все фильмы с Томом Хэнксом"
+      </div>
+    </div>
+
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <div class="text-3xl mb-3">📅</div>
+      <h3 class="font-bold text-white mb-2">Фильтр по году</h3>
+      <p class="text-muted text-sm">Указывай временные рамки в естественном языке</p>
+      <div class="mt-3 bg-bg rounded-xl p-3 text-xs text-white/50 italic">
+        "комедии 2023 с высоким рейтингом"
+      </div>
+    </div>
+
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <div class="text-3xl mb-3">⭐</div>
+      <h3 class="font-bold text-white mb-2">По жанру и рейтингу</h3>
+      <p class="text-muted text-sm">Комбинируй жанр, год и минимальный рейтинг в одном запросе</p>
+      <div class="mt-3 bg-bg rounded-xl p-3 text-xs text-white/50 italic">
+        "лучшие боевики после 2015"
+      </div>
+    </div>
+
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <div class="text-3xl mb-3">🌍</div>
+      <h3 class="font-bold text-white mb-2">На русском языке</h3>
+      <p class="text-muted text-sm">Пиши как привык — AI понимает русский язык со всеми формами слов</p>
+      <div class="mt-3 bg-bg rounded-xl p-3 text-xs text-white/50 italic">
+        "ужасы про маньяков не страшные"
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXAMPLES -->
+<section class="max-w-3xl mx-auto px-4 mb-16">
+  <h2 class="text-2xl font-black text-center mb-8">Примеры запросов</h2>
+  <div class="space-y-3">
+    {% set examples = [
+      "найди фильм там здоровый качок помогает маленькому мужику",
+      "сериалы похожие на Игру Престолов вышедшие после 2018",
+      "все фильмы с Уилом Смитом",
+      "ужасы 2024 с высоким рейтингом",
+      "комедии про полицейских",
+      "фильмы как Начало Кристофера Нолана",
+      "драмы не старше 2020 рейтинг выше 8",
+    ] %}
+    {% for ex in examples %}
+    <a href="/smart-search?q={{ ex | urlencode }}"
+       class="flex items-center justify-between bg-card border border-border hover:border-accent rounded-xl px-5 py-3 transition-all group">
+      <span class="text-white/70 group-hover:text-white text-sm">{{ ex }}</span>
+      <span class="text-accent text-sm font-semibold shrink-0 ml-4">Попробовать →</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- FAQ для SEO -->
+<section class="max-w-3xl mx-auto px-4 mb-16">
+  <h2 class="text-2xl font-black text-center mb-8">Частые вопросы</h2>
+  <div class="space-y-4">
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <h3 class="font-bold text-white mb-2">Как найти фильм если не помнишь название?</h3>
+      <p class="text-muted text-sm">Просто опиши что помнишь — сюжет, персонажей, сцены. AI поиск MovieFinder анализирует описание и находит подходящий фильм. Например: "фильм где мальчик видит мёртвых людей" → "Шестое чувство".</p>
+    </div>
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <h3 class="font-bold text-white mb-2">Как найти похожие фильмы?</h3>
+      <p class="text-muted text-sm">Напиши "похожие на [название фильма]" — AI найдёт фильм-референс в базе TMDB и подберёт 20 похожих по жанру, стилю и атмосфере. Можно добавить фильтры: год, рейтинг.</p>
+    </div>
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <h3 class="font-bold text-white mb-2">Можно ли искать на русском языке?</h3>
+      <p class="text-muted text-sm">Да, AI поиск полностью понимает русский язык. Вводи запросы как привык — "комедии", "боевики", "фильмы с Томом Хэнксом". Не нужно переводить на английский.</p>
+    </div>
+    <div class="bg-card border border-border rounded-2xl p-5">
+      <h3 class="font-bold text-white mb-2">Это бесплатно?</h3>
+      <p class="text-muted text-sm">Да, AI поиск фильмов на MovieFinder полностью бесплатный. Без регистрации, без ограничений на количество поисков.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Schema moved to structured_data block in head -->
+
+{% endblock %}

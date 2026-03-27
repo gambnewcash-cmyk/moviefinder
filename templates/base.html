@@ -3,9 +3,46 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{% block title %}MovieFinder — Watch Anything, Anywhere{% endblock %}</title>
+  <meta name="theme-color" content="#0f0f0f"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <title>{% block title %}MovieFinder — Найди где смотреть любой фильм онлайн{% endblock %}</title>
+
+  <!-- SEO Meta -->
+  <meta name="description" content="{% block meta_description %}Найди где смотреть любой фильм или сериал онлайн. Сравни стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka и 20+ платформ.{% endblock %}"/>
+  <link rel="canonical" href="{% block canonical %}https://moviefinder-production.up.railway.app{{ request.url.path }}{% endblock %}"/>
+
+  <!-- hreflang multilingual -->
+  <link rel="alternate" hreflang="ru" href="{% block hreflang_ru %}https://moviefinder-production.up.railway.app{{ request.url.path }}{% endblock %}"/>
+  <link rel="alternate" hreflang="en" href="{% block hreflang_en %}https://moviefinder-production.up.railway.app{{ request.url.path }}?lang=en{% endblock %}"/>
+  <link rel="alternate" hreflang="x-default" href="https://moviefinder-production.up.railway.app{{ request.url.path }}"/>
+
+  <!-- Yandex Turbo hint -->
+  <link rel="alternate" type="application/rss+xml" title="Turbo" href="/turbo.rss"/>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}"/>
+  <meta property="og:title" content="{% block og_title %}{% block og_title_inner %}MovieFinder — Найди где смотреть фильм{% endblock %}{% endblock %}"/>
+  <meta property="og:description" content="{% block og_description %}Найди где смотреть любой фильм или сериал онлайн. Кинопоиск, Okko, IVI, HDRezka и другие платформы.{% endblock %}"/>
+  <meta property="og:url" content="https://moviefinder-production.up.railway.app{{ request.url.path }}"/>
+  <meta property="og:image" content="{% block og_image %}https://moviefinder-production.up.railway.app/static/img/og-default.jpg{% endblock %}"/>
+  <meta property="og:site_name" content="MovieFinder"/>
+  <meta property="og:locale" content="{% if lang == 'en' %}en_US{% else %}ru_RU{% endif %}"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="{% block twitter_title %}MovieFinder — Найди где смотреть фильм{% endblock %}"/>
+  <meta name="twitter:description" content="{% block twitter_description %}Найди где смотреть любой фильм или сериал онлайн бесплатно{% endblock %}"/>
+  <meta name="twitter:image" content="{% block twitter_image %}https://moviefinder-production.up.railway.app/static/img/og-default.jpg{% endblock %}"/>
+
+  <!-- Structured Data block for child templates -->
+  {% block structured_data %}{% endblock %}
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg"/>
+  <link rel="shortcut icon" href="/static/img/favicon.svg"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com"/>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -57,16 +94,11 @@
       <span class="text-accent">▶</span>
       <span>Movie<span class="text-accent">Finder</span></span>
     </a>
-    <div class="flex-1 max-w-md hidden md:block">
-      <form action="/search" method="get">
-        <input name="q" placeholder="{{ t.search_placeholder_nav if t else 'Search movies, shows…' }}"
-               class="w-full bg-card border border-border rounded-full px-4 py-1.5 text-sm text-white placeholder-muted focus:outline-none focus:border-accent transition"
-               autocomplete="off"/>
-      </form>
-    </div>
+
     <div class="ml-auto flex items-center gap-3">
-      <a href="/search" class="text-sm text-muted hover:text-white transition">{{ t.search if t else 'Search' }}</a>
-      <a href="/?section=trending" class="text-sm text-muted hover:text-white transition hidden sm:block">{{ t.trending if t else 'Trending' }}</a>
+      <a href="/ai-search" class="text-sm text-muted hover:text-white transition flex items-center gap-1">🤖 {{ t.ai_search if t else 'Поиск через AI' }}</a>
+      <a href="/favorites" class="text-sm text-muted hover:text-white transition flex items-center gap-1">❤️ Избранное</a>
+
       <!-- Language Switcher -->
       <div class="flex items-center gap-1">
         <button class="lang-btn {% if lang == 'en' %}active{% endif %}" onclick="setLang('en')">🇬🇧 EN</button>
@@ -83,7 +115,7 @@
   <div class="max-w-7xl mx-auto px-4">
     <p class="font-bold text-white text-lg mb-2"><span class="text-accent">▶</span> MovieFinder</p>
     <p class="mb-4">{{ t.footer_desc if t else 'Find where to watch any movie or TV show — streaming & more.' }}</p>
-    <p class="text-xs text-border">{{ t.footer_api if t else 'Movie data provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.' }}</p>
+    <p class="text-muted/60 text-xs mt-1">{{ t.footer_api if t else 'This product uses the TMDB API but is not endorsed or certified by TMDB.' }}</p>
   </div>
 </footer>
 

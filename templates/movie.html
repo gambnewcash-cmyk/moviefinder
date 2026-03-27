@@ -1,5 +1,40 @@
 {% extends "base.html" %}
-{% block title %}{{ movie.title }} ({{ movie.year }}) · MovieFinder{% endblock %}
+{% block title %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — где смотреть онлайн | MovieFinder{% endblock %}
+
+{% block meta_description %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. {% if movie.genre %}Жанр: {{ movie.genre }}. {% endif %}Все стриминговые сервисы и бесплатные источники на одной странице — Кинопоиск, Okko, IVI, HDRezka.{% endblock %}
+
+{% block og_type %}video.movie{% endblock %}
+{% block og_image %}{{ movie.poster_url or 'https://moviefinder-production.up.railway.app/static/img/og-default.jpg' }}{% endblock %}
+{% block og_description %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — найди где смотреть онлайн. Кинопоиск, Okko, IVI, HDRezka и другие платформы.{% endblock %}
+{% block og_title_inner %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — MovieFinder{% endblock %}
+{% block twitter_title %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — где смотреть онлайн{% endblock %}
+{% block twitter_description %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. Все платформы на одной странице.{% endblock %}
+{% block twitter_image %}{{ movie.poster_url or 'https://moviefinder-production.up.railway.app/static/img/og-default.jpg' }}{% endblock %}
+{% block canonical %}https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}{% endblock %}
+{% block hreflang_ru %}https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}?lang=ru{% endblock %}
+{% block hreflang_en %}https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}?lang=en{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Movie",
+  "name": "{{ (movie.title_ru or movie.title) | replace('"', '&quot;') }}",
+  "alternateName": "{{ movie.title | replace('"', '&quot;') }}",
+  "datePublished": "{{ movie.year }}",
+  {% if movie.description %}"description": "{{ movie.description | truncate(300) | replace('"', ' ') | replace('
+', ' ') }}",{% endif %}
+  {% if movie.poster_url %}"image": "{{ movie.poster_url }}",{% endif %}
+  {% if movie.genre %}"genre": {{ movie.genre.split(', ') | tojson }},{% endif %}
+  {% if movie.rating and movie.rating > 0 %}"aggregateRating": {"@type": "AggregateRating", "ratingValue": "{{ '%.1f' | format(movie.rating) }}", "bestRating": "10", "ratingCount": "1000"},{% endif %}
+  "url": "https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}",
+  "potentialAction": {
+    "@type": "WatchAction",
+    "target": "https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}"
+  }
+}
+</script>
+{% endblock %}
 
 {% block head %}
 {% if movie.backdrop_path %}
@@ -15,6 +50,13 @@
 {% endblock %}
 
 {% block content %}
+
+<!-- Back navigation -->
+<div class="max-w-7xl mx-auto px-4 pt-4">
+  <a href="javascript:history.back()" class="inline-flex items-center gap-2 text-muted hover:text-white transition-colors text-sm">
+    ← {{ t.back if t else 'Назад' }}
+  </a>
+</div>
 
 <!-- HERO -->
 <div class="hero-backdrop min-h-[420px] flex items-end pb-0">
@@ -32,10 +74,19 @@
       </div>
       <!-- Info -->
       <div class="flex-1 pb-8">
+        {% if movie.media_type == 'tv' %}
+        <span class="inline-flex items-center bg-blue-900/40 text-blue-400 border border-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">📺 Сериал</span>
+        {% else %}
+        <span class="inline-flex items-center bg-accent/20 text-accent border border-accent/30 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">🎬 Фильм</span>
+        {% endif %}
         <h1 class="text-4xl md:text-5xl font-black leading-tight mb-2">{{ movie.title }}</h1>
         <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-muted">
           {% if movie.year %}<span class="text-white font-medium">{{ movie.year }}</span>{% endif %}
           {% if movie.runtime %}<span>· {{ movie.runtime }} {{ t.min if t else 'min' }}</span>{% endif %}
+          {% if movie.number_of_seasons %}
+          <span>· 📺 {{ movie.number_of_seasons }} {{ t.seasons if t else 'сез.' }}</span>
+          {% if movie.number_of_episodes %}<span>{{ movie.number_of_episodes }} {{ t.episodes if t else 'эп.' }}</span>{% endif %}
+          {% endif %}
           {% if movie.genres_list %}
           {% for g in movie.genres_list %}
           <span class="bg-card border border-border px-2 py-0.5 rounded-full text-xs">{{ g }}</span>
@@ -58,6 +109,17 @@
           ▶ {{ t.trailer if t else 'Watch Trailer' }}
         </a>
         {% endif %}
+        <!-- Favorite + Watched buttons -->
+        <div class="flex gap-3 mt-5">
+          <button id="fav-btn-detail" onclick="toggleFavoriteDetail()"
+            class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium">
+            ❤️ В избранное
+          </button>
+          <button id="watched-btn-detail" onclick="toggleWatchedDetail()"
+            class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium">
+            ✓ Просмотрено
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -70,83 +132,202 @@
     <div class="lg:col-span-2 space-y-8">
 
       <!-- WHERE TO WATCH -->
-      <section>
+      <section id="watch-section">
         <h2 class="text-2xl font-bold mb-5 flex items-center gap-2">
           📺 {{ t.where_to_watch if t else 'Where to Watch' }}
         </h2>
 
-        <!-- Premium Streaming -->
-        <div class="mb-6">
-          <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="text-green-400">💎</span> {{ t.premium if t else 'Premium' }}
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {% for s in sources.streaming %}
-            <a href="{{ s.url }}" target="_blank" rel="noopener"
-               class="flex items-center gap-4 bg-card border border-border hover:border-accent rounded-xl p-4 transition-all group">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
-                   style="background: {{ s.color }}">
-                {{ s.icon }}
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-white font-semibold text-sm">{{ s.source_name }}</p>
-                <p class="text-muted text-xs">Search on {{ s.source_name }}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs bg-green-900/40 text-green-400 border border-green-800 px-2 py-0.5 rounded-full">{{ s.quality }}</span>
-                <span class="text-muted group-hover:text-white transition-colors">→</span>
-              </div>
-            </a>
-            {% endfor %}
-          </div>
+        <!-- Loading state -->
+        <div id="sources-loading" class="flex items-center gap-3 text-muted py-6">
+          <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>Checking availability...</span>
         </div>
 
-        <!-- Free / Pirate Sources -->
-        <div class="mb-4">
-          <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span class="text-accent">🆓</span> {{ t.free_online if t else 'Free Online' }}
-            <span class="text-xs text-muted font-normal normal-case">(search results)</span>
-          </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {% for s in sources.pirate %}
-            <a href="{{ s.url }}" target="_blank" rel="noopener"
-               class="flex flex-col gap-2 bg-card border border-border hover:border-accent rounded-xl p-4 transition-all group">
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">{{ s.icon }}</span>
-                <div>
-                  <p class="text-white font-semibold text-sm">{{ s.source_name }}</p>
-                  <span class="text-xs bg-accent/20 text-accent border border-accent/30 px-2 py-0.5 rounded-full">{{ s.quality }}</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted text-xs">{{ t.watch_now if t else 'Watch Now' }} →</span>
-                <span class="text-accent text-lg group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </a>
-            {% endfor %}
-          </div>
-        </div>
+        <!-- Sources container (filled by JS) -->
+        <div id="sources-container" class="hidden space-y-6"></div>
 
-        <!-- JustWatch link -->
-        {% for s in sources.justwatch %}
-        <a href="{{ s.url }}" target="_blank" rel="noopener"
-           class="flex items-center gap-3 text-sm text-muted hover:text-white transition-colors mt-2">
-          <span>📋</span> See all streaming options on JustWatch →
-        </a>
-        {% endfor %}
+        <!-- No sources fallback -->
+        <div id="sources-empty" class="hidden text-muted py-4">
+          <p>No streaming sources found for this title.</p>
+          <a id="jw-fallback-link" href="https://www.justwatch.com/us/search?q={{ movie.title | urlencode }}"
+             target="_blank" rel="noopener"
+             class="inline-flex items-center gap-2 mt-2 text-accent hover:underline text-sm">
+            🔍 Search on JustWatch →
+          </a>
+        </div>
       </section>
 
-      <!-- VPN PROMO -->
-      <div class="rounded-2xl bg-gradient-to-r from-[#1a1a2e] to-[#0f3460] border border-border p-5 flex items-center gap-4">
-        <span class="text-4xl shrink-0">🛡️</span>
-        <div class="flex-1">
-          <p class="font-bold text-white">Content not available in your region?</p>
-          <p class="text-muted text-sm mt-0.5">Use a VPN to unlock Netflix US, BBC iPlayer & more.</p>
-        </div>
-        <a href="#" class="shrink-0 bg-accent hover:bg-accent-hover text-white text-sm font-bold px-4 py-2 rounded-full transition-colors">
-          Get VPN →
-        </a>
-      </div>
+      <script>
+      (function() {
+        const tmdbId = {{ movie.tmdb_id }};
+        const title = {{ (movie.title or '') | tojson }};
+        const titleRu = {{ (movie.title_ru or movie.title or '') | tojson }};
+        const year = {{ movie.year or 0 }};
+        const mediaType = {{ (movie.media_type or 'movie') | tojson }};
+
+        const loading = document.getElementById('sources-loading');
+        const container = document.getElementById('sources-container');
+        const empty = document.getElementById('sources-empty');
+
+        function renderSourceCard(s) {
+          const iconHtml = s.icon_url
+            ? `<img src="${s.icon_url}" alt="${s.source_name}" class="w-8 h-8 rounded object-contain bg-white/10 p-0.5" onerror="this.style.display='none'">`
+            : `<div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold text-white">${s.source_name.charAt(0)}</div>`;
+
+          const badgeColor = s.source_type === 'pirate'
+            ? 'bg-accent/20 text-accent border-accent/30'
+            : 'bg-green-900/40 text-green-400 border-green-800';
+
+          const label = s.source_type === 'pirate' ? s.quality
+            : (s.price ? s.price : s.quality);
+
+          const aiHtml = s.via_ai ? `<span class="text-xs bg-purple-900/50 text-purple-300 border border-purple-700/50 px-1.5 py-0.5 rounded font-normal">AI</span>` : '';
+          return `
+            <a href="${s.url}" target="_blank" rel="noopener"
+               class="flex items-center gap-3 bg-card border border-border hover:border-accent rounded-xl p-3 transition-all group min-w-0">
+              ${iconHtml}
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold text-sm truncate">${s.source_name} ${aiHtml}</p>
+              </div>
+              <span class="text-xs border px-2 py-0.5 rounded-full shrink-0 ${badgeColor}">${label}</span>
+              <span class="text-muted group-hover:text-white transition-colors shrink-0">→</span>
+            </a>`;
+        }
+
+        // M1 FIX: Translations for source labels
+        const UI = {
+          subscription: "{{ t.subscription if t else 'Subscription' }}",
+          rent: "{{ t.rent if t else 'Rent' }}",
+          buy: "{{ t.buy if t else 'Buy' }}",
+          free: "Бесплатно (JustWatch)",
+          freeOnline: "Бесплатно онлайн",
+          loading: "{{ t.checking_sources if t else 'Checking availability...' }}",
+          noSources: "{{ t.no_sources if t else 'No streaming sources found.' }}",
+          error: "{{ t.sources_error if t else 'Could not load streaming info.' }}",
+        };
+
+        function renderGroup(label, icon, sources, gridCols, isFree) {
+          if (!sources || sources.length === 0) return '';
+          const cols = gridCols || 'grid-cols-1 sm:grid-cols-2';
+          const borderClass = isFree ? 'border border-green-600/40 bg-green-950/20 rounded-xl p-3' : '';
+          const labelClass = isFree ? 'text-green-400' : 'text-muted';
+          const badge = isFree ? '<span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">БЕСПЛАТНО</span>' : '';
+          return `
+            <div class="${borderClass}">
+              <h3 class="text-sm font-semibold ${labelClass} uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span>${icon}</span> ${label}
+                <span class="text-xs font-normal normal-case text-muted">(${sources.length})</span>
+                ${badge}
+              </h3>
+              <div class="grid ${cols} gap-2">
+                ${sources.map(renderSourceCard).join('')}
+              </div>
+            </div>`;
+        }
+
+        async function loadSources() {
+          try {
+            // Detect country from browser language
+            const browserLang = navigator.language || navigator.userLanguage || 'en-US';
+            const country = browserLang.includes('ru') ? 'RU' :
+                            browserLang.includes('ua') ? 'UA' :
+                            browserLang.includes('de') ? 'DE' :
+                            browserLang.includes('fr') ? 'FR' : 'US';
+            const params = new URLSearchParams({
+              title: title,
+              year: year,
+              title_ru: titleRu,
+              country: country,
+              media_type: mediaType
+            });
+            const res = await fetch(`/api/sources/${tmdbId}?${params}`);
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+
+            loading.classList.add('hidden');
+
+            const g = data.grouped;
+            const totalJw = (g.subscription||[]).length + (g.rent||[]).length + (g.buy||[]).length + (g.free||[]).length;
+            const totalPirate = (g.pirate||[]).length;
+
+            if (totalJw === 0 && totalPirate === 0) {
+              empty.classList.remove('hidden');
+              // H5 FIX: Update JW fallback link with detected country
+              const jwFallback = document.getElementById('jw-fallback-link');
+              if (jwFallback) {
+                jwFallback.href = 'https://www.justwatch.com/' + country.toLowerCase() + '/search?q=' + encodeURIComponent(title);
+              }
+              return;
+            }
+
+            // Sort: free first, then subscription, then rent/buy
+            const hasFree = (g.free||[]).length > 0 || totalPirate > 0;
+            const freeHtml = [
+              // FREE SECTION FIRST - highlighted
+              totalPirate > 0 ? renderGroup(UI.freeOnline, '🎬', g.pirate, 'grid-cols-1 sm:grid-cols-3', true) : '',
+            ].join('');
+
+            const paidHtml = [
+              // PAID SECTION
+              renderGroup(UI.subscription, '💎', g.subscription, 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'),
+              renderGroup(UI.rent, '💳', g.rent, 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'),
+              renderGroup(UI.buy, '🛒', g.buy, 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'),
+              totalJw > 0 ? `<p class="text-xs text-muted mt-1">📋 Data from JustWatch • ${data.cached ? 'cached' : 'live'}</p>` : '',
+            ].join('');
+
+            const trialHtml = `
+<div class="mt-4 border border-yellow-600/30 bg-yellow-950/10 rounded-xl p-3">
+  <h3 class="text-sm font-semibold text-yellow-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+    🎁 <span>Смотри бесплатно с пробным периодом</span>
+  </h3>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <a href="https://www.ivi.ru/search#request=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
+       class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
+      <img src="https://www.ivi.ru/favicon.ico" class="w-8 h-8 rounded mb-1" onerror="this.style.display='none'"/>
+      <span class="text-white text-xs font-semibold">ivi</span>
+      <span class="text-muted text-xs">30 дней бесплатно</span>
+    </a>
+    <a id="kp-trial-link" href="https://www.kinopoisk.ru/index.php?first=yes&what=&kp_query=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
+       class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
+      <span class="text-2xl mb-1">⭐</span>
+      <span class="text-white text-xs font-semibold">Кинопоиск</span>
+      <span class="text-muted text-xs">Пробный период</span>
+    </a>
+    <a href="https://okko.tv/search?query=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
+       class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
+      <img src="https://okko.tv/favicon.ico" class="w-8 h-8 rounded mb-1" onerror="this.style.display='none'"/>
+      <span class="text-white text-xs font-semibold">Okko</span>
+      <span class="text-muted text-xs">7 дней бесплатно</span>
+    </a>
+    <a href="https://start.ru/search?q=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
+       class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
+      <img src="https://start.ru/favicon.ico" class="w-8 h-8 rounded mb-1" onerror="this.style.display='none'"/>
+      <span class="text-white text-xs font-semibold">START</span>
+      <span class="text-muted text-xs">Пробный период</span>
+    </a>
+  </div>
+</div>`;
+            container.innerHTML = freeHtml + trialHtml + paidHtml;
+            // Fetch direct Kinopoisk URL
+            const kpLink = document.getElementById('kp-trial-link');
+            if (kpLink) {
+              fetch(`/api/kp-url/${tmdbId}?title=${encodeURIComponent(title)}&title_ru=${encodeURIComponent(titleRu||'')}&year=${year||''}`)
+                .then(r => r.json())
+                .then(data => { if (data.url) kpLink.href = data.url; })
+                .catch(() => {});
+            }
+            container.classList.remove('hidden');
+          } catch (e) {
+            loading.innerHTML = '<span class="text-muted text-sm">' + UI.error + '</span>';
+          }
+        }
+
+        loadSources();
+      })();
+      </script>
 
       <!-- CAST -->
       {% if movie.cast %}
@@ -178,7 +359,7 @@
       {% if movie.similar %}
       <div class="space-y-3">
         {% for s in movie.similar %}
-        <a href="/movie/{{ s.tmdb_id }}"
+        <a href="/movie/{{ s.tmdb_id }}{% if s.media_type == 'tv' %}?media_type=tv{% endif %}"
            class="flex gap-3 bg-card border border-border hover:border-accent rounded-xl p-3 transition-all group">
           <div class="shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-border">
             {% if s.poster_url %}
@@ -204,5 +385,75 @@
 
   </div>
 </div>
+
+
+<script>
+// Favorites & Watched for movie detail page
+(function() {
+  const movieId = String({{ movie.tmdb_id }});
+  const movieTitle = {{ (movie.title or '') | tojson }};
+  const moviePoster = {{ (movie.poster_url or '') | tojson }};
+  const movieYear = {{ movie.year or 0 }};
+  const movieType = {{ (movie.media_type or 'movie') | tojson }};
+
+  function getFavorites() { return JSON.parse(localStorage.getItem('mf_favorites') || '[]'); }
+  function getWatched() { return JSON.parse(localStorage.getItem('mf_watched') || '[]'); }
+
+  function updateDetailBtns() {
+    const favs = getFavorites();
+    const watched = getWatched();
+    const isFav = favs.some(f => String(f.id) === movieId);
+    const isWatched = watched.includes(movieId);
+    const favBtn = document.getElementById('fav-btn-detail');
+    const watchedBtn = document.getElementById('watched-btn-detail');
+    if (favBtn) {
+      favBtn.style.color = isFav ? '#e50914' : '';
+      favBtn.innerHTML = isFav ? '❤️ В избранном' : '❤️ В избранное';
+    }
+    if (watchedBtn) {
+      watchedBtn.style.color = isWatched ? '#22c55e' : '';
+      watchedBtn.innerHTML = isWatched ? '✅ Просмотрено' : '✓ Просмотрено';
+    }
+  }
+
+  window.toggleFavoriteDetail = function() {
+    let favs = getFavorites();
+    const idx = favs.findIndex(f => String(f.id) === movieId);
+    if (idx >= 0) {
+      favs.splice(idx, 1);
+      showDetailToast('Удалено из избранного');
+    } else {
+      favs.push({id: movieId, title: movieTitle, poster: moviePoster, year: movieYear, mediaType: movieType});
+      showDetailToast('❤️ Добавлено в избранное!');
+    }
+    localStorage.setItem('mf_favorites', JSON.stringify(favs));
+    updateDetailBtns();
+  };
+
+  window.toggleWatchedDetail = function() {
+    let watched = getWatched();
+    const idx = watched.indexOf(movieId);
+    if (idx >= 0) {
+      watched.splice(idx, 1);
+      showDetailToast('Убрано из просмотренных');
+    } else {
+      watched.push(movieId);
+      showDetailToast('✅ Отмечено как просмотренное!');
+    }
+    localStorage.setItem('mf_watched', JSON.stringify(watched));
+    updateDetailBtns();
+  };
+
+  function showDetailToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-card border border-border text-white px-5 py-3 rounded-full text-sm font-medium shadow-xl z-50';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+  }
+
+  document.addEventListener('DOMContentLoaded', updateDetailBtns);
+})();
+</script>
 
 {% endblock %}
