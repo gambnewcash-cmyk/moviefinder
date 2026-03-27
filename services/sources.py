@@ -975,8 +975,9 @@ async def get_watch_sources(
     if cached is not None:
         return {"sources": cached, "cached": True}
 
-    # Parallel requests
+    # Parallel requests - fetch JustWatch for both user country AND US (to get Netflix/Prime/etc)
     async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        extra_countries = ["US"] if country not in ("US",) else []
         tasks = [
             _fetch_justwatch(client, title, title_ru, year, country=country),
             _fetch_hdrezka(client, title, title_ru, year, media_type=media_type),
@@ -984,9 +985,23 @@ async def get_watch_sources(
             _fetch_filmix(client, title, title_ru, year, media_type=media_type),
             _fetch_lordfilm(client, title, title_ru, year, media_type=media_type),
         ]
+        if extra_countries:
+            for ec in extra_countries:
+                tasks.append(_fetch_justwatch(client, title, title_ru, year, country=ec))
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    jw_sources, hdrezka, kinogo, filmix, lordfilm = results
+    jw_sources = results[0]
+    hdrezka, kinogo, filmix, lordfilm = results[1], results[2], results[3], results[4]
+    # Merge extra JustWatch countries
+    if len(results) > 5:
+        seen_jw_names = {s.get("source_name") for s in (jw_sources if isinstance(jw_sources, list) else [])}
+        for extra_jw in results[5:]:
+            if isinstance(extra_jw, list):
+                for s in extra_jw:
+                    if s.get("source_name") not in seen_jw_names:
+                        if isinstance(jw_sources, list):
+                            jw_sources.append(s)
+                        seen_jw_names.add(s.get("source_name"))
 
     # Determine which scrapers returned nothing
     missing_services = []
