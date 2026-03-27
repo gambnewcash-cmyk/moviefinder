@@ -330,15 +330,24 @@ TMDB_GENRE_IDS = {
 }
 
 
-async def get_movies_by_genre(genre_slug: str, page: int = 1, lang: str = "en") -> dict:
+async def get_movies_by_genre(genre_slug: str, page: int = 1, lang: str = "en", sort: str = "new") -> dict:
     """Get movies by genre slug using TMDB discover API. Returns dict with pagination info."""
     genre_id = TMDB_GENRE_IDS.get(genre_slug)
     if not genre_id:
         return {"movies": [], "total_pages": 1, "current_page": 1}
+
+    sort_map = {
+        "new": "release_date.desc",
+        "rating": "vote_average.desc",
+        "popular": "popularity.desc",
+    }
+    sort_by = sort_map.get(sort, "release_date.desc")
+    vote_count_min = 50 if sort == "rating" else 5
+
     params = {
         "with_genres": genre_id,
-        "sort_by": "vote_average.desc",
-        "vote_count.gte": 200,
+        "sort_by": sort_by,
+        "vote_count.gte": vote_count_min,
         "include_adult": False,
         "page": page,
     }

@@ -417,7 +417,7 @@ async def genres_page(request: Request):
 
 
 @app.get("/genre/{slug}", response_class=HTMLResponse)
-async def genre_page(request: Request, slug: str, page: int = 1):
+async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "new"):
     lang = get_lang(request)
     t = get_translations(lang)
 
@@ -426,8 +426,10 @@ async def genre_page(request: Request, slug: str, page: int = 1):
         return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
 
     page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "new"
     try:
-        result = await get_movies_by_genre(slug, page=page, lang=lang)
+        result = await get_movies_by_genre(slug, page=page, lang=lang, sort=sort)
         movies = result["movies"]
         total_pages = result["total_pages"]
     except Exception as e:
@@ -444,6 +446,7 @@ async def genre_page(request: Request, slug: str, page: int = 1):
         "current_page": page,
         "total_pages": total_pages,
         "base_url": f"/genre/{slug}",
+        "current_sort": sort,
     })
 
 

@@ -51,6 +51,22 @@
     <p class="text-muted text-sm mt-2">{{ movies | length }} {{ t.genre_count if t else 'фильмов' }} • Страница {{ current_page }} из {{ total_pages }}</p>
   </div>
 
+  <!-- Sort buttons -->
+  <div class="flex gap-2 mb-6 flex-wrap">
+    <a href="/genre/{{ slug }}?sort=new&amp;page=1"
+       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'new' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
+      🆕 {% if lang == 'ru' %}Новые{% else %}Newest{% endif %}
+    </a>
+    <a href="/genre/{{ slug }}?sort=rating&amp;page=1"
+       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'rating' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
+      ⭐ {% if lang == 'ru' %}По рейтингу{% else %}Top Rated{% endif %}
+    </a>
+    <a href="/genre/{{ slug }}?sort=popular&amp;page=1"
+       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'popular' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
+      🔥 {% if lang == 'ru' %}Популярные{% else %}Popular{% endif %}
+    </a>
+  </div>
+
   <!-- Movie Grid -->
   {% if movies %}
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -107,17 +123,17 @@
 {% if total_pages > 1 %}
 <div class="flex justify-center items-center gap-2 mt-10 mb-6">
   {% if current_page > 1 %}
-    <a href="{{ base_url }}?page={{ current_page - 1 }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">← Назад</a>
+    <a href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page - 1 }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">← Назад</a>
   {% endif %}
   {% for p in range([1, current_page - 2]|max, [total_pages + 1, current_page + 3]|min) %}
     {% if p == current_page %}
       <span class="px-4 py-2 bg-accent text-white rounded-lg font-bold">{{ p }}</span>
     {% else %}
-      <a href="{{ base_url }}?page={{ p }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">{{ p }}</a>
+      <a href="{{ base_url }}?sort={{ current_sort }}&page={{ p }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">{{ p }}</a>
     {% endif %}
   {% endfor %}
   {% if current_page < total_pages %}
-    <a href="{{ base_url }}?page={{ current_page + 1 }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">Вперёд →</a>
+    <a href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page + 1 }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">Вперёд →</a>
   {% endif %}
 </div>
 <p class="text-center text-muted text-sm mb-8">Страница {{ current_page }} из {{ total_pages }}</p>
