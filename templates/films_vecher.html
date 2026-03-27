@@ -104,22 +104,22 @@
   </div>
 
 {% if total_pages > 1 %}
-<div class="flex justify-center items-center gap-2 mt-10 mb-6">
+<div class="flex justify-center items-center gap-1 sm:gap-2 mt-10 mb-6">
   {% if current_page > 1 %}
-    <a href="{{ base_url }}?page={{ current_page - 1 }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">← Назад</a>
+    <a href="{{ base_url }}?page={{ current_page - 1 }}" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">← Назад</a>
   {% endif %}
   {% for p in range([1, current_page - 2]|max, [total_pages + 1, current_page + 3]|min) %}
     {% if p == current_page %}
-      <span class="px-4 py-2 bg-accent text-white rounded-lg font-bold">{{ p }}</span>
+      <span class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm bg-accent text-white rounded-lg font-bold">{{ p }}</span>
     {% else %}
-      <a href="{{ base_url }}?page={{ p }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">{{ p }}</a>
+      <a href="{{ base_url }}?page={{ p }}" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">{{ p }}</a>
     {% endif %}
   {% endfor %}
   {% if current_page < total_pages %}
-    <a href="{{ base_url }}?page={{ current_page + 1 }}" class="px-4 py-2 bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">Вперёд →</a>
+    <a href="{{ base_url }}?page={{ current_page + 1 }}" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm bg-card border border-border hover:border-accent text-muted hover:text-white rounded-lg transition-all">Вперёд →</a>
   {% endif %}
 </div>
-<p class="text-center text-muted text-sm mb-8">Страница {{ current_page }} из {{ total_pages }}</p>
+<p class="text-center text-muted text-xs mb-8">Страница {{ current_page }} из {{ total_pages }}</p>
 {% endif %}
   {% else %}
   <div class="text-center py-20 text-muted">

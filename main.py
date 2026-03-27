@@ -374,6 +374,8 @@ async def top_movies_page(request: Request, page: int = 1):
         result = await get_top_2025_2026(page=page, lang=lang)
         movies = result["movies"]
         total_pages = result["total_pages"]
+        for m in movies:
+            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     except Exception as e:
         print(f"Top page error: {e}")
         movies = []
@@ -394,6 +396,8 @@ async def films_2026_page(request: Request):
     t = get_translations(lang)
     try:
         movies = await get_new_2026(lang=lang)
+        for m in movies:
+            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     except Exception as e:
         print(f"Films 2026 page error: {e}")
         movies = []
@@ -432,6 +436,8 @@ async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "ne
         result = await get_movies_by_genre(slug, page=page, lang=lang, sort=sort)
         movies = result["movies"]
         total_pages = result["total_pages"]
+        for m in movies:
+            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     except Exception as e:
         print(f"Genre page error: {e}")
         movies = []
@@ -459,6 +465,8 @@ async def films_vecher_page(request: Request, page: int = 1):
         result = await get_vecher_movies(page=page, lang=lang)
         movies = result["movies"]
         total_pages = result["total_pages"]
+        for m in movies:
+            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     except Exception as e:
         print(f"Vecher page error: {e}")
         movies = []
