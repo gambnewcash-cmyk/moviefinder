@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-from database import init_db, log_search, get_trending_searches, save_movie, get_movie_by_tmdb, get_recent_movies, get_top_rated_db
+from database import init_db, log_search, get_trending_searches, save_movie, get_movie_by_tmdb, get_recent_movies, get_top_rated_db, get_movies_by_genre_db, get_vecher_movies_db, get_movies_2026_db
 from services.tmdb import search_movies, get_movie_details, get_trending, get_top_rated, get_now_playing, get_upcoming, get_popular_movies, get_new_2026, get_popular_tv, get_oscar_winners, get_romance_comedy, get_top_horror, get_movies_by_genre, get_top_2025_2026, get_vecher_movies
 from services.sources import get_all_sources, get_watch_sources
 from services.smart_search import smart_search, get_typo_suggestions
@@ -391,22 +391,26 @@ async def top_movies_page(request: Request, page: int = 1):
 
 
 @app.get("/films/2026", response_class=HTMLResponse)
-async def films_2026_page(request: Request):
+async def films_2026_page(request: Request, page: int = 1):
     lang = get_lang(request)
     t = get_translations(lang)
+    page = max(1, page)
     try:
-        movies = await get_new_2026(lang=lang)
-        for m in movies:
-            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
+        result = get_movies_2026_db(page=page)
+        movies = result["movies"]
+        total_pages = result["total_pages"]
     except Exception as e:
-        print(f"Films 2026 page error: {e}")
+        print(f"Films 2026 page DB error: {e}")
         movies = []
+        total_pages = 1
+    for m in movies:
+        m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     return templates.TemplateResponse(request, "films_2026.html", {
         "movies": movies,
         "lang": lang,
         "t": t,
-        "current_page": 1,
-        "total_pages": 1,
+        "current_page": page,
+        "total_pages": total_pages,
         "base_url": "/films/2026",
     })
 
@@ -433,15 +437,18 @@ async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "ne
     if sort not in ("new", "rating", "popular"):
         sort = "new"
     try:
-        result = await get_movies_by_genre(slug, page=page, lang=lang, sort=sort)
+        result = get_movies_by_genre_db(genre_info["tmdb"], page=page, sort=sort)
         movies = result["movies"]
         total_pages = result["total_pages"]
-        for m in movies:
-            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
+        total = result["total"]
     except Exception as e:
-        print(f"Genre page error: {e}")
+        print(f"Genre page DB error: {e}")
         movies = []
         total_pages = 1
+        total = 0
+
+    for m in movies:
+        m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
 
     genre_name = genre_info["ru"] if lang == "ru" else genre_info["en"]
 
@@ -451,6 +458,7 @@ async def genre_page(request: Request, slug: str, page: int = 1, sort: str = "ne
         "slug": slug,
         "current_page": page,
         "total_pages": total_pages,
+        "total": total,
         "base_url": f"/genre/{slug}",
         "current_sort": sort,
     })
@@ -462,15 +470,15 @@ async def films_vecher_page(request: Request, page: int = 1):
     t = get_translations(lang)
     page = max(1, page)
     try:
-        result = await get_vecher_movies(page=page, lang=lang)
+        result = get_vecher_movies_db(page=page)
         movies = result["movies"]
         total_pages = result["total_pages"]
-        for m in movies:
-            m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     except Exception as e:
-        print(f"Vecher page error: {e}")
+        print(f"Vecher page DB error: {e}")
         movies = []
         total_pages = 1
+    for m in movies:
+        m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
     return templates.TemplateResponse(request, "films_vecher.html", {
         "movies": movies, "lang": lang, "t": t,
         "current_page": page,

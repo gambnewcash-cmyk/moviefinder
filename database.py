@@ -116,3 +116,82 @@ def get_db_connection():
     conn = _sqlite3.connect(DB_PATH)
     conn.row_factory = _sqlite3.Row
     return conn
+
+
+def get_movies_by_genre_db(genre_tmdb: str, page: int = 1, sort: str = "new", per_page: int = 20) -> dict:
+    """Get movies from local SQLite by genre with pagination and sorting."""
+    sort_map = {
+        "new": "year DESC, rating DESC",
+        "rating": "rating DESC, year DESC",
+        "popular": "rating DESC, year DESC",
+    }
+    order_by = sort_map.get(sort, "year DESC, rating DESC")
+    offset = (page - 1) * per_page
+    with get_db() as conn:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM movies WHERE genre LIKE ? AND poster_url IS NOT NULL AND poster_url != ''",
+            (f'%{genre_tmdb}%',)
+        ).fetchone()
+        total = count_row[0] if count_row else 0
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        rows = conn.execute(
+            f"SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre FROM movies WHERE genre LIKE ? AND poster_url IS NOT NULL AND poster_url != '' ORDER BY {order_by} LIMIT ? OFFSET ?",
+            (f'%{genre_tmdb}%', per_page, offset)
+        ).fetchall()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre = r
+            movies.append({
+                "tmdb_id": tmdb_id, "title": title or "", "title_ru": title_ru or "",
+                "display_title": title or "", "year": year, "rating": rating,
+                "poster_url": poster_url, "genre": genre or "", "media_type": "movie",
+            })
+        return {"movies": movies, "total_pages": total_pages, "current_page": page, "total": total}
+
+
+def get_vecher_movies_db(page: int = 1, per_page: int = 20) -> dict:
+    """Evening movies: Comedy + Drama + Romance, rating >= 7.0, from SQLite."""
+    offset = (page - 1) * per_page
+    with get_db() as conn:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM movies WHERE (genre LIKE '%Comedy%' OR genre LIKE '%Drama%' OR genre LIKE '%Romance%') AND rating >= 7.0 AND poster_url IS NOT NULL AND poster_url != ''",
+        ).fetchone()
+        total = count_row[0] if count_row else 0
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        rows = conn.execute(
+            "SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre FROM movies WHERE (genre LIKE '%Comedy%' OR genre LIKE '%Drama%' OR genre LIKE '%Romance%') AND rating >= 7.0 AND poster_url IS NOT NULL AND poster_url != '' ORDER BY rating DESC, year DESC LIMIT ? OFFSET ?",
+            (per_page, offset)
+        ).fetchall()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre = r
+            movies.append({
+                "tmdb_id": tmdb_id, "title": title or "", "title_ru": title_ru or "",
+                "display_title": title or "", "year": year, "rating": rating,
+                "poster_url": poster_url, "genre": genre or "", "media_type": "movie",
+            })
+        return {"movies": movies, "total_pages": total_pages, "current_page": page, "total": total}
+
+
+def get_movies_2026_db(page: int = 1, per_page: int = 20) -> dict:
+    """Movies from 2025-2026, sorted by rating DESC."""
+    offset = (page - 1) * per_page
+    with get_db() as conn:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM movies WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != ''",
+        ).fetchone()
+        total = count_row[0] if count_row else 0
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        rows = conn.execute(
+            "SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre FROM movies WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != '' ORDER BY year DESC, rating DESC LIMIT ? OFFSET ?",
+            (per_page, offset)
+        ).fetchall()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre = r
+            movies.append({
+                "tmdb_id": tmdb_id, "title": title or "", "title_ru": title_ru or "",
+                "display_title": title or "", "year": year, "rating": rating,
+                "poster_url": poster_url, "genre": genre or "", "media_type": "movie",
+            })
+        return {"movies": movies, "total_pages": total_pages, "current_page": page, "total": total}
