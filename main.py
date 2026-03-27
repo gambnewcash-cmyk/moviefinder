@@ -364,6 +364,11 @@ GENRE_MAP = {
 }
 
 
+@app.get("/favicon.ico")
+async def favicon():
+    from fastapi.responses import FileResponse
+    return FileResponse("static/img/favicon.ico", media_type="image/x-icon")
+
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt():
     return """User-agent: *
