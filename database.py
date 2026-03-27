@@ -178,12 +178,12 @@ def get_movies_2026_db(page: int = 1, per_page: int = 20) -> dict:
     offset = (page - 1) * per_page
     with get_db() as conn:
         count_row = conn.execute(
-            "SELECT COUNT(*) FROM movies WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != ''",
+            "SELECT COUNT(*) FROM movies WHERE year = 2026 AND poster_url IS NOT NULL AND poster_url != ''",
         ).fetchone()
         total = count_row[0] if count_row else 0
         total_pages = max(1, (total + per_page - 1) // per_page)
         rows = conn.execute(
-            "SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre FROM movies WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != '' ORDER BY year DESC, rating DESC LIMIT ? OFFSET ?",
+            "SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre FROM movies WHERE year = 2026 AND poster_url IS NOT NULL AND poster_url != '' ORDER BY year DESC, rating DESC LIMIT ? OFFSET ?",
             (per_page, offset)
         ).fetchall()
         movies = []
