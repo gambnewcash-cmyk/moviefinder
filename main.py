@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 
 from database import init_db, log_search, get_trending_searches, save_movie, get_movie_by_tmdb, get_recent_movies, get_top_rated_db
-from services.tmdb import search_movies, get_movie_details, get_trending, get_top_rated, get_now_playing, get_upcoming, get_popular_movies, get_new_2026, get_popular_tv, get_oscar_winners, get_romance_comedy, get_top_horror
+from services.tmdb import search_movies, get_movie_details, get_trending, get_top_rated, get_now_playing, get_upcoming, get_popular_movies, get_new_2026, get_popular_tv, get_oscar_winners, get_romance_comedy, get_top_horror, get_movies_by_genre, get_top_2025_2026, get_vecher_movies
 from services.sources import get_all_sources, get_watch_sources
 from services.smart_search import smart_search, get_typo_suggestions
 from translations import get_translations, detect_language
@@ -374,7 +374,7 @@ async def top_movies_page(request: Request):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
             FROM movies 
             WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != ''
             ORDER BY rating DESC, year DESC
@@ -416,7 +416,7 @@ async def films_2026_page(request: Request):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
             FROM movies 
             WHERE year = 2026 AND poster_url IS NOT NULL AND poster_url != ''
             ORDER BY rating DESC
@@ -472,7 +472,7 @@ async def genre_page(request: Request, slug: str):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
             FROM movies
             WHERE genre LIKE ? AND poster_url IS NOT NULL AND poster_url != ""
             ORDER BY rating DESC, year DESC
@@ -511,7 +511,7 @@ async def films_vecher_page(request: Request):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, 'movie' as media_type
             FROM movies
             WHERE (genre LIKE '%Comedy%' OR genre LIKE '%Drama%' OR genre LIKE '%Romance%')
             AND rating >= 7.5 AND poster_url IS NOT NULL AND poster_url != ""

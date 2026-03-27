@@ -319,3 +319,108 @@ async def get_top_horror(lang: str = "en") -> List[dict]:
         return [format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])[:20]]
     data = await fetch_tmdb("/discover/movie", params, lang=lang)
     return [format_movie(m) for m in data.get("results", [])[:20]]
+
+
+# TMDB genre ID mapping
+TMDB_GENRE_IDS = {
+    "horror": 27, "comedy": 35, "action": 28, "drama": 18,
+    "thriller": 53, "romance": 10749, "animation": 16, "documentary": 99,
+    "voennye": 10752, "fantastika": 878, "istoricheskie": 36,
+    "muzyka": 10402, "crime": 80
+}
+
+
+async def get_movies_by_genre(genre_slug: str, pages: int = 5, lang: str = "en") -> List[dict]:
+    """Get movies by genre slug using TMDB discover API."""
+    genre_id = TMDB_GENRE_IDS.get(genre_slug)
+    if not genre_id:
+        return []
+    all_movies = []
+    params = {
+        "with_genres": genre_id,
+        "sort_by": "vote_average.desc",
+        "vote_count.gte": 200,
+        "include_adult": False,
+    }
+    if lang == "ru":
+        for page in range(1, pages + 1):
+            p = dict(params)
+            p["page"] = page
+            try:
+                ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", p)
+                en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
+                all_movies.extend([format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])])
+            except Exception:
+                break
+        return all_movies[:100]
+    for page in range(1, pages + 1):
+        p = dict(params)
+        p["page"] = page
+        try:
+            data = await fetch_tmdb("/discover/movie", p, lang=lang)
+            all_movies.extend([format_movie(m) for m in data.get("results", [])])
+        except Exception:
+            break
+    return all_movies[:100]
+
+
+async def get_top_2025_2026(lang: str = "en") -> List[dict]:
+    """Top 100 movies from 2025-2026 by rating."""
+    params = {
+        "sort_by": "vote_average.desc",
+        "vote_count.gte": 100,
+        "primary_release_date.gte": "2025-01-01",
+        "include_adult": False,
+    }
+    all_movies = []
+    if lang == "ru":
+        for page in range(1, 6):
+            p = dict(params)
+            p["page"] = page
+            try:
+                ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", p)
+                en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
+                all_movies.extend([format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])])
+            except Exception:
+                break
+        return all_movies[:100]
+    for page in range(1, 6):
+        p = dict(params)
+        p["page"] = page
+        try:
+            data = await fetch_tmdb("/discover/movie", p, lang=lang)
+            all_movies.extend([format_movie(m) for m in data.get("results", [])])
+        except Exception:
+            break
+    return all_movies[:100]
+
+
+async def get_vecher_movies(lang: str = "en") -> List[dict]:
+    """Cozy evening movies: Comedy + Drama + Romance, rating 7+."""
+    all_movies = []
+    for genre_id in [35, 18, 10749]:  # Comedy, Drama, Romance
+        params = {
+            "with_genres": genre_id,
+            "sort_by": "vote_average.desc",
+            "vote_count.gte": 500,
+            "include_adult": False,
+            "page": 1,
+        }
+        try:
+            if lang == "ru":
+                ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", params)
+                en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
+                all_movies.extend([format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])])
+            else:
+                data = await fetch_tmdb("/discover/movie", params, lang=lang)
+                all_movies.extend([format_movie(m) for m in data.get("results", [])])
+        except Exception:
+            pass
+    # Sort by rating, deduplicate
+    seen = set()
+    result = []
+    for m in sorted(all_movies, key=lambda x: x.get("rating", 0), reverse=True):
+        if m.get("tmdb_id") not in seen:
+            seen.add(m.get("tmdb_id"))
+            result.append(m)
+    return result[:100]
