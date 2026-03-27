@@ -376,7 +376,7 @@ async def top_movies_page(request: Request):
         cur.execute("""
             SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
             FROM movies 
-            WHERE rating >= 8.0 AND poster_url IS NOT NULL AND poster_url != ''
+            WHERE year >= 2025 AND poster_url IS NOT NULL AND poster_url != ''
             ORDER BY rating DESC, year DESC
             LIMIT 100
         """)

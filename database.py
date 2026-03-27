@@ -109,3 +109,10 @@ def get_watch_sources(movie_db_id: int):
             SELECT * FROM watch_sources WHERE movie_id = ? AND is_available = 1
         """, (movie_db_id,)).fetchall()
         return [dict(r) for r in rows]
+
+
+def get_db_connection():
+    import sqlite3 as _sqlite3
+    conn = _sqlite3.connect(DB_PATH)
+    conn.row_factory = _sqlite3.Row
+    return conn
