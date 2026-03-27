@@ -487,7 +487,7 @@ def get_translations(lang: str) -> dict:
 def detect_language(accept_language: str) -> str:
     """Detect language from Accept-Language header. Returns 'ru' or 'en'."""
     if not accept_language:
-        return "en"
+        return "ru"  # Default to Russian for CIS audience
     # Parse primary languages
     parts = accept_language.lower().replace(" ", "").split(",")
     for part in parts:
