@@ -68,6 +68,22 @@
   </div>
 
 
+  <!-- Sort buttons -->
+  <div class="flex gap-2 mb-6 flex-wrap">
+    <a href="/genre/{{ slug }}?sort=new&amp;page=1"
+       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'new' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
+      🆕 {% if lang == 'ru' %}Новые{% else %}Newest{% endif %}
+    </a>
+    <a href="/genre/{{ slug }}?sort=rating&amp;page=1"
+       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'rating' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
+      ⭐ {% if lang == 'ru' %}По рейтингу{% else %}Top Rated{% endif %}
+    </a>
+    <a href="/genre/{{ slug }}?sort=popular&amp;page=1"
+       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'popular' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
+      🔥 {% if lang == 'ru' %}Популярные{% else %}Popular{% endif %}
+    </a>
+  </div>
+
 <!-- SEO Text -->
 {% set genre_seo_texts_ru = {
   "horror": "Раздел ужасов — это место, где страх оживает на экране и держит в напряжении до последней минуты. Здесь собраны самые пугающие, атмосферные и захватывающие фильмы, которые не дадут тебе спокойно уснуть.",
@@ -107,21 +123,7 @@
 {% if seo_text %}
 <p class="text-muted text-sm leading-relaxed max-w-2xl mb-6">{{ seo_text }}</p>
 {% endif %}
-  <!-- Sort buttons -->
-  <div class="flex gap-2 mb-6 flex-wrap">
-    <a href="/genre/{{ slug }}?sort=new&amp;page=1"
-       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'new' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
-      🆕 {% if lang == 'ru' %}Новые{% else %}Newest{% endif %}
-    </a>
-    <a href="/genre/{{ slug }}?sort=rating&amp;page=1"
-       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'rating' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
-      ⭐ {% if lang == 'ru' %}По рейтингу{% else %}Top Rated{% endif %}
-    </a>
-    <a href="/genre/{{ slug }}?sort=popular&amp;page=1"
-       class="px-4 py-2 rounded-full text-sm transition-all {% if current_sort == 'popular' %}bg-accent text-white{% else %}bg-card border border-border text-muted hover:border-accent hover:text-white{% endif %}">
-      🔥 {% if lang == 'ru' %}Популярные{% else %}Popular{% endif %}
-    </a>
-  </div>
+
 
   <!-- Movie Grid -->
   {% if movies %}

@@ -371,16 +371,22 @@ Sitemap: https://moviefinders.net/sitemap-index.xml
 
 
 @app.get("/top", response_class=HTMLResponse)
-async def top_movies_page(request: Request, page: int = 1):
+async def top_movies_page(request: Request, page: int = 1, sort: str = "new"):
     lang = get_lang(request)
     t = get_translations(lang)
     page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "new"
     try:
         result = await get_top_2025_2026(page=page, lang=lang)
         movies = result["movies"]
         total_pages = result["total_pages"]
         for m in movies:
             m["display_title"] = m.get("title_ru") or m.get("title", "") if lang == "ru" else m.get("title", "")
+        if sort == "rating":
+            movies = sorted(movies, key=lambda x: x.get("rating") or 0, reverse=True)
+        elif sort == "popular":
+            movies = sorted(movies, key=lambda x: x.get("vote_count") or x.get("rating") or 0, reverse=True)
     except Exception as e:
         print(f"Top page error: {e}")
         movies = []
@@ -391,17 +397,20 @@ async def top_movies_page(request: Request, page: int = 1):
         "t": t,
         "current_page": page,
         "total_pages": total_pages,
+        "current_sort": sort,
         "base_url": "/top",
     })
 
 
 @app.get("/films/2026", response_class=HTMLResponse)
-async def films_2026_page(request: Request, page: int = 1):
+async def films_2026_page(request: Request, page: int = 1, sort: str = "new"):
     lang = get_lang(request)
     t = get_translations(lang)
     page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "new"
     try:
-        result = get_movies_2026_db(page=page)
+        result = get_movies_2026_db(page=page, sort=sort)
         movies = result["movies"]
         total_pages = result["total_pages"]
     except Exception as e:
@@ -416,6 +425,7 @@ async def films_2026_page(request: Request, page: int = 1):
         "t": t,
         "current_page": page,
         "total_pages": total_pages,
+        "current_sort": sort,
         "base_url": "/films/2026",
     })
 
