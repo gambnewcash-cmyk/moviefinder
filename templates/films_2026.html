@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.films2026_page_title if t else 'New Movies 2026 Watch Online Free | MovieFinder' }}{% endblock %}
+
+{% block meta_description %}{{ t.films2026_page_desc if t else 'New movies 2026 — watch online free without registration. Best new releases of 2026.' }}{% endblock %}
+
+{% block head %}
+<link rel="canonical" href="https://moviefinders.net/films/2026"/>
+<meta property="og:title" content="{{ t.films2026_page_title if t else 'New Movies 2026 Watch Online Free | MovieFinder' }}"/>
+<meta property="og:description" content="{{ t.films2026_page_desc if t else 'New movies 2026 — watch online free without registration. Best new releases of 2026.' }}"/>
+<meta property="og:url" content="https://moviefinders.net/films/2026"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "{{ t.films2026_page_h1 if t else 'New Movies 2026' }}",
+  "description": "{{ t.films2026_page_desc if t else 'New movies 2026' }}",
+  "url": "https://moviefinders.net/films/2026",
+  "numberOfItems": {{ movies|length }},
+  "itemListElement": [
+    {% for m in movies %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "item": {
+        "@type": "Movie",
+        "name": "{{ m.display_title | replace('"', '\\"') }}",
+        "url": "https://moviefinders.net/movie/{{ m.tmdb_id }}",
+        {% if m.poster_url %}"image": "{{ m.poster_url }}",{% endif %}
+        "datePublished": "2026"
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <h1 class="text-3xl sm:text-4xl font-black text-white mb-3">
+      {{ t.films2026_page_h1 if t else 'New Movies 2026 — Watch Online' }}
+    </h1>
+    <p class="text-muted text-base max-w-2xl mx-auto">
+      {{ t.films2026_page_desc if t else 'New movies 2026 — watch online free without registration. Best new releases of 2026.' }}
+    </p>
+  </div>
+
+  <!-- Movie Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    {% for m in movies %}
+    <a href="/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}" class="movie-card relative block rounded-xl overflow-hidden bg-card border border-border group cursor-pointer">
+      <div class="relative w-full" style="padding-bottom:150%">
+        {% if m.poster_url %}
+        <img src="{{ m.poster_url }}" alt="{{ m.display_title }}"
+          class="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+        <div class="absolute inset-0 flex-col items-center justify-center text-center px-3" style="display:none; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)">
+          <div class="text-4xl mb-2">🎬</div>
+          <p class="text-white/70 text-xs font-medium leading-tight">{{ m.display_title }}</p>
+        </div>
+        {% else %}
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-3" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)">
+          <div class="text-4xl mb-2">🎬</div>
+          <p class="text-white/70 text-xs font-medium leading-tight line-clamp-3">{{ m.display_title }}</p>
+        </div>
+        {% endif %}
+        <!-- Rating badge -->
+        {% if m.rating and m.rating > 0 %}
+        <div class="absolute top-2 right-2 bg-black/80 text-yellow-400 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+          ⭐ {{ "%.1f"|format(m.rating) }}
+        </div>
+        {% endif %}
+        <!-- New 2026 badge -->
+        <div class="absolute top-2 left-2 bg-accent/90 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          2026
+        </div>
+        <!-- Gradient overlay -->
+        <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent"></div>
+        <!-- Hover button -->
+        <div class="find-btn absolute bottom-10 left-0 right-0 flex justify-center px-3">
+          <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ {{ t.find_btn if t else 'Watch' }}</span>
+        </div>
+        <!-- Title overlay -->
+        <div class="absolute bottom-0 left-0 right-0 p-2">
+          <p class="text-white text-xs font-semibold line-clamp-2 leading-tight">{{ m.display_title }}</p>
+          {% if m.year %}<p class="text-muted text-xs mt-0.5">{{ m.year }}</p>{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if not movies %}
+  <div class="text-center text-muted py-16">
+    <div class="text-5xl mb-4">🎬</div>
+    <p>No movies found for 2026 yet. Check back soon!</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

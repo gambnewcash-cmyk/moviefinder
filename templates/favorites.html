@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Избранное — MovieFinder{% endblock %}
+{% block title %}{{ t.fav_page_title if t else "❤️ Favorites" }} — MovieFinder{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
-  <h1 class="text-3xl font-black mb-2">❤️ Избранное</h1>
-  <p class="text-muted mb-8" id="fav-count">Загрузка...</p>
+  <h1 class="text-3xl font-black mb-2">{{ t.fav_page_title if t else "❤️ Favorites" }}</h1>
+  <p class="text-muted mb-8" id="fav-count">{{ t.fav_count_loading if t else "Loading..." }}</p>
   
   <div id="fav-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     <!-- filled by JS -->
@@ -11,13 +11,15 @@
   
   <div id="fav-empty" class="hidden text-center py-20">
     <div class="text-6xl mb-4">💔</div>
-    <p class="text-white text-xl font-bold mb-2">Избранное пусто</p>
-    <p class="text-muted mb-6">Добавляй фильмы нажимая ❤️ на карточке</p>
-    <a href="/" class="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors">На главную</a>
+    <p class="text-white text-xl font-bold mb-2">{{ t.fav_empty_title if t else "No favorites yet" }}</p>
+    <p class="text-muted mb-6">{{ t.fav_empty_desc if t else "Add movies by clicking ❤️ on a card" }}</p>
+    <a href="/" class="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors">{{ t.fav_go_home if t else "Go Home" }}</a>
   </div>
   
+  <span id="i18n-fav-movies" class="hidden">{{ t.fav_count_movies if t else "movies" }}</span>
+  <span id="i18n-none-watched" class="hidden">{{ t.fav_none_watched if t else "No watched movies" }}</span>
   <div id="watched-section" class="mt-12">
-    <h2 class="text-2xl font-bold mb-2">✅ Просмотренные</h2>
+    <h2 class="text-2xl font-bold mb-2">{{ t.fav_watched_title if t else "✅ Watched" }}</h2>
     <p class="text-muted mb-6" id="watched-count"></p>
     <div id="watched-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
   </div>
@@ -41,7 +43,7 @@ function renderFavorites() {
     return;
   }
   
-  count.textContent = favs.length + ' фильмов';
+  count.textContent = favs.length + ' ' + document.getElementById('i18n-fav-movies').textContent;
   grid.innerHTML = favs.map(f => `
     <div class="relative group">
       <a href="/movie/${f.id}${f.mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-border">
@@ -69,9 +71,9 @@ function renderWatched() {
   const watched = getWatched();
   const el = document.getElementById('watched-count');
   const list = document.getElementById('watched-list');
-  el.textContent = watched.length + ' фильмов';
+  el.textContent = watched.length + ' ' + document.getElementById('i18n-fav-movies').textContent;
   if (watched.length === 0) {
-    list.innerHTML = '<p class="text-muted text-sm">Нет просмотренных фильмов</p>';
+    list.innerHTML = '<p class="text-muted text-sm">' + document.getElementById('i18n-none-watched').textContent + '</p>';
     return;
   }
   list.innerHTML = watched.map(w => {

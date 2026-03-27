@@ -10,12 +10,12 @@
 
   <!-- SEO Meta -->
   <meta name="description" content="{% block meta_description %}Найди где смотреть любой фильм или сериал онлайн. Сравни стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka и 20+ платформ.{% endblock %}"/>
-  <link rel="canonical" href="{% block canonical %}https://moviefinder-production.up.railway.app{{ request.url.path }}{% endblock %}"/>
+  <link rel="canonical" href="{% block canonical %}https://moviefinders.net{{ request.url.path }}{% endblock %}"/>
 
   <!-- hreflang multilingual -->
-  <link rel="alternate" hreflang="ru" href="{% block hreflang_ru %}https://moviefinder-production.up.railway.app{{ request.url.path }}{% endblock %}"/>
-  <link rel="alternate" hreflang="en" href="{% block hreflang_en %}https://moviefinder-production.up.railway.app{{ request.url.path }}?lang=en{% endblock %}"/>
-  <link rel="alternate" hreflang="x-default" href="https://moviefinder-production.up.railway.app{{ request.url.path }}"/>
+  <link rel="alternate" hreflang="ru" href="{% block hreflang_ru %}https://moviefinders.net{{ request.url.path }}{% endblock %}"/>
+  <link rel="alternate" hreflang="en" href="{% block hreflang_en %}https://moviefinders.net{{ request.url.path }}?lang=en{% endblock %}"/>
+  <link rel="alternate" hreflang="x-default" href="https://moviefinders.net{{ request.url.path }}"/>
 
   <!-- Yandex Turbo hint -->
   <link rel="alternate" type="application/rss+xml" title="Turbo" href="/turbo.rss"/>
@@ -24,8 +24,8 @@
   <meta property="og:type" content="{% block og_type %}website{% endblock %}"/>
   <meta property="og:title" content="{% block og_title %}{% block og_title_inner %}MovieFinder — Найди где смотреть фильм{% endblock %}{% endblock %}"/>
   <meta property="og:description" content="{% block og_description %}Найди где смотреть любой фильм или сериал онлайн. Кинопоиск, Okko, IVI, HDRezka и другие платформы.{% endblock %}"/>
-  <meta property="og:url" content="https://moviefinder-production.up.railway.app{{ request.url.path }}"/>
-  <meta property="og:image" content="{% block og_image %}https://moviefinder-production.up.railway.app/static/img/og-default.jpg{% endblock %}"/>
+  <meta property="og:url" content="https://moviefinders.net{{ request.url.path }}"/>
+  <meta property="og:image" content="{% block og_image %}https://moviefinders.net/static/img/og-default.jpg{% endblock %}"/>
   <meta property="og:site_name" content="MovieFinder"/>
   <meta property="og:locale" content="{% if lang == 'en' %}en_US{% else %}ru_RU{% endif %}"/>
 
@@ -33,7 +33,7 @@
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="{% block twitter_title %}MovieFinder — Найди где смотреть фильм{% endblock %}"/>
   <meta name="twitter:description" content="{% block twitter_description %}Найди где смотреть любой фильм или сериал онлайн бесплатно{% endblock %}"/>
-  <meta name="twitter:image" content="{% block twitter_image %}https://moviefinder-production.up.railway.app/static/img/og-default.jpg{% endblock %}"/>
+  <meta name="twitter:image" content="{% block twitter_image %}https://moviefinders.net/static/img/og-default.jpg{% endblock %}"/>
 
   <!-- Structured Data block for child templates -->
   {% block structured_data %}{% endblock %}
@@ -84,20 +84,23 @@
     .lang-btn:not(.active):hover { border-color: #aaa; color: #fff; }
   </style>
   {% block head %}{% endblock %}
+    <meta name="google-site-verification" content="yWlBQIqXT4wfGISFLq1s5kc5DhKkRmk8aTINTK4neVg" />
 </head>
 <body class="min-h-screen">
 
 <!-- NAV -->
 <nav class="sticky top-0 z-50 bg-bg/95 backdrop-blur border-b border-border">
-  <div class="max-w-7xl mx-auto px-4 h-14 flex items-center gap-6">
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 h-12 sm:h-14 flex items-center gap-2 sm:gap-6">
     <a href="/" class="flex items-center gap-2 font-black text-xl tracking-tight">
       <span class="text-accent">▶</span>
       <span>Movie<span class="text-accent">Finder</span></span>
     </a>
 
     <div class="ml-auto flex items-center gap-3">
-      <a href="/ai-search" class="text-sm text-muted hover:text-white transition flex items-center gap-1">🤖 {{ t.ai_search if t else 'Поиск через AI' }}</a>
-      <a href="/favorites" class="text-sm text-muted hover:text-white transition flex items-center gap-1">❤️ Избранное</a>
+      <a href="/top" class="text-sm text-muted hover:text-white transition flex items-center gap-1">🏆 <span class="hidden sm:inline">{{ t.top_nav if t else 'Топ 100' }}</span></a>
+      <a href="/films/2026" class="text-sm text-muted hover:text-white transition flex items-center gap-1">🆕 <span class="hidden sm:inline">{{ t.films2026_nav if t else 'Фильмы 2026' }}</span></a>
+      <a href="/ai-search" class="text-sm text-muted hover:text-white transition flex items-center gap-1">🤖 <span class="hidden sm:inline">{{ t.ai_search if t else 'Поиск через AI' }}</span></a>
+      <a href="/favorites" class="text-sm text-muted hover:text-white transition flex items-center gap-1">❤️ <span class="hidden sm:inline">{{ t.favorites if t else "Favorites" }}</span></a>
 
       <!-- Language Switcher -->
       <div class="flex items-center gap-1">

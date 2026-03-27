@@ -868,7 +868,7 @@ async def _fetch_perplexity_fallback(
                 "Content-Type": "application/json",
             },
             json={
-                "model": "sonar",
+                "model": "sonar-small",
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 500,
             },
@@ -997,7 +997,8 @@ async def get_watch_sources(
 
     # Perplexity fallback for missing scrapers
     perplexity_results: List[Dict] = []
-    if missing_services:
+    # Only call Perplexity when ALL 4 scrapers found nothing (cost saving)
+    if len(missing_services) >= 3:
         async with httpx.AsyncClient(verify=False, follow_redirects=True) as px_client:
             perplexity_results = await _fetch_perplexity_fallback(
                 px_client, title, title_ru, year, missing_services

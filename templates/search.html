@@ -1,5 +1,38 @@
 {% extends "base.html" %}
-{% block title %}{% if query %}{{ query }} — {% endif %}{{ t.search_results if t else 'Search' }} · MovieFinder{% endblock %}
+{% block title %}{% if query %}{{ query }} — {% endif %}{{ t.search_results if t else 'Search' }} · MovieFinder
+<div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold z-50 transform translate-y-10 opacity-0 transition-all duration-300 pointer-events-none"></div>
+<script>
+const _si18n = {
+  toast_removed_fav: "{{ t.toast_removed_fav if t else 'Removed from favorites' }}",
+  toast_added_fav: "{{ t.toast_added_fav if t else '❤️ Added to favorites!' }}",
+  toast_removed_watched: "{{ t.toast_removed_watched if t else 'Removed from watched' }}",
+  toast_added_watched: "{{ t.toast_added_watched if t else '✅ Marked as watched!' }}",
+};
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove('translate-y-10', 'opacity-0');
+  el.classList.add('translate-y-0', 'opacity-100');
+  setTimeout(() => { el.classList.add('translate-y-10', 'opacity-0'); el.classList.remove('translate-y-0', 'opacity-100'); }, 2500);
+}
+function toggleFavorite(id, title, poster, year, mediaType) {
+  let favs = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const idx = favs.findIndex(f => f.id == id);
+  if (idx >= 0) { favs.splice(idx, 1); showToast(_si18n.toast_removed_fav); }
+  else { favs.push({id, title, poster, year, mediaType: mediaType || 'movie'}); showToast(_si18n.toast_added_fav); }
+  localStorage.setItem('favorites', JSON.stringify(favs));
+}
+function toggleWatched(id, title, poster, year, mediaType) {
+  let watched = JSON.parse(localStorage.getItem('watched') || '[]');
+  const idx = watched.findIndex(f => f.id == id);
+  if (idx >= 0) { watched.splice(idx, 1); showToast(_si18n.toast_removed_watched); }
+  else { watched.push({id, title, poster: poster||'', year: year||'', mediaType: mediaType||'movie'}); showToast(_si18n.toast_added_watched); }
+  localStorage.setItem('watched', JSON.stringify(watched));
+}
+</script>
+
+{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10">
@@ -57,9 +90,7 @@
       <div class="inline-flex items-center gap-2 bg-card border border-border px-5 py-2 rounded-full">
         <span class="text-accent font-bold">🤖</span>
         <span class="text-white font-medium">{{ t.smart_found if t else 'Found' }} <strong>{{ smart_count }}</strong> {{ t.smart_movies if t else 'movies' }}</span>
-        {% if smart_description %}
-        <span class="text-muted">· {{ smart_description }}</span>
-        {% endif %}
+
       </div>
     </div>
     {% else %}
@@ -76,7 +107,7 @@
   <div class="flex flex-wrap gap-3 mb-8" id="filtersBar">
     <select id="filterGenre" onchange="applyFilters()"
       class="bg-card border border-border text-sm text-muted rounded-full px-4 py-2 focus:outline-none focus:border-accent cursor-pointer">
-      <option value="">All Genres</option>
+      <option value="">{{ t.filter_all_genres if t else "All Genres" }}</option>
       <option value="Action">Action</option>
       <option value="Comedy">Comedy</option>
       <option value="Drama">Drama</option>
@@ -90,7 +121,7 @@
     </select>
     <select id="filterYear" onchange="applyFilters()"
       class="bg-card border border-border text-sm text-muted rounded-full px-4 py-2 focus:outline-none focus:border-accent cursor-pointer">
-      <option value="">All Years</option>
+      <option value="">{{ t.filter_all_years if t else "All Years" }}</option>
       <option value="2020s">2020s</option>
       <option value="2010s">2010s</option>
       <option value="2000s">2000s</option>
@@ -99,19 +130,19 @@
     </select>
     <select id="filterRating" onchange="applyFilters()"
       class="bg-card border border-border text-sm text-muted rounded-full px-4 py-2 focus:outline-none focus:border-accent cursor-pointer">
-      <option value="">Any Rating</option>
+      <option value="">{{ t.filter_any_rating if t else "Any Rating" }}</option>
       <option value="8">8+ ⭐⭐⭐⭐</option>
       <option value="7">7+</option>
       <option value="6">6+</option>
     </select>
-    <button onclick="clearFilters()" class="text-sm text-muted hover:text-white transition-colors px-2">Clear</button>
+    <button onclick="clearFilters()" class="text-sm text-muted hover:text-white transition-colors px-2">{{ t.filter_clear if t else "Clear" }}</button>
   </div>
 
   <!-- Results grid -->
   {% if results %}
   <div id="resultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     {% for m in results %}
-    <a href="/movie/{{ m.tmdb_id }}"
+    <a href="/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}"
        class="movie-card relative rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block fade-in"
        data-genre="{{ m.genre or '' }}"
        data-year="{{ m.year or '' }}"
@@ -135,7 +166,7 @@
           <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ {{ t.find_btn if t else 'Find' }}</span>
         </div>
         <div class="absolute bottom-0 left-0 right-0 p-3">
-          <p class="text-white text-sm font-semibold line-clamp-2 leading-tight">{{ m.title }}</p>
+          <p class="text-white text-sm font-semibold line-clamp-2 leading-tight">{{ m.display_title if m.display_title else m.title }}</p>
           <div class="flex items-center gap-2 mt-1">
             {% if m.year %}<span class="text-muted text-xs">{{ m.year }}</span>{% endif %}
             {% if m.genre %}<span class="text-muted text-xs truncate">{{ m.genre.split(',')[0] }}</span>{% endif %}

@@ -15,6 +15,16 @@ from translations import get_translations, detect_language
 
 app = FastAPI(title="MovieFinder")
 
+
+@app.get("/yandex_afadf407fdf7e97f.html")
+async def yandex_verify():
+    return HTMLResponse('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body>Verification: afadf407fdf7e97f</body></html>')
+
+@app.get("/googlef7a33d45345493f6.html", response_class=PlainTextResponse)
+async def google_verify():
+    return "google-site-verification: googlef7a33d45345493f6.html"
+
+
 BASE_DIR = os.path.dirname(__file__)
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
@@ -127,6 +137,12 @@ async def search_page(request: Request, q: str = ""):
         log_search(q)
         try:
             results = await search_movies(q, lang=lang)
+            # Set display title based on language
+            for m in results:
+                if lang == "ru" and m.get("title_ru"):
+                    m["display_title"] = m["title_ru"]
+                else:
+                    m["display_title"] = m["title"]
         except Exception as e:
             print(f"Search error: {e}")
     return templates.TemplateResponse(request, "search.html", {
@@ -201,7 +217,12 @@ async def smart_search_page(request: Request, q: str = ""):
     result = {"results": [], "description": "", "count": 0}
     if q:
         log_search(q)
-        result = await smart_search(q)
+        result = await smart_search(q, lang=lang)
+        for m in result["results"]:
+            if lang == "ru" and m.get("title_ru"):
+                m["display_title"] = m["title_ru"]
+            else:
+                m["display_title"] = m["title"]
     return templates.TemplateResponse(request, "search.html", {
         "query": q,
         "results": result["results"],
@@ -220,7 +241,7 @@ async def ai_search_page(request: Request, q: str = ""):
     result = {"results": [], "description": "", "count": 0}
     if q:
         log_search(q)
-        result = await smart_search(q)
+        result = await smart_search(q, lang=lang)
     return templates.TemplateResponse(request, "ai_search.html", {
         "query": q,
         "results": result["results"],
@@ -313,7 +334,7 @@ async def api_sources(
 # SEO ROUTES
 # ============================================================
 
-BASE_URL = "https://moviefinder-production.up.railway.app"
+BASE_URL = "https://moviefinders.net"
 SITEMAP_CHUNK_SIZE = 10000
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
@@ -321,10 +342,94 @@ async def robots_txt():
     return """User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /static/
 
-Sitemap: https://moviefinder-production.up.railway.app/sitemap-index.xml
+Sitemap: https://moviefinders.net/sitemap-index.xml
 """
+
+
+
+@app.get("/top", response_class=HTMLResponse)
+async def top_movies_page(request: Request):
+    lang = get_lang(request)
+    t = get_translations(lang)
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            FROM movies 
+            WHERE rating >= 8.0 AND poster_url IS NOT NULL AND poster_url != ''
+            ORDER BY rating DESC, year DESC
+            LIMIT 100
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
+            display_title = title_ru if lang == "ru" and title_ru else title
+            movies.append({
+                "tmdb_id": tmdb_id,
+                "title": title,
+                "title_ru": title_ru,
+                "display_title": display_title,
+                "year": year,
+                "rating": rating,
+                "poster_url": poster_url,
+                "genre": genre,
+                "media_type": media_type or "movie"
+            })
+    except Exception as e:
+        print(f"Top page error: {e}")
+        movies = []
+    return templates.TemplateResponse(request, "top.html", {
+        "movies": movies,
+        "lang": lang,
+        "t": t,
+    })
+
+
+@app.get("/films/2026", response_class=HTMLResponse)
+async def films_2026_page(request: Request):
+    lang = get_lang(request)
+    t = get_translations(lang)
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            FROM movies 
+            WHERE year = 2026 AND poster_url IS NOT NULL AND poster_url != ''
+            ORDER BY rating DESC
+            LIMIT 100
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
+            display_title = title_ru if lang == "ru" and title_ru else title
+            movies.append({
+                "tmdb_id": tmdb_id,
+                "title": title,
+                "title_ru": title_ru,
+                "display_title": display_title,
+                "year": year,
+                "rating": rating,
+                "poster_url": poster_url,
+                "genre": genre,
+                "media_type": media_type or "movie"
+            })
+    except Exception as e:
+        print(f"Films 2026 page error: {e}")
+        movies = []
+    return templates.TemplateResponse(request, "films_2026.html", {
+        "movies": movies,
+        "lang": lang,
+        "t": t,
+    })
 
 @app.get("/sitemap-index.xml")
 async def sitemap_index():
@@ -358,6 +463,8 @@ async def sitemap_static():
     static_pages = [
         ("/", "1.0", "daily"),
         ("/ai-search", "0.9", "weekly"),
+        ("/top", "0.9", "weekly"),
+        ("/films/2026", "0.9", "daily"),
         ("/favorites", "0.5", "monthly"),
     ]
     

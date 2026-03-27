@@ -44,6 +44,7 @@ def format_movie(m: dict, en_title: Optional[str] = None) -> dict:
         "rating": round(m.get("vote_average", 0), 1),
         "poster_url": f"{IMAGE_BASE}{poster}" if poster else None,
         "genre": genre_str,
+        "vote_count": m.get("vote_count"),
         "description": m.get("overview", ""),
         "description_ru": m.get("overview", ""),
         "runtime": m.get("runtime"),

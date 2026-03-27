@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — где смотреть онлайн | MovieFinder{% endblock %}
+{% block title %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — {{ t.watch_online_free if t else "смотреть онлайн бесплатно" }} | MovieFinder{% endblock %}
 
-{% block meta_description %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. {% if movie.genre %}Жанр: {{ movie.genre }}. {% endif %}Все стриминговые сервисы и бесплатные источники на одной странице — Кинопоиск, Okko, IVI, HDRezka.{% endblock %}
+{% block meta_description %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. {% if movie.genres_list %}Жанр: {{ movie.genres_list[:2] | join(", ") }}. {% elif movie.genre %}Жанр: {{ movie.genre.split(", ")[:2] | join(", ") }}. {% endif %}Все стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka.{% endblock %}
 
 {% block og_type %}video.movie{% endblock %}
-{% block og_image %}{{ movie.poster_url or 'https://moviefinder-production.up.railway.app/static/img/og-default.jpg' }}{% endblock %}
+{% block og_image %}{{ movie.poster_url or 'https://moviefinders.net/static/img/og-default.jpg' }}{% endblock %}
 {% block og_description %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — найди где смотреть онлайн. Кинопоиск, Okko, IVI, HDRezka и другие платформы.{% endblock %}
 {% block og_title_inner %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — MovieFinder{% endblock %}
 {% block twitter_title %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — где смотреть онлайн{% endblock %}
 {% block twitter_description %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. Все платформы на одной странице.{% endblock %}
-{% block twitter_image %}{{ movie.poster_url or 'https://moviefinder-production.up.railway.app/static/img/og-default.jpg' }}{% endblock %}
-{% block canonical %}https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}{% endblock %}
-{% block hreflang_ru %}https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}?lang=ru{% endblock %}
-{% block hreflang_en %}https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}?lang=en{% endblock %}
+{% block twitter_image %}{{ movie.poster_url or 'https://moviefinders.net/static/img/og-default.jpg' }}{% endblock %}
+{% block canonical %}https://moviefinders.net/movie/{{ movie.tmdb_id }}{% endblock %}
+{% block hreflang_ru %}https://moviefinders.net/movie/{{ movie.tmdb_id }}?lang=ru{% endblock %}
+{% block hreflang_en %}https://moviefinders.net/movie/{{ movie.tmdb_id }}?lang=en{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -25,12 +25,13 @@
   {% if movie.description %}"description": "{{ movie.description | truncate(300) | replace('"', ' ') | replace('
 ', ' ') }}",{% endif %}
   {% if movie.poster_url %}"image": "{{ movie.poster_url }}",{% endif %}
-  {% if movie.genre %}"genre": {{ movie.genre.split(', ') | tojson }},{% endif %}
-  {% if movie.rating and movie.rating > 0 %}"aggregateRating": {"@type": "AggregateRating", "ratingValue": "{{ '%.1f' | format(movie.rating) }}", "bestRating": "10", "ratingCount": "1000"},{% endif %}
-  "url": "https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}",
+  {% if movie.genres_list %}"genre": {{ movie.genres_list | tojson }},{% elif movie.genre %}"genre": {{ movie.genre.split(', ') | tojson }},{% endif %}
+  {% if movie.rating and movie.rating > 0 %}"aggregateRating": {"@type": "AggregateRating", "ratingValue": "{{ '%.1f' | format(movie.rating) }}", "bestRating": "10", "ratingCount": "{{ movie.vote_count or 1000 }}"},{% endif %}
+  {% if movie.cast and movie.cast|length > 0 %}"actor": [{% for a in movie.cast[:5] %}{"@type": "Person", "name": "{{ a.name | replace('"', ' ') }}"}{% if not loop.last %},{% endif %}{% endfor %}],{% endif %}
+  "url": "https://moviefinders.net/movie/{{ movie.tmdb_id }}",
   "potentialAction": {
     "@type": "WatchAction",
-    "target": "https://moviefinder-production.up.railway.app/movie/{{ movie.tmdb_id }}"
+    "target": "https://moviefinders.net/movie/{{ movie.tmdb_id }}"
   }
 }
 </script>
@@ -61,25 +62,25 @@
 <!-- HERO -->
 <div class="hero-backdrop min-h-[420px] flex items-end pb-0">
   <div class="max-w-7xl mx-auto px-4 w-full">
-    <div class="flex flex-col md:flex-row gap-8 pb-0 pt-10">
+    <div class="flex flex-col md:flex-row gap-4 sm:gap-8 pb-0 pt-6 sm:pt-10">
       <!-- Poster -->
       <div class="shrink-0">
-        <div class="w-52 rounded-2xl overflow-hidden shadow-2xl border border-border">
+        <div class="w-36 sm:w-52 rounded-2xl overflow-hidden shadow-2xl border border-border">
           {% if movie.poster_url %}
           <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-auto"/>
           {% else %}
-          <div class="w-52 h-80 flex items-center justify-center bg-card text-muted text-5xl">🎬</div>
+          <div class="w-36 h-56 sm:w-52 sm:h-80 flex items-center justify-center bg-card text-muted text-5xl">🎬</div>
           {% endif %}
         </div>
       </div>
       <!-- Info -->
       <div class="flex-1 pb-8">
         {% if movie.media_type == 'tv' %}
-        <span class="inline-flex items-center bg-blue-900/40 text-blue-400 border border-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">📺 Сериал</span>
+        <span class="inline-flex items-center bg-blue-900/40 text-blue-400 border border-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">{{ t.movie_series_badge if t else "📺 Series" }}</span>
         {% else %}
-        <span class="inline-flex items-center bg-accent/20 text-accent border border-accent/30 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">🎬 Фильм</span>
+        <span class="inline-flex items-center bg-accent/20 text-accent border border-accent/30 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">{{ t.movie_film_badge if t else "🎬 Movie" }}</span>
         {% endif %}
-        <h1 class="text-4xl md:text-5xl font-black leading-tight mb-2">{{ movie.title }}</h1>
+        <h1 class="text-2xl sm:text-4xl md:text-5xl font-black leading-tight mb-2">{{ movie.title }}</h1>
         <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-muted">
           {% if movie.year %}<span class="text-white font-medium">{{ movie.year }}</span>{% endif %}
           {% if movie.runtime %}<span>· {{ movie.runtime }} {{ t.min if t else 'min' }}</span>{% endif %}
@@ -110,14 +111,14 @@
         </a>
         {% endif %}
         <!-- Favorite + Watched buttons -->
-        <div class="flex gap-3 mt-5">
+        <div class="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-5">
           <button id="fav-btn-detail" onclick="toggleFavoriteDetail()"
             class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium">
-            ❤️ В избранное
+            {{ t.btn_add_fav if t else "❤️ Favorites" }}
           </button>
           <button id="watched-btn-detail" onclick="toggleWatchedDetail()"
             class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium">
-            ✓ Просмотрено
+            {{ t.btn_watched if t else "✓ Watched" }}
           </button>
         </div>
       </div>
@@ -202,8 +203,8 @@
           subscription: "{{ t.subscription if t else 'Subscription' }}",
           rent: "{{ t.rent if t else 'Rent' }}",
           buy: "{{ t.buy if t else 'Buy' }}",
-          free: "Бесплатно (JustWatch)",
-          freeOnline: "Бесплатно онлайн",
+          free: "{{ t.free_justwatch if t else 'Free (JustWatch)' }}",
+          freeOnline: "{{ t.free_online if t else 'Free Online' }}",
           loading: "{{ t.checking_sources if t else 'Checking availability...' }}",
           noSources: "{{ t.no_sources if t else 'No streaming sources found.' }}",
           error: "{{ t.sources_error if t else 'Could not load streaming info.' }}",
@@ -214,7 +215,7 @@
           const cols = gridCols || 'grid-cols-1 sm:grid-cols-2';
           const borderClass = isFree ? 'border border-green-600/40 bg-green-950/20 rounded-xl p-3' : '';
           const labelClass = isFree ? 'text-green-400' : 'text-muted';
-          const badge = isFree ? '<span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">БЕСПЛАТНО</span>' : '';
+          const badge = isFree ? '<span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">' + i18n.free_badge + '</span>' : '';
           return `
             <div class="${borderClass}">
               <h3 class="text-sm font-semibold ${labelClass} uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -267,7 +268,7 @@
             const hasFree = (g.free||[]).length > 0 || totalPirate > 0;
             const freeHtml = [
               // FREE SECTION FIRST - highlighted
-              totalPirate > 0 ? renderGroup(UI.freeOnline, '🎬', g.pirate, 'grid-cols-1 sm:grid-cols-3', true) : '',
+              totalPirate > 0 ? renderGroup(UI.freeOnline, '🎬', g.pirate, 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', true) : '',
             ].join('');
 
             const paidHtml = [
@@ -281,32 +282,32 @@
             const trialHtml = `
 <div class="mt-4 border border-yellow-600/30 bg-yellow-950/10 rounded-xl p-3">
   <h3 class="text-sm font-semibold text-yellow-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-    🎁 <span>Смотри бесплатно с пробным периодом</span>
+    🎁 <span>{{ t.trial_banner if t else "🎁 Watch free with trial" }}</span>
   </h3>
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
     <a href="https://www.ivi.ru/search#request=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
        class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
       <img src="https://www.ivi.ru/favicon.ico" class="w-8 h-8 rounded mb-1" onerror="this.style.display='none'"/>
       <span class="text-white text-xs font-semibold">ivi</span>
-      <span class="text-muted text-xs">30 дней бесплатно</span>
+      <span class="text-muted text-xs">{{ t.trial_30days if t else "30 days free" }}</span>
     </a>
     <a id="kp-trial-link" href="https://www.kinopoisk.ru/index.php?first=yes&what=&kp_query=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
        class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
       <span class="text-2xl mb-1">⭐</span>
       <span class="text-white text-xs font-semibold">Кинопоиск</span>
-      <span class="text-muted text-xs">Пробный период</span>
+      <span class="text-muted text-xs">{{ t.trial_period if t else "Trial period" }}</span>
     </a>
     <a href="https://okko.tv/search?query=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
        class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
       <img src="https://okko.tv/favicon.ico" class="w-8 h-8 rounded mb-1" onerror="this.style.display='none'"/>
       <span class="text-white text-xs font-semibold">Okko</span>
-      <span class="text-muted text-xs">7 дней бесплатно</span>
+      <span class="text-muted text-xs">{{ t.trial_7days if t else "7 days free" }}</span>
     </a>
     <a href="https://start.ru/search?q=${encodeURIComponent(title)}" target="_blank" rel="nofollow"
        class="flex flex-col items-center gap-1 bg-card border border-border hover:border-yellow-500 rounded-xl p-3 transition-all">
       <img src="https://start.ru/favicon.ico" class="w-8 h-8 rounded mb-1" onerror="this.style.display='none'"/>
       <span class="text-white text-xs font-semibold">START</span>
-      <span class="text-muted text-xs">Пробный период</span>
+      <span class="text-muted text-xs">{{ t.trial_period if t else "Trial period" }}</span>
     </a>
   </div>
 </div>`;
@@ -396,6 +397,24 @@
   const movieYear = {{ movie.year or 0 }};
   const movieType = {{ (movie.media_type or 'movie') | tojson }};
 
+  const i18n = {
+  free_justwatch: "{{ t.free_justwatch if t else 'Free (JustWatch)' }}",
+  free_online: "{{ t.free_online if t else 'Free Online' }}",
+  free_badge: "{{ t.free_badge if t else 'FREE' }}",
+  trial_banner: "{{ t.trial_banner if t else '🎁 Watch free with trial' }}",
+  trial_30days: "{{ t.trial_30days if t else '30 days free' }}",
+  trial_7days: "{{ t.trial_7days if t else '7 days free' }}",
+  trial_period: "{{ t.trial_period if t else 'Trial period' }}",
+  btn_add_fav: "{{ t.btn_add_fav if t else '❤️ Favorites' }}",
+  btn_in_fav: "{{ t.btn_in_fav if t else '❤️ In Favorites' }}",
+  btn_watched: "{{ t.btn_watched if t else '✓ Watched' }}",
+  toast_removed_fav: "{{ t.toast_removed_fav if t else 'Removed from favorites' }}",
+  toast_added_fav: "{{ t.toast_added_fav if t else '❤️ Added to favorites!' }}",
+  toast_removed_watched: "{{ t.toast_removed_watched if t else 'Removed from watched' }}",
+  toast_added_watched: "{{ t.toast_added_watched if t else '✅ Marked as watched!' }}",
+  series_badge: "{{ t.movie_series_badge if t else '📺 Series' }}",
+  film_badge: "{{ t.movie_film_badge if t else '🎬 Movie' }}",
+};
   function getFavorites() { return JSON.parse(localStorage.getItem('mf_favorites') || '[]'); }
   function getWatched() { return JSON.parse(localStorage.getItem('mf_watched') || '[]'); }
 
@@ -408,11 +427,11 @@
     const watchedBtn = document.getElementById('watched-btn-detail');
     if (favBtn) {
       favBtn.style.color = isFav ? '#e50914' : '';
-      favBtn.innerHTML = isFav ? '❤️ В избранном' : '❤️ В избранное';
+      favBtn.innerHTML = isFav ? i18n.btn_in_fav : i18n.btn_add_fav;
     }
     if (watchedBtn) {
       watchedBtn.style.color = isWatched ? '#22c55e' : '';
-      watchedBtn.innerHTML = isWatched ? '✅ Просмотрено' : '✓ Просмотрено';
+      watchedBtn.innerHTML = isWatched ? i18n.btn_watched : i18n.btn_watched;
     }
   }
 
@@ -421,10 +440,10 @@
     const idx = favs.findIndex(f => String(f.id) === movieId);
     if (idx >= 0) {
       favs.splice(idx, 1);
-      showDetailToast('Удалено из избранного');
+      showDetailToast(i18n.toast_removed_fav);
     } else {
       favs.push({id: movieId, title: movieTitle, poster: moviePoster, year: movieYear, mediaType: movieType});
-      showDetailToast('❤️ Добавлено в избранное!');
+      showDetailToast(i18n.toast_added_fav);
     }
     localStorage.setItem('mf_favorites', JSON.stringify(favs));
     updateDetailBtns();
@@ -435,10 +454,10 @@
     const idx = watched.indexOf(movieId);
     if (idx >= 0) {
       watched.splice(idx, 1);
-      showDetailToast('Убрано из просмотренных');
+      showDetailToast(i18n.toast_removed_watched);
     } else {
       watched.push(movieId);
-      showDetailToast('✅ Отмечено как просмотренное!');
+      showDetailToast(i18n.toast_added_watched);
     }
     localStorage.setItem('mf_watched', JSON.stringify(watched));
     updateDetailBtns();

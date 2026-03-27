@@ -232,7 +232,7 @@ Rules:
 
 
 
-async def smart_search(query: str) -> Dict[str, Any]:
+async def smart_search(query: str, lang: str = "ru") -> Dict[str, Any]:
     """
     Parse natural language query using Groq AI, then search TMDB.
     Returns: {"results": [...], "params_used": {...}, "description": "..."}
@@ -253,7 +253,7 @@ async def smart_search(query: str) -> Dict[str, Any]:
                 async with httpx.AsyncClient(timeout=10) as client:
                     r = await client.get(
                         f"{BASE_URL}/search/multi",
-                        params={"api_key": TMDB_API_KEY, "query": ref_title, "language": "ru-RU"}
+                        params={"api_key": TMDB_API_KEY, "query": ref_title, "language": "ru-RU" if lang == "ru" else "en-US"}
                     )
                     ref_results = r.json().get("results", [])
                     if ref_results:
@@ -269,7 +269,7 @@ async def smart_search(query: str) -> Dict[str, Any]:
                             if query_words:
                                 r2 = await client.get(
                                     f"{BASE_URL}/search/multi",
-                                    params={"api_key": TMDB_API_KEY, "query": query_words, "language": "ru-RU"}
+                                    params={"api_key": TMDB_API_KEY, "query": query_words, "language": "ru-RU" if lang == "ru" else "en-US"}
                                 )
                                 r2_results = r2.json().get("results", [])
                                 r2_movies = [x for x in r2_results if x.get("media_type") == "movie"]
@@ -281,9 +281,9 @@ async def smart_search(query: str) -> Dict[str, Any]:
                         ref_name = ref_item.get("title") or ref_item.get("name", ref_title)
 
                         rec_r = await client.get(f"{BASE_URL}/{ref_media}/{ref_id}/recommendations",
-                            params={"api_key": TMDB_API_KEY, "language": "ru-RU"})
+                            params={"api_key": TMDB_API_KEY, "language": "ru-RU" if lang == "ru" else "en-US"})
                         sim_r = await client.get(f"{BASE_URL}/{ref_media}/{ref_id}/similar",
-                            params={"api_key": TMDB_API_KEY, "language": "ru-RU"})
+                            params={"api_key": TMDB_API_KEY, "language": "ru-RU" if lang == "ru" else "en-US"})
 
                         recs = rec_r.json().get("results", [])
                         similar = sim_r.json().get("results", [])
@@ -348,7 +348,7 @@ async def smart_search(query: str) -> Dict[str, Any]:
                 async with httpx.AsyncClient(timeout=10) as client:
                     r_multi = await client.get(
                         f"{BASE_URL}/search/multi",
-                        params={"api_key": TMDB_API_KEY, "query": ai_params["title"], "language": "ru-RU"}
+                        params={"api_key": TMDB_API_KEY, "query": ai_params["title"], "language": "ru-RU" if lang == "ru" else "en-US"}
                     )
                     results = r_multi.json().get("results", [])
                     combined = []
@@ -380,7 +380,7 @@ async def smart_search(query: str) -> Dict[str, Any]:
                     async with httpx.AsyncClient(timeout=15) as client:
                         actor_params = {
                             "api_key": TMDB_API_KEY,
-                            "language": "ru-RU",
+                            "language": "ru-RU" if lang == "ru" else "en-US",
                             "with_cast": actor_id,
                             "sort_by": "vote_average.desc",
                             "vote_count.gte": 50,
@@ -420,7 +420,7 @@ async def smart_search(query: str) -> Dict[str, Any]:
             }
             discover_p = {
                 "api_key": TMDB_API_KEY,
-                "language": "ru-RU",
+                "language": "ru-RU" if lang == "ru" else "en-US",
                 "sort_by": "vote_average.desc",
                 "vote_count.gte": 100,
                 "include_adult": False,
@@ -468,7 +468,7 @@ async def smart_search(query: str) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
                 f"{BASE_URL}/search/multi",
-                params={"api_key": TMDB_API_KEY, "query": query, "language": "ru-RU"}
+                params={"api_key": TMDB_API_KEY, "query": query, "language": "ru-RU" if lang == "ru" else "en-US"}
             )
             results = r.json().get("results", [])
             combined = []
