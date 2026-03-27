@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if lang == "ru" %}{{ genre_name }} — смотреть онлайн бесплатно | MovieFinder{% else %}{{ genre_name }} — watch online free | MovieFinder{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+{% if lang == "ru" %}{{ t.genre_seo_prefix if t else 'Лучшие' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— смотреть онлайн бесплатно без регистрации на MovieFinder.' }}{% else %}{{ t.genre_seo_prefix if t else 'Best' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— watch online free without registration on MovieFinder.' }}{% endif %}
+{% endblock %}
+
+{% block head_extra %}
+<link rel="canonical" href="https://moviefinders.net/genre/{{ slug }}" />
+<link rel="alternate" hreflang="ru" href="https://moviefinders.net/genre/{{ slug }}" />
+<link rel="alternate" hreflang="en" href="https://moviefinders.net/genre/{{ slug }}" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "{{ genre_name }}",
+  "description": "{% if lang == 'ru' %}{{ t.genre_seo_prefix if t else 'Лучшие' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— смотреть онлайн бесплатно без регистрации на MovieFinder.' }}{% else %}{{ t.genre_seo_prefix if t else 'Best' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— watch online free without registration on MovieFinder.' }}{% endif %}",
+  "url": "https://moviefinders.net/genre/{{ slug }}",
+  "hasPart": [
+    {% for m in movies[:10] %}{
+      "@type": "Movie",
+      "name": "{{ m.display_title | replace('"', '\\"') }}",
+      "url": "https://moviefinders.net/movie/{{ m.tmdb_id }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-muted mb-6 flex items-center gap-2">
+    <a href="/" class="hover:text-white transition">{{ t.nav_home if t else 'Главная' }}</a>
+    <span>›</span>
+    <a href="/genres" class="hover:text-white transition">{{ t.genres_page_h1 if t else 'Жанры' }}</a>
+    <span>›</span>
+    <span class="text-white">{{ genre_name }}</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">{{ genre_name }}</h1>
+    <p class="text-muted text-base max-w-2xl">
+      {% if lang == "ru" %}{{ t.genre_seo_prefix if t else 'Лучшие' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— смотреть онлайн бесплатно без регистрации на MovieFinder.' }}{% else %}{{ t.genre_seo_prefix if t else 'Best' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— watch online free without registration on MovieFinder.' }}{% endif %}
+    </p>
+    <p class="text-muted text-sm mt-2">{{ movies | length }} {{ t.genre_count if t else 'фильмов' }}</p>
+  </div>
+
+  <!-- Movie Grid -->
+  {% if movies %}
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    {% for m in movies %}
+    <a href="/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}" class="movie-card relative rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block">
+      <!-- Poster -->
+      <div class="relative w-full" style="padding-bottom:150%">
+        {% if m.poster_url %}
+        <img src="{{ m.poster_url }}" alt="{{ m.display_title }}"
+          class="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+        <div class="absolute inset-0 flex-col items-center justify-center text-center px-3" style="display:none; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)">
+          <div class="text-4xl mb-2">🎬</div>
+          <p class="text-white/70 text-xs font-medium leading-tight">{{ m.display_title }}</p>
+        </div>
+        {% else %}
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-3" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)">
+          <div class="text-4xl mb-2">🎬</div>
+          <p class="text-white/70 text-xs font-medium leading-tight line-clamp-3">{{ m.display_title }}</p>
+        </div>
+        {% endif %}
+        <!-- Rating badge -->
+        {% if m.rating and m.rating > 0 %}
+        <div class="absolute top-2 right-2 bg-black/80 text-yellow-400 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+          ⭐ {{ "%.1f"|format(m.rating) }}
+        </div>
+        {% endif %}
+        <!-- Gradient overlay -->
+        <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent"></div>
+        <!-- Hover: Find sources button -->
+        <div class="find-btn absolute bottom-10 left-0 right-0 flex justify-center px-3">
+          <span class="bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full">▶ {{ t.find_btn if t else 'Find' }}</span>
+        </div>
+        <!-- Title overlay -->
+        <div class="absolute bottom-0 left-0 right-0 p-2">
+          <p class="text-white text-xs font-semibold line-clamp-2 leading-tight">{{ m.display_title }}</p>
+          {% if m.year %}<p class="text-muted text-xs mt-0.5">{{ m.year }}</p>{% endif %}
+        </div>
+        <!-- Favorite + Watched buttons -->
+        <div class="absolute top-2 left-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="event.preventDefault(); toggleFavorite('{{ m.tmdb_id }}', '{{ m.display_title | replace("'", "\\'") }}', '{{ m.poster_url }}', '{{ m.year }}', '{{ m.media_type }}')"
+            class="fav-btn-{{ m.tmdb_id }} w-7 h-7 rounded-full bg-black/80 flex items-center justify-center text-sm hover:bg-accent transition-colors"
+            title="{{ t.add_to_favorites if t else 'Add to favorites' }}">❤️</button>
+          <button onclick="event.preventDefault(); toggleWatched('{{ m.tmdb_id }}', '{{ m.display_title | replace("'", "\\'") }}', '{{ m.poster_url }}', '{{ m.year }}', '{{ m.media_type }}')"
+            class="watched-btn-{{ m.tmdb_id }} w-7 h-7 rounded-full bg-black/80 flex items-center justify-center text-sm hover:bg-green-600 transition-colors"
+            title="{{ t.mark_watched if t else 'Mark as watched' }}">✓</button>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-20 text-muted">
+    <div class="text-5xl mb-4">🎬</div>
+    <p>{{ t.no_results if t else 'Ничего не найдено' }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window._i18n = {
+  toast_removed_fav: "{{ t.toast_removed_fav if t else 'Removed from favorites' }}",
+  toast_added_fav: "{{ t.toast_added_fav if t else '❤️ Added to favorites!' }}",
+  toast_removed_watched: "{{ t.toast_removed_watched if t else 'Removed from watched' }}",
+  toast_added_watched: "{{ t.toast_added_watched if t else '✅ Marked as watched!' }}"
+};
+</script>
+<script>
+function getFavorites() { return JSON.parse(localStorage.getItem('mf_favorites') || '[]'); }
+function saveFavorites(f) { localStorage.setItem('mf_favorites', JSON.stringify(f)); }
+function getWatched() { return JSON.parse(localStorage.getItem('mf_watched') || '[]'); }
+function saveWatched(w) { localStorage.setItem('mf_watched', JSON.stringify(w)); }
+
+function toggleFavorite(id, title, poster, year, mediaType) {
+  let favs = getFavorites();
+  const idx = favs.findIndex(f => f.id == id);
+  if (idx >= 0) { favs.splice(idx, 1); showToast(window._i18n.toast_removed_fav); }
+  else { favs.push({id, title, poster, year, mediaType: mediaType || 'movie'}); showToast(window._i18n.toast_added_fav); }
+  saveFavorites(favs);
+}
+function toggleWatched(id, title, poster, year, mediaType) {
+  let watched = getWatched();
+  const idx = watched.findIndex(w => w.id == id);
+  if (idx >= 0) { watched.splice(idx, 1); showToast(window._i18n.toast_removed_watched); }
+  else { watched.push({id, title, poster: poster||'', year: year||'', mediaType: mediaType||'movie'}); showToast(window._i18n.toast_added_watched); }
+  saveWatched(watched);
+}
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-card border border-border text-white px-5 py-3 rounded-full text-sm font-medium shadow-xl z-50 transition-all';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+</script>
+{% endblock %}

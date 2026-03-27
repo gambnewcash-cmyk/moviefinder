@@ -337,6 +337,23 @@ async def api_sources(
 BASE_URL = "https://moviefinders.net"
 SITEMAP_CHUNK_SIZE = 10000
 
+GENRE_MAP = {
+    "drama": {"tmdb": "Drama", "ru": "Драмы", "en": "Drama Films", "slug": "drama"},
+    "comedy": {"tmdb": "Comedy", "ru": "Комедии", "en": "Comedy Films", "slug": "comedy"},
+    "horror": {"tmdb": "Horror", "ru": "Фильмы ужасов", "en": "Horror Films", "slug": "horror"},
+    "action": {"tmdb": "Action", "ru": "Боевики", "en": "Action Films", "slug": "action"},
+    "thriller": {"tmdb": "Thriller", "ru": "Триллеры", "en": "Thrillers", "slug": "thriller"},
+    "romance": {"tmdb": "Romance", "ru": "Романтические фильмы", "en": "Romance Films", "slug": "romance"},
+    "animation": {"tmdb": "Animation", "ru": "Мультфильмы", "en": "Animation Films", "slug": "animation"},
+    "documentary": {"tmdb": "Documentary", "ru": "Документальные фильмы", "en": "Documentary Films", "slug": "documentary"},
+    "voennye": {"tmdb": "War", "ru": "Военные фильмы", "en": "War Films", "slug": "voennye"},
+    "fantastika": {"tmdb": "Sci-Fi", "ru": "Фантастика", "en": "Sci-Fi Films", "slug": "fantastika"},
+    "istoricheskie": {"tmdb": "History", "ru": "Исторические фильмы", "en": "Historical Films", "slug": "istoricheskie"},
+    "muzyka": {"tmdb": "Music", "ru": "Музыкальные фильмы", "en": "Music Films", "slug": "muzyka"},
+    "crime": {"tmdb": "Crime", "ru": "Криминальные фильмы", "en": "Crime Films", "slug": "crime"},
+}
+
+
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt():
     return """User-agent: *
@@ -431,6 +448,94 @@ async def films_2026_page(request: Request):
         "t": t,
     })
 
+
+@app.get("/genres", response_class=HTMLResponse)
+async def genres_page(request: Request):
+    lang = get_lang(request)
+    t = get_translations(lang)
+    return templates.TemplateResponse(request, "genres.html", {
+        "genres": GENRE_MAP, "lang": lang, "t": t,
+    })
+
+
+@app.get("/genre/{slug}", response_class=HTMLResponse)
+async def genre_page(request: Request, slug: str):
+    lang = get_lang(request)
+    t = get_translations(lang)
+
+    genre_info = GENRE_MAP.get(slug)
+    if not genre_info:
+        return templates.TemplateResponse(request, "404.html", {"request": request, "lang": lang, "t": t}, status_code=404)
+
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            FROM movies
+            WHERE genre LIKE ? AND poster_url IS NOT NULL AND poster_url != ""
+            ORDER BY rating DESC, year DESC
+            LIMIT 200
+        """, (f'%{genre_info["tmdb"]}%',))
+        rows = cur.fetchall()
+        conn.close()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
+            display_title = title_ru if lang == "ru" and title_ru else title
+            movies.append({
+                "tmdb_id": tmdb_id, "title": title, "title_ru": title_ru,
+                "display_title": display_title, "year": year, "rating": rating,
+                "poster_url": poster_url, "genre": genre, "media_type": media_type or "movie"
+            })
+    except Exception as e:
+        print(f"Genre page error: {e}")
+        movies = []
+
+    genre_name = genre_info["ru"] if lang == "ru" else genre_info["en"]
+
+    return templates.TemplateResponse(request, "genre.html", {
+        "movies": movies, "lang": lang, "t": t,
+        "genre_info": genre_info, "genre_name": genre_name,
+        "slug": slug,
+    })
+
+
+@app.get("/films/vecher", response_class=HTMLResponse)
+async def films_vecher_page(request: Request):
+    lang = get_lang(request)
+    t = get_translations(lang)
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type
+            FROM movies
+            WHERE (genre LIKE '%Comedy%' OR genre LIKE '%Drama%' OR genre LIKE '%Romance%')
+            AND rating >= 7.5 AND poster_url IS NOT NULL AND poster_url != ""
+            ORDER BY rating DESC
+            LIMIT 100
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        movies = []
+        for r in rows:
+            tmdb_id, title, title_ru, year, rating, poster_url, genre, media_type = r
+            display_title = title_ru if lang == "ru" and title_ru else title
+            movies.append({
+                "tmdb_id": tmdb_id, "title": title, "title_ru": title_ru,
+                "display_title": display_title, "year": year, "rating": rating,
+                "poster_url": poster_url, "genre": genre, "media_type": media_type or "movie"
+            })
+    except Exception as e:
+        print(f"Vecher page error: {e}")
+        movies = []
+    return templates.TemplateResponse(request, "films_vecher.html", {
+        "movies": movies, "lang": lang, "t": t,
+    })
+
 @app.get("/sitemap-index.xml")
 async def sitemap_index():
     import sqlite3, math
@@ -466,7 +571,9 @@ async def sitemap_static():
         ("/top", "0.9", "weekly"),
         ("/films/2026", "0.9", "daily"),
         ("/favorites", "0.5", "monthly"),
-    ]
+        ("/genres", "0.8", "weekly"),
+        ("/films/vecher", "0.8", "weekly"),
+    ] + [("/genre/" + slug, "0.8", "weekly") for slug in GENRE_MAP.keys()]
     
     urls = []
     for path, priority, changefreq in static_pages:
