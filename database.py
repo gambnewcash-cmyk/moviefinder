@@ -122,8 +122,8 @@ def get_movies_by_genre_db(genre_tmdb: str, page: int = 1, sort: str = "new", pe
     """Get movies from local SQLite by genre with pagination and sorting."""
     sort_map = {
         "new": ("year DESC, rating DESC", "genre LIKE ? AND poster_url IS NOT NULL AND poster_url != ''"),
-        "rating": ("rating DESC, year DESC", "genre LIKE ? AND rating < 10.0 AND rating >= 5.0 AND poster_url IS NOT NULL AND poster_url != ''"),
-        "popular": ("year DESC, rating DESC", "genre LIKE ? AND rating >= 7.0 AND year >= 2015 AND poster_url IS NOT NULL AND poster_url != ''"),
+        "rating": ("rating DESC, year DESC", "genre LIKE ? AND rating < 10.0 AND rating >= 5.0 AND vote_count >= 100 AND poster_url IS NOT NULL AND poster_url != ''"),
+        "popular": ("popularity DESC, vote_count DESC", "genre LIKE ? AND poster_url IS NOT NULL AND poster_url != ''"),
     }
     order_by, where_extra = sort_map.get(sort, sort_map["new"])
     offset = (page - 1) * per_page
@@ -178,8 +178,8 @@ def get_movies_2026_db(page: int = 1, per_page: int = 20, sort: str = "new") -> 
     offset = (page - 1) * per_page
     sort_configs = {
         "new": ("created_at DESC", "year = 2026 AND rating > 0"),
-        "rating": ("rating DESC", "year = 2026 AND rating < 10.0 AND rating >= 5.0"),
-        "popular": ("rating DESC, created_at DESC", "year = 2026 AND rating >= 7.0"),
+        "rating": ("rating DESC", "year = 2026 AND rating < 10.0 AND rating >= 5.0 AND vote_count >= 10"),
+        "popular": ("popularity DESC, vote_count DESC", "year = 2026 AND rating > 0"),
     }
     order_by, where_2026 = sort_configs.get(sort, sort_configs["new"])
     with get_db() as conn:
