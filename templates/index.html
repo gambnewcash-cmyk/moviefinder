@@ -142,22 +142,26 @@
   </div>
 </section>
 
-<!-- TRENDING SEARCHES -->
-{% if trending_searches %}
-<section class="max-w-7xl mx-auto px-4 mb-10">
-  <h2 class="text-lg font-bold mb-3 text-muted flex items-center gap-2">🔥 {{ t.trending_searches if t else 'Popular Searches' }}</h2>
+<!-- Жанры и подборки -->
+<section class="max-w-7xl mx-auto px-4 mb-8">
+  <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">🎬 {{ t.genres_nav_title if t else "Жанры и подборки" }}</h2>
   <div class="flex flex-wrap gap-2">
-    {% for s in trending_searches %}
-    <a href="/search?q={{ s.query | urlencode }}"
-      class="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-full text-sm hover:border-accent hover:text-accent transition-all">
-      <span class="text-accent font-bold text-xs">{{ loop.index }}</span>
-      <span>{{ s.query[:30] }}{% if s.query|length > 30 %}...{% endif %}</span>
-      <span class="text-muted text-xs">{{ s.count }}×</span>
-    </a>
-    {% endfor %}
+    <a href="/genre/horror" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">👻 {{ t.genre_horror if t else "Ужасы" }}</a>
+    <a href="/genre/comedy" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">😂 {{ t.genre_comedy if t else "Комедии" }}</a>
+    <a href="/genre/action" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">💥 {{ t.genre_action if t else "Боевики" }}</a>
+    <a href="/genre/drama" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🎭 {{ t.genre_drama if t else "Драмы" }}</a>
+    <a href="/genre/thriller" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🔪 {{ t.genre_thriller if t else "Триллеры" }}</a>
+    <a href="/genre/romance" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">❤️ {{ t.genre_romance if t else "Романтика" }}</a>
+    <a href="/genre/animation" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🎨 {{ t.genre_animation if t else "Мультфильмы" }}</a>
+    <a href="/genre/fantastika" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🚀 {{ t.genre_fantastika if t else "Фантастика" }}</a>
+    <a href="/genre/voennye" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">⚔️ {{ t.genre_voennye if t else "Военные" }}</a>
+    <a href="/genre/crime" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🕵️ {{ t.genre_crime if t else "Криминал" }}</a>
+    <a href="/top" class="flex items-center gap-1.5 bg-accent/20 border border-accent/40 hover:border-accent px-3 py-2 rounded-full text-sm text-accent hover:text-white transition-all">🏆 {{ t.nav_top if t else "Топ 100" }}</a>
+    <a href="/films/2026" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🆕 {{ t.nav_2026 if t else "Фильмы 2026" }}</a>
+    <a href="/films/vecher" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🌙 {{ t.nav_vecher if t else "На вечер" }}</a>
+    <a href="/genres" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">📂 {{ t.nav_all_genres if t else "Все жанры" }}</a>
   </div>
 </section>
-{% endif %}
 
 
 <!-- TRENDING TODAY -->
