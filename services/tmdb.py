@@ -382,11 +382,11 @@ async def get_top_2025_2026(page: int = 1, lang: str = "en") -> dict:
             ru_data, en_data = await _fetch_tmdb_both_langs("/discover/movie", params)
             en_titles = {m.get("id"): m.get("title") for m in en_data.get("results", [])}
             movies = [format_movie(m, en_title=en_titles.get(m.get("id"))) for m in ru_data.get("results", [])]
-            total_pages = min(ru_data.get("total_pages", 1), 50)
+            total_pages = min(ru_data.get("total_pages", 1), 5)
         else:
             data = await fetch_tmdb("/discover/movie", params, lang=lang)
             movies = [format_movie(m) for m in data.get("results", [])]
-            total_pages = min(data.get("total_pages", 1), 50)
+            total_pages = min(data.get("total_pages", 1), 5)
     except Exception as e:
         movies = []
         total_pages = 1
