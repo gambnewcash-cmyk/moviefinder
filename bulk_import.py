@@ -124,15 +124,10 @@ async def main():
                 await asyncio.sleep(0.1)
             conn.commit()
 
-        # Phase 2: discover by year
-        if total_saved + existing < 100000:
-            print(f"\n--- Phase 2: discover/movie by year ---")
-            for year in range(2024, 1960, -1):
-                if total_saved + existing >= 100000:
-                    break
-                for page in range(1, 26):
-                    if total_saved + existing >= 100000:
-                        break
+        # Phase 2: discover by year (2026 → 1960, no limit)
+        print(f"\n--- Phase 2: discover/movie by year ---")
+        for year in range(2026, 1960, -1):
+            for page in range(1, 26):
                     try:
                         r = await client.get(
                             f"{BASE_URL}/discover/movie",
