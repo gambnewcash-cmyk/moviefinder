@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ movie.title_ru or movie.title }} ({{ movie.year }}) — {{ t.watch_online_free if t else "смотреть онлайн бесплатно" }} | MovieFinder{% endblock %}
 
-{% block meta_description %}{% if lang == 'en' %}Where to watch {{ movie.display_title }} ({{ movie.year }}) online. Genre: {% if movie.genres_list %}{{ movie.genres_list[:2] | join(", ") }}{% elif movie.genre %}{{ movie.genre.split(", ")[:2] | join(", ") }}{% endif %}. All streaming services and free sources in one place.{% else %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. {% if movie.genres_list %}Жанр: {{ movie.genres_list[:2] | join(", ") }}. {% elif movie.genre %}Жанр: {{ movie.genre.split(", ")[:2] | join(", ") }}. {% endif %}Все стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka.{% endif %}{% endblock %}
+{% block meta_description %}{% if lang == 'en' %}Where to watch {{ movie.title_en or movie.title_ru or movie.title }} ({{ movie.year }}) online. Genre: {% if movie.genres_list %}{{ movie.genres_list[:2] | join(", ") }}{% elif movie.genre %}{{ movie.genre.split(", ")[:2] | join(", ") }}{% endif %}. All streaming services and free sources in one place.{% else %}Где смотреть {{ movie.title_ru or movie.title }} ({{ movie.year }}) онлайн. {% if movie.genres_list %}Жанр: {{ movie.genres_list[:2] | join(", ") }}. {% elif movie.genre %}Жанр: {{ movie.genre.split(", ")[:2] | join(", ") }}. {% endif %}Все стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka.{% endif %}{% endblock %}
 
 {% block og_type %}video.movie{% endblock %}
 {% block og_image %}{{ movie.poster_url or 'https://moviefinders.net/static/img/og-default.jpg' }}{% endblock %}
