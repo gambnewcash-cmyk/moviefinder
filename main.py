@@ -791,6 +791,18 @@ async def en_movie_page(request: Request, tmdb_id: int, media_type: str = "movie
         if db_movie and db_movie.get("title_en"):
             movie["display_title"] = db_movie["title_en"]
         sources = await get_all_sources(tmdb_id, movie["title"], movie.get("year"), title_ru=movie.get("title_ru"), media_type=media_type)
+        # Override with our unique AI description if available
+        try:
+            import psycopg2 as _pg2
+            _pg_url = "postgresql://postgres:OLIBHomUThkXFlbrgpJWyeZblHZdJQvj@gondola.proxy.rlwy.net:54122/railway"
+            with _pg2.connect(_pg_url) as _conn:
+                with _conn.cursor() as _cur:
+                    _cur.execute("SELECT description FROM ai_descriptions WHERE tmdb_id=%s AND lang='en'", (tmdb_id,))
+                    _row = _cur.fetchone()
+                    if _row and _row[0]:
+                        movie["description"] = _row[0]
+        except Exception:
+            pass
         return templates.TemplateResponse(request, "movie.html", {
             "movie": movie, "sources": sources, "lang": lang, "t": t,
             "hreflang_ru": f"https://moviefinders.net/movie/{tmdb_id}",
