@@ -922,24 +922,49 @@ async def en_homepage(request: Request):
     """English homepage - serves homepage with EN language forced."""
     lang = "en"
     t = get_translations(lang)
-    # Get same data as homepage but in EN
     try:
-        trending = await get_trending(lang=lang)
-        trending = trending[:12]
-    except:
-        trending = []
-    for m in trending:
-        m["display_title"] = m.get("title_en") or m.get("title", "")
-    trending_searches = get_trending_searches(limit=8)
-    return templates.TemplateResponse(request, "index.html", {
-        "trending": trending,
-        "trending_searches": trending_searches,
-        "lang": lang,
-        "t": t,
-        "hreflang_ru": "https://moviefinders.net/",
-        "hreflang_en": "https://moviefinders.net/en/",
-        "canonical_url": "https://moviefinders.net/en/",
-    })
+        trending, top_rated, new_2026, popular_tv, oscar_winners, romance_comedy, top_horror = await asyncio.gather(
+            get_trending(lang=lang),
+            get_top_rated(lang=lang),
+            get_new_2026(lang=lang),
+            get_popular_tv(lang=lang),
+            get_oscar_winners(lang=lang),
+            get_romance_comedy(lang=lang),
+            get_top_horror(lang=lang),
+            return_exceptions=True
+        )
+        if isinstance(trending, Exception): trending = []
+        if isinstance(top_rated, Exception): top_rated = []
+        if isinstance(new_2026, Exception): new_2026 = []
+        if isinstance(popular_tv, Exception): popular_tv = []
+        if isinstance(oscar_winners, Exception): oscar_winners = []
+        if isinstance(romance_comedy, Exception): romance_comedy = []
+        if isinstance(top_horror, Exception): top_horror = []
+        trending_searches = get_trending_searches(10)
+        return templates.TemplateResponse(request, "index.html", {
+            "trending": trending[:20],
+            "top_rated": top_rated[:20],
+            "new_2026": new_2026[:20],
+            "popular_tv": popular_tv[:20],
+            "oscar_winners": oscar_winners[:20],
+            "romance_comedy": romance_comedy[:20],
+            "top_horror": top_horror[:20],
+            "trending_searches": trending_searches,
+            "lang": lang,
+            "t": t,
+            "hreflang_ru": "https://moviefinders.net/",
+            "hreflang_en": "https://moviefinders.net/en/",
+            "canonical_url": "https://moviefinders.net/en/",
+        })
+    except Exception as e:
+        print(f"EN index error: {e}")
+        return templates.TemplateResponse(request, "index.html", {
+            "trending": [], "top_rated": [], "new_2026": [], "popular_tv": [], "oscar_winners": [], "romance_comedy": [], "top_horror": [],
+            "trending_searches": [], "lang": lang, "t": t,
+            "hreflang_ru": "https://moviefinders.net/",
+            "hreflang_en": "https://moviefinders.net/en/",
+            "canonical_url": "https://moviefinders.net/en/",
+        })
 
 
 @app.get("/en/genres", response_class=HTMLResponse)
