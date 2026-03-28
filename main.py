@@ -913,3 +913,13 @@ async def en_films_vecher_page(request: Request, page: int = 1, sort: str = "pop
         "hreflang_en": "https://moviefinders.net/en/films/vecher",
         "canonical_url": "https://moviefinders.net/en/films/vecher",
     })
+
+
+@app.get("/en/", response_class=HTMLResponse)
+@app.get("/en", response_class=HTMLResponse)
+async def en_homepage(request: Request):
+    """English homepage - redirect to main with EN lang set."""
+    from fastapi.responses import RedirectResponse
+    response = RedirectResponse(url="/", status_code=302)
+    response.set_cookie("lang", "en", max_age=31536000)
+    return response
