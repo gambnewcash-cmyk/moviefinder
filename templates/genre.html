@@ -8,11 +8,12 @@
 {% if lang == "ru" %}{{ t.genre_seo_prefix if t else 'Лучшие' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— смотреть онлайн бесплатно без регистрации на MovieFinder.' }}{% else %}{{ t.genre_seo_prefix if t else 'Best' }} {{ genre_name | lower }} {{ t.genre_seo_suffix if t else '— watch online free without registration on MovieFinder.' }}{% endif %}
 {% endblock %}
 
-{% block head_extra %}
+{% block hreflang_ru %}https://moviefinders.net/genre/{{ slug }}{% endblock %}
+{% block hreflang_en %}https://moviefinders.net/en/genre/{{ slug }}{% endblock %}
+{% block hreflang_xdefault %}https://moviefinders.net/genre/{{ slug }}{% endblock %}
+
+{% block head %}
 <link rel="canonical" href="https://moviefinders.net/genre/{{ slug }}" />
-<link rel="alternate" hreflang="ru" href="https://moviefinders.net/genre/{{ slug }}" />
-<link rel="alternate" hreflang="en" href="https://moviefinders.net/en/genre/{{ slug }}" />
-<link rel="alternate" hreflang="x-default" href="https://moviefinders.net/genre/{{ slug }}" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -30,6 +31,22 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "{{ t.home if t else 'Главная' }}", "item": "https://moviefinders.net/"},
+    {"@type": "ListItem", "position": 2, "name": "{{ genre_name }}", "item": "https://moviefinders.net/genre/{{ slug }}"}
+  ]
+}
+</script>
+{% if current_page > 1 %}
+<link rel="prev" href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page - 1 }}"/>
+{% endif %}
+{% if current_page < total_pages %}
+<link rel="next" href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page + 1 }}"/>
+{% endif %}
 {% endblock %}
 
 {% block content %}

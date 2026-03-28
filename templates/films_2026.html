@@ -5,6 +5,7 @@
 {% block meta_description %}{{ t.films2026_page_desc if t else 'New movies 2026 — watch online free without registration. Best new releases of 2026.' }}{% endblock %}
 {% block hreflang_ru %}https://moviefinders.net/films/2026{% endblock %}
 {% block hreflang_en %}https://moviefinders.net/en/films/2026{% endblock %}
+{% block hreflang_xdefault %}https://moviefinders.net/films/2026{% endblock %}
 
 {% block head %}
 <link rel="canonical" href="https://moviefinders.net/films/2026"/>
@@ -36,6 +37,12 @@
   ]
 }
 </script>
+{% if current_page > 1 %}
+<link rel="prev" href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page - 1 }}"/>
+{% endif %}
+{% if current_page < total_pages %}
+<link rel="next" href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page + 1 }}"/>
+{% endif %}
 {% endblock %}
 
 {% block content %}

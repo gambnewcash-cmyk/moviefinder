@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+
+{% block head %}<meta name="robots" content="noindex, follow"/>{% endblock %}
 {% block title %}{% if query %}{{ query }} — {% endif %}{{ t.search_results if t else 'Search' }} · MovieFinder
 <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold z-50 transform translate-y-10 opacity-0 transition-all duration-300 pointer-events-none"></div>
 <script>

@@ -5,6 +5,7 @@
 {% block meta_description %}{{ t.top_page_desc if t else 'TOP-100 best movies of all time by audience rating. Watch online free on MovieFinder.' }}{% endblock %}
 {% block hreflang_ru %}https://moviefinders.net/top{% endblock %}
 {% block hreflang_en %}https://moviefinders.net/en/top{% endblock %}
+{% block hreflang_xdefault %}https://moviefinders.net/top{% endblock %}
 
 {% block head %}
 <link rel="canonical" href="https://moviefinders.net/top"/>
@@ -41,6 +42,12 @@
   ]
 }
 </script>
+{% if current_page > 1 %}
+<link rel="prev" href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page - 1 }}"/>
+{% endif %}
+{% if current_page < total_pages %}
+<link rel="next" href="{{ base_url }}?sort={{ current_sort }}&page={{ current_page + 1 }}"/>
+{% endif %}
 {% endblock %}
 
 {% block content %}

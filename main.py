@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 import httpx
+from datetime import date
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -601,7 +602,7 @@ async def sitemap_index():
     conn.close()
     
     num_chunks = math.ceil(total / SITEMAP_CHUNK_SIZE)
-    today = "2026-03-27"
+    today = date.today().isoformat()
     
     urls = []
     urls.append(f"  <sitemap>\n    <loc>{BASE_URL}/sitemap-static.xml</loc>\n    <lastmod>{today}</lastmod>\n  </sitemap>")
@@ -618,13 +619,12 @@ async def sitemap_index():
 
 @app.get("/sitemap-static.xml")
 async def sitemap_static():
-    today = "2026-03-27"
+    today = date.today().isoformat()
     static_pages = [
         ("/", "1.0", "daily"),
         ("/ai-search", "0.9", "weekly"),
         ("/top", "0.9", "weekly"),
         ("/films/2026", "0.9", "daily"),
-        ("/favorites", "0.5", "monthly"),
         ("/genres", "0.8", "weekly"),
         ("/films/vecher", "0.8", "weekly"),
         ("/en/top", "0.8", "weekly"),
@@ -657,7 +657,7 @@ async def sitemap_movies(chunk: int):
         return Response(content="Invalid chunk", status_code=400)
     
     offset = (chunk - 1) * SITEMAP_CHUNK_SIZE
-    today = "2026-03-27"
+    today = date.today().isoformat()
     
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()

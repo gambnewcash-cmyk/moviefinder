@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}">
+<html lang="{{ lang if lang else 'ru' }}">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -9,13 +9,13 @@
   <title>{% block title %}MovieFinder — Найди где смотреть любой фильм онлайн{% endblock %}</title>
 
   <!-- SEO Meta -->
-  <meta name="description" content="{% block meta_description %}Найди где смотреть любой фильм или сериал онлайн. Сравни стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka и 20+ платформ.{% endblock %}"/>
+  <meta name="description" content="{%- block meta_description -%}Найди где смотреть любой фильм или сериал онлайн. Сравни стриминговые сервисы и бесплатные источники — Кинопоиск, Okko, IVI, HDRezka и 20+ платформ.{%- endblock -%}"/>
   <link rel="canonical" href="{% block canonical %}https://moviefinders.net{{ request.url.path }}{% endblock %}"/>
 
   <!-- hreflang multilingual -->
   <link rel="alternate" hreflang="ru" href="{% block hreflang_ru %}https://moviefinders.net{{ request.url.path }}{% endblock %}"/>
   <link rel="alternate" hreflang="en" href="{% block hreflang_en %}https://moviefinders.net/en{{ request.url.path }}{% endblock %}"/>
-  <link rel="alternate" hreflang="x-default" href="https://moviefinders.net{{ request.url.path }}"/>
+  <link rel="alternate" hreflang="x-default" href="{% block hreflang_xdefault %}https://moviefinders.net{{ request.url.path }}{% endblock %}"/>
 
   <!-- Yandex Turbo hint -->
   <link rel="alternate" type="application/rss+xml" title="Turbo" href="/turbo.rss"/>
