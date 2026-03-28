@@ -13,7 +13,7 @@
     <div class="text-6xl mb-4">💔</div>
     <p class="text-white text-xl font-bold mb-2">{{ t.fav_empty_title if t else "No favorites yet" }}</p>
     <p class="text-muted mb-6">{{ t.fav_empty_desc if t else "Add movies by clicking ❤️ on a card" }}</p>
-    <a href="/" class="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors">{{ t.fav_go_home if t else "Go Home" }}</a>
+    <a href="{{ '/en/' if lang == 'en' else '/' }}" class="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-full transition-colors">{{ t.fav_go_home if t else "Go Home" }}</a>
   </div>
   
   <span id="i18n-fav-movies" class="hidden">{{ t.fav_count_movies if t else "movies" }}</span>
@@ -27,6 +27,7 @@
 
 {% block scripts %}
 <script>
+window._pfx = {{ '"/en"' if lang == 'en' else '""' }};
 function getFavorites() { return JSON.parse(localStorage.getItem('mf_favorites') || '[]'); }
 function getWatched() { return JSON.parse(localStorage.getItem('mf_watched') || '[]'); }
 
@@ -46,7 +47,7 @@ function renderFavorites() {
   count.textContent = favs.length + ' ' + document.getElementById('i18n-fav-movies').textContent;
   grid.innerHTML = favs.map(f => `
     <div class="relative group">
-      <a href="/movie/${f.id}${f.mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-border">
+      <a href="${window._pfx}/movie/${f.id}${f.mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-border">
         <div style="padding-bottom:150%; position:relative;">
           ${f.poster ? `<img src="${f.poster}" class="absolute inset-0 w-full h-full object-cover" loading="lazy"/>` : 
             `<div class="absolute inset-0 flex items-center justify-center" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)"><span class="text-3xl">🎬</span></div>`}
@@ -84,7 +85,7 @@ function renderWatched() {
     const mediaType = w.mediaType || 'movie';
     return `
     <div class="relative group">
-      <a href="/movie/${id}${mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-green-800/40">
+      <a href="${window._pfx}/movie/${id}${mediaType === 'tv' ? '?media_type=tv' : ''}" class="block rounded-xl overflow-hidden bg-card border border-green-800/40">
         <div style="padding-bottom:150%; position:relative;">
           ${poster ? `<img src="${poster}" class="absolute inset-0 w-full h-full object-cover" loading="lazy"/>` :
             `<div class="absolute inset-0 flex items-center justify-center" style="background:linear-gradient(135deg,#1a2e1a,#0f3d0f)"><span class="text-3xl">✅</span></div>`}

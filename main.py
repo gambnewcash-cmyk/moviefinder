@@ -952,3 +952,15 @@ async def en_genres_page(request: Request):
         "hreflang_en": "https://moviefinders.net/en/genres",
         "canonical_url": "https://moviefinders.net/en/genres",
     })
+
+
+@app.get("/en/favorites", response_class=HTMLResponse)
+async def en_favorites_page(request: Request):
+    lang = "en"
+    t = get_translations(lang)
+    return templates.TemplateResponse(request, "favorites.html", {
+        "lang": lang, "t": t,
+        "hreflang_ru": "https://moviefinders.net/favorites",
+        "hreflang_en": "https://moviefinders.net/en/favorites",
+        "canonical_url": "https://moviefinders.net/en/favorites",
+    })
