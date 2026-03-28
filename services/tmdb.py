@@ -140,7 +140,9 @@ async def get_movie_details(tmdb_id: int, media_type: str = "movie", lang: str =
                 m["number_of_seasons"] = ru_data.get("number_of_seasons")
                 m["number_of_episodes"] = ru_data.get("number_of_episodes")
             # Similar movies - fetch with ru lang for display
-            similar_raw = ru_data.get("similar", {}).get("results", [])[:8]
+            similar_raw = [s for s in ru_data.get("similar", {}).get("results", [])
+                          if s.get("vote_average", 0) >= 5.5 and s.get("vote_count", 0) >= 50
+                          and s.get("poster_path")][:8]
             en_similar = en_data.get("similar", {}).get("results", [])
             en_sim_titles = {s.get("id"): s.get("title") or s.get("name") for s in en_similar}
             # For TV shows, similar items are also TV shows - set media_type
@@ -187,7 +189,9 @@ async def get_movie_details(tmdb_id: int, media_type: str = "movie", lang: str =
             director = next((c["name"] for c in crew if c.get("job") == "Director"), None)
             m["director"] = director
             # Similar
-            similar_raw = data.get("similar", {}).get("results", [])[:8]
+            similar_raw = [s for s in data.get("similar", {}).get("results", [])
+                          if s.get("vote_average", 0) >= 5.5 and s.get("vote_count", 0) >= 50
+                          and s.get("poster_path")][:8]
             # For TV shows, similar items are also TV shows - set media_type
             if media_type == "tv":
                 for s in similar_raw:
