@@ -62,6 +62,7 @@
 {% endblock %}
 
 {% block content %}
+{% set pfx = '/en' if lang == 'en' else '' %}
 
 <!-- Back navigation -->
 <div class="max-w-7xl mx-auto px-4 pt-4">
@@ -371,7 +372,7 @@
       {% if movie.similar %}
       <div class="space-y-3">
         {% for s in movie.similar %}
-        <a href="/movie/{{ s.tmdb_id }}{% if s.media_type == 'tv' %}?media_type=tv{% endif %}"
+        <a href="{{ pfx }}/movie/{{ s.tmdb_id }}{% if s.media_type == 'tv' %}?media_type=tv{% endif %}"
            class="flex gap-3 bg-card border border-border hover:border-accent rounded-xl p-3 transition-all group">
           <div class="shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-border">
             {% if s.poster_url %}

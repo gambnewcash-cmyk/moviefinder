@@ -5,6 +5,7 @@
 
 
 {% block content %}
+{% set pfx = '/en' if lang == 'en' else '' %}
 <section class="max-w-7xl mx-auto px-4 py-10">
 
   <!-- Search bar with mode toggle -->
@@ -112,7 +113,7 @@
   {% if results %}
   <div id="resultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     {% for m in results %}
-    <a href="/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}"
+    <a href="{{ pfx }}/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}"
        class="movie-card relative rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block fade-in"
        data-genre="{{ m.genre or '' }}"
        data-year="{{ m.year or '' }}"
