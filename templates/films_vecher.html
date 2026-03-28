@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 
+{% block hreflang_ru %}https://moviefinders.net/films/vecher{% endblock %}
+{% block hreflang_en %}https://moviefinders.net/en/films/vecher{% endblock %}
+{% block hreflang_xdefault %}https://moviefinders.net/films/vecher{% endblock %}
+
 {% block title %}{% if lang == "ru" %}Фильмы на вечер — что посмотреть сегодня | MovieFinder{% else %}Movies for Evening — What to Watch Tonight | MovieFinder{% endif %}{% endblock %}
 
 {% block meta_description %}{% if lang == "ru" %}Подборка уютных фильмов на вечер с рейтингом выше 7.5. Комедии, драмы и романтика для приятного просмотра дома.{% else %}Cozy movies for the evening with rating above 7.5. Comedies, dramas and romance for a pleasant evening at home.{% endif %}{% endblock %}
 
+{% block canonical %}{% if lang == 'en' %}https://moviefinders.net/en/films/vecher{% else %}https://moviefinders.net/films/vecher{% endif %}{% endblock %}
 {% block head_extra %}
-<link rel="canonical" href="https://moviefinders.net/films/vecher" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

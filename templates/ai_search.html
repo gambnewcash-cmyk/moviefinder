@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block hreflang_ru %}https://moviefinders.net/ai-search{% endblock %}
+{% block hreflang_en %}https://moviefinders.net/en/ai-search{% endblock %}
+{% block hreflang_xdefault %}https://moviefinders.net/ai-search{% endblock %}
+
 {% block head %}<meta name="robots" content="noindex, follow"/>{% endblock %}
 {% block title %}{{ t.ai_search_page_title }}{% endblock %}
 
@@ -10,7 +14,7 @@
 {% block og_description %}{{ t.ai_search_og_desc }}{% endblock %}
 {% block twitter_title %}AI Поиск Фильмов — MovieFinder{% endblock %}
 {% block twitter_description %}Опиши фильм своими словами — AI найдёт название и покажет где смотреть онлайн{% endblock %}
-{% block canonical %}https://moviefinders.net/ai-search{% endblock %}
+{% block canonical %}{% if lang == "en" %}https://moviefinders.net/en/ai-search{% else %}https://moviefinders.net/ai-search{% endif %}{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">

@@ -629,7 +629,8 @@ async def sitemap_static():
         ("/films/vecher", "0.8", "weekly"),
         ("/en/top", "0.8", "weekly"),
         ("/en/films/2026", "0.8", "daily"),
-    ] + [("/genre/" + slug, "0.8", "weekly") for slug in GENRE_MAP.keys()] + [("/en/genre/" + slug, "0.7", "weekly") for slug in GENRE_MAP.keys()]
+        ("/en/films/vecher", "0.8", "weekly"),
+    ] +  [("/genre/" + slug, "0.8", "weekly") for slug in GENRE_MAP.keys()] + [("/en/genre/" + slug, "0.7", "weekly") for slug in GENRE_MAP.keys()]
     
     urls = []
     for path, priority, changefreq in static_pages:
@@ -915,11 +916,27 @@ async def en_films_vecher_page(request: Request, page: int = 1, sort: str = "pop
     })
 
 
-@app.get("/en/", response_class=HTMLResponse)
-@app.get("/en", response_class=HTMLResponse)
+@app.api_route("/en/", methods=["GET", "HEAD"], response_class=HTMLResponse)
+@app.api_route("/en", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def en_homepage(request: Request):
-    """English homepage - redirect to main with EN lang set."""
-    from fastapi.responses import RedirectResponse
-    response = RedirectResponse(url="/", status_code=302)
-    response.set_cookie("lang", "en", max_age=31536000)
-    return response
+    """English homepage - serves homepage with EN language forced."""
+    lang = "en"
+    t = get_translations(lang)
+    # Get same data as homepage but in EN
+    try:
+        trending = await get_trending(lang=lang)
+        trending = trending[:12]
+    except:
+        trending = []
+    for m in trending:
+        m["display_title"] = m.get("title_en") or m.get("title", "")
+    trending_searches = get_trending_searches(limit=8)
+    return templates.TemplateResponse(request, "index.html", {
+        "trending": trending,
+        "trending_searches": trending_searches,
+        "lang": lang,
+        "t": t,
+        "hreflang_ru": "https://moviefinders.net/",
+        "hreflang_en": "https://moviefinders.net/en/",
+        "canonical_url": "https://moviefinders.net/en/",
+    })

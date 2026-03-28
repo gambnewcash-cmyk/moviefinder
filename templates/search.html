@@ -1,40 +1,8 @@
 {% extends "base.html" %}
 
 {% block head %}<meta name="robots" content="noindex, follow"/>{% endblock %}
-{% block title %}{% if query %}{{ query }} — {% endif %}{{ t.search_results if t else 'Search' }} · MovieFinder
-<div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold z-50 transform translate-y-10 opacity-0 transition-all duration-300 pointer-events-none"></div>
-<script>
-const _si18n = {
-  toast_removed_fav: "{{ t.toast_removed_fav if t else 'Removed from favorites' }}",
-  toast_added_fav: "{{ t.toast_added_fav if t else '❤️ Added to favorites!' }}",
-  toast_removed_watched: "{{ t.toast_removed_watched if t else 'Removed from watched' }}",
-  toast_added_watched: "{{ t.toast_added_watched if t else '✅ Marked as watched!' }}",
-};
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.remove('translate-y-10', 'opacity-0');
-  el.classList.add('translate-y-0', 'opacity-100');
-  setTimeout(() => { el.classList.add('translate-y-10', 'opacity-0'); el.classList.remove('translate-y-0', 'opacity-100'); }, 2500);
-}
-function toggleFavorite(id, title, poster, year, mediaType) {
-  let favs = JSON.parse(localStorage.getItem('favorites') || '[]');
-  const idx = favs.findIndex(f => f.id == id);
-  if (idx >= 0) { favs.splice(idx, 1); showToast(_si18n.toast_removed_fav); }
-  else { favs.push({id, title, poster, year, mediaType: mediaType || 'movie'}); showToast(_si18n.toast_added_fav); }
-  localStorage.setItem('favorites', JSON.stringify(favs));
-}
-function toggleWatched(id, title, poster, year, mediaType) {
-  let watched = JSON.parse(localStorage.getItem('watched') || '[]');
-  const idx = watched.findIndex(f => f.id == id);
-  if (idx >= 0) { watched.splice(idx, 1); showToast(_si18n.toast_removed_watched); }
-  else { watched.push({id, title, poster: poster||'', year: year||'', mediaType: mediaType||'movie'}); showToast(_si18n.toast_added_watched); }
-  localStorage.setItem('watched', JSON.stringify(watched));
-}
-</script>
+{% block title %}{% if query %}{{ query }} — {% endif %}{{ t.search_results if t else 'Search' }} · MovieFinder{% endblock %}
 
-{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10">
@@ -200,6 +168,37 @@ function toggleWatched(id, title, poster, year, mediaType) {
 {% endblock %}
 
 {% block scripts %}
+<div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold z-50 transform translate-y-10 opacity-0 transition-all duration-300 pointer-events-none"></div>
+<script>
+const _si18n = {
+  toast_removed_fav: "{{ t.toast_removed_fav if t else 'Removed from favorites' }}",
+  toast_added_fav: "{{ t.toast_added_fav if t else '❤️ Added to favorites!' }}",
+  toast_removed_watched: "{{ t.toast_removed_watched if t else 'Removed from watched' }}",
+  toast_added_watched: "{{ t.toast_added_watched if t else '✅ Marked as watched!' }}",
+};
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove('translate-y-10', 'opacity-0');
+  el.classList.add('translate-y-0', 'opacity-100');
+  setTimeout(() => { el.classList.add('translate-y-10', 'opacity-0'); el.classList.remove('translate-y-0', 'opacity-100'); }, 2500);
+}
+function toggleFavorite(id, title, poster, year, mediaType) {
+  let favs = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const idx = favs.findIndex(f => f.id == id);
+  if (idx >= 0) { favs.splice(idx, 1); showToast(_si18n.toast_removed_fav); }
+  else { favs.push({id, title, poster, year, mediaType: mediaType || 'movie'}); showToast(_si18n.toast_added_fav); }
+  localStorage.setItem('favorites', JSON.stringify(favs));
+}
+function toggleWatched(id, title, poster, year, mediaType) {
+  let watched = JSON.parse(localStorage.getItem('watched') || '[]');
+  const idx = watched.findIndex(f => f.id == id);
+  if (idx >= 0) { watched.splice(idx, 1); showToast(_si18n.toast_removed_watched); }
+  else { watched.push({id, title, poster: poster||'', year: year||'', mediaType: mediaType||'movie'}); showToast(_si18n.toast_added_watched); }
+  localStorage.setItem('watched', JSON.stringify(watched));
+}
+</script>
 <style>
   .active-toggle { background: #e50914; color: white; }
   .search-toggle-btn:not(.active-toggle):hover { color: white; }

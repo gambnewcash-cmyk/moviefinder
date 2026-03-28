@@ -127,17 +127,27 @@
 function setLang(lang) {
   localStorage.setItem('mf_lang', lang);
   var path = window.location.pathname;
-  // If on /en/ page and switching to RU → redirect to RU URL
+  
+  // Pages that have EN equivalents
+  var enRoutes = ['/movie/', '/genre/', '/top', '/films/2026', '/films/vecher', '/ai-search'];
+  var hasEnVersion = enRoutes.some(function(r) { return path === r || path.startsWith(r); });
+  
   if (lang === 'ru' && path.startsWith('/en/')) {
+    // EN → RU: strip /en prefix
     window.location.href = path.replace('/en/', '/');
     return;
   }
-  // If on RU page and switching to EN → redirect to EN URL
   if (lang === 'en' && !path.startsWith('/en/')) {
-    window.location.href = '/en' + path;
+    if (hasEnVersion) {
+      // Has EN version: go to /en/path
+      window.location.href = '/en' + path;
+    } else {
+      // No EN version: go to EN homepage
+      window.location.href = '/en/';
+    }
     return;
   }
-  // Otherwise just set cookie and reload
+  // Already on correct lang page, just set cookie
   fetch('/api/set-language?lang=' + lang).then(() => location.reload());
 }
 

@@ -7,8 +7,9 @@
 {% block hreflang_en %}https://moviefinders.net/en/films/2026{% endblock %}
 {% block hreflang_xdefault %}https://moviefinders.net/films/2026{% endblock %}
 
+{% block canonical %}{% if lang == 'en' %}https://moviefinders.net/en/films/2026{% else %}https://moviefinders.net/films/2026{% endif %}{% endblock %}
+
 {% block head %}
-<link rel="canonical" href="{% if lang == 'en' %}https://moviefinders.net/en/films/2026{% else %}https://moviefinders.net/films/2026{% endif %}"/>
 <meta property="og:title" content="{{ t.films2026_page_title if t else 'New Movies 2026 Watch Online Free | MovieFinder' }}"/>
 <meta property="og:description" content="{{ t.films2026_page_desc if t else 'New movies 2026 — watch online free without registration. Best new releases of 2026.' }}"/>
 <meta property="og:url" content="https://moviefinders.net/films/2026"/>
