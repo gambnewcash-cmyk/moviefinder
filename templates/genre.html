@@ -12,8 +12,11 @@
 {% block hreflang_en %}https://moviefinders.net/en/genre/{{ slug }}{% endblock %}
 {% block hreflang_xdefault %}https://moviefinders.net/genre/{{ slug }}{% endblock %}
 
+{% block og_title_inner %}{{ genre_name }} — {% if lang == 'ru' %}смотреть онлайн бесплатно{% else %}watch online free{% endif %} | MovieFinder{% endblock %}
+{% block og_description %}{% if lang == 'ru' %}{{ genre_name }} — лучшие фильмы жанра. Узнай на каких платформах доступны бесплатно и без регистрации.{% else %}{{ genre_name }} films — find where to watch online free on all streaming platforms.{% endif %}{% endblock %}
+
 {% block head %}
-<link rel="canonical" href="https://moviefinders.net/genre/{{ slug }}" />
+<link rel="canonical" href="{% if lang == 'en' %}https://moviefinders.net/en/genre/{{ slug }}{% else %}https://moviefinders.net/genre/{{ slug }}{% endif %}" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

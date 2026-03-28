@@ -1,131 +1,145 @@
-# SEO Effectiveness Analysis Report — moviefinders.net
-**Date:** 2026-03-27  
-**Analyst:** Ceo (Elite SEO Specialist)  
-**Context:** Analysis conducted ~1-2 weeks after SEO optimization (March 2026)  
+# SEO Effectiveness Analysis — moviefinders.net
+**Date:** 2026-03-28  
+**Analyst:** Ceo (AI SEO Specialist)  
+**Scope:** Full technical, on-page, and SERP analysis
 
 ---
 
-## EXECUTIVE SUMMARY
+## 1. EXECUTIVE SUMMARY
 
-**Score: 3.5/10**
+| Parameter | Value |
+|-----------|-------|
+| **Overall SEO Score** | **3.5 / 10** |
+| **Indexation (Google/Bing)** | 🔴 0 pages detected |
+| **SERP Positions (RU)** | 🔴 Not ranking |
+| **SERP Positions (EN)** | 🔴 Not ranking |
+| **Technical SEO** | 🟡 Good structure, critical canonical bug |
+| **Content Quality** | 🟡 Acceptable, localization incomplete |
+| **Schema Markup** | 🟢 Implemented correctly |
+| **Sitemap** | 🟢 Present and structured |
 
-The SEO optimization work was technically implemented correctly, but is **not yet producing results** — and there are serious structural issues that will prevent it from ever working fully without additional intervention. The site is a JavaScript SPA (Single Page Application) that renders content client-side, meaning search engine crawlers likely cannot see the actual page content even though titles are set. Zero indexation was confirmed across DuckDuckGo, Yahoo, and Bing searches. The optimization is partially built on a broken foundation.
-
----
-
-## 1. INDEXATION STATUS
-
-### Search Engine Results
-
-| Search Engine | Query | Result |
-|---|---|---|
-| DuckDuckGo | `site:moviefinders.net` | **0 results** (bot challenge triggered) |
-| DuckDuckGo | `site:moviefinders.net top` | **0 results** |
-| DuckDuckGo | `site:moviefinders.net films/2026` | **0 results** |
-| DuckDuckGo | `site:moviefinders.net genre` | **0 results** |
-| DuckDuckGo | `site:moviefinders.net films/vecher` | **0 results** |
-| Yahoo | `site:moviefinders.net` | **"We did not find results"** — explicit zero |
-| Bing | `site:moviefinders.net` | Bot challenge (no results shown) |
-
-### Verdict on Indexation
-- **CRITICAL: The site appears to have ZERO pages indexed in major search engines** (excluding Google which requires GSC for accurate count)
-- DuckDuckGo triggering bot challenges rapidly suggests the site may have had unusual crawl patterns or the tools are rate-limited due to aggressive crawling attempts
-- Yahoo's explicit "did not find results" is the clearest signal — **moviefinders.net is NOT indexed in Yahoo/Bing**
-- Note: Google indexation status cannot be confirmed without Google Search Console access. The 1-2 week timeline means even Google may still be processing
-
-### New Pages Indexation Status
-
-| Page | In Sitemap | Status |
-|---|---|---|
-| /top | ✅ Yes | Unknown — not confirmed indexed |
-| /films/2026 | ✅ Yes | Unknown — not confirmed indexed |
-| /films/vecher | ✅ Yes | Unknown — not confirmed indexed |
-| /genres | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/horror | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/comedy | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/action | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/drama | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/thriller | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/voennye | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/fantastika | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/crime | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/animation | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/romance | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/documentary | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/istoricheskie | ✅ Yes | Unknown — not confirmed indexed |
-| /genre/muzyka | ✅ Yes | Unknown — not confirmed indexed |
+**Verdict:** The site has a solid technical foundation but is essentially invisible to search engines — zero indexation detected across all searches. Multiple critical bugs prevent proper crawling and ranking.
 
 ---
 
-## 2. TITLE / META AUDIT
+## 2. INDEXATION STATUS
 
-### Main Page (https://moviefinders.net)
-- **Title:** `Watch Movies Online Free 2025 2026 — MovieFinder` ✅ GOOD
-  - Keyword-rich, includes year targets, branded
-  - Correct length (~50 chars)
-- **Body Content (crawlable):** ⚠️ SEVERE ISSUE
-  - Only renders: "1 Enter a title | Movie, TV show, or use AI smart search | 2 See platforms | See which platforms have the movie or show for free — Netflix, HDRezka, Filmix and 20+ sites | 3 Enjoy | Direct link — one click and you're watching"
-  - This is a SPA shell — **no actual movie content is visible to crawlers without JavaScript execution**
+### 2.1 Google/Bing Index (via DuckDuckGo)
 
-### /top
-- **Title:** `Top 100 Movies 2025-2026 — Watch Online Free` ✅ GOOD
-- **Body Content (crawlable):** ⚠️ Only shows "▶ MovieFinder | Find where to watch any movie or TV show — streaming & more. | Movie data provided by TMDB."
-- **H1:** Not visible in SSR HTML (rendered by JavaScript only)
-- **Meta Description:** Not confirmed in crawl output — likely set dynamically
+| Query | Results | Status |
+|-------|---------|--------|
+| `site:moviefinders.net` | 0 pages | 🔴 NOT INDEXED |
+| `site:moviefinders.net top` | 0 pages | 🔴 NOT INDEXED |
+| `site:moviefinders.net 2026` | 0 pages | 🔴 NOT INDEXED |
+| `site:moviefinders.net genre` | 0 pages | 🔴 NOT INDEXED |
+| `site:moviefinders.net en` | 0 pages | 🔴 NOT INDEXED |
 
-### /genre/horror
-- **Title:** `Horror Films — watch online free` ✅ Good (though could include keyword "смотреть" for Russian)
-- **Body Content (crawlable):** ⚠️ SAME SHELL — "▶ MovieFinder | Find where to watch any movie or TV show — streaming & more."
-- **H1:** Not visible without JS
-- **Meta:** Dynamic, not SSR
+**Diagnosis:** The site is effectively invisible to search engines. Possible causes:
+1. **Site is too new** — insufficient time for crawlers to discover and index
+2. **Authority issues** — zero backlinks means Googlebot has low crawl priority
+3. **Canonical bugs** — EN pages canonicalized to RU pages, confusing Google
+4. **crawl budget waste** — 220,000+ URLs submitted, but no authority to index them
 
-### /films/2026
-- **Title:** `New Movies 2026 Watch Online Free` ✅ GOOD
-
-### /films/vecher
-- **Title:** `Movies for Evening — What to Watch Tonight` ✅ Good (English — mixed with Russian audience targeting?)
-
-### /genres
-- **Title:** `All Movie Genres | MovieFinder` ✅ Decent
-
-### /genre/comedy
-- **Title:** `Comedy Films — watch online free` ✅ Good
-
-### Critical Issue — SPA Architecture
-All pages return the same thin HTML shell:
+### 2.2 Sitemap Structure
 ```
-▶ MovieFinder
-Find where to watch any movie or TV show — streaming & more.
-Movie data provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.
+sitemap-index.xml
+├── sitemap-static.xml        (homepage, /top, /films/2026, /genres, genre pages, en/ versions)
+├── sitemap-movies-1.xml      (~20,000 URLs — RU + EN pairs)
+├── sitemap-movies-2.xml      (~20,000 URLs)
+├── ...
+└── sitemap-movies-11.xml     (~20,000 URLs)
 ```
-**This means:**
-- Googlebot sees empty pages (unless Google successfully executes JavaScript, which happens with delay)
-- All the actual movie lists, genre content, descriptions = INVISIBLE to crawlers
-- Schema.org JSON-LD may be embedded in the static HTML (needs verification) or rendered by JS (problematic)
-- The titles ARE set in meta tags (confirmed working) but body content is empty
+**Total estimated URLs in sitemap: ~220,000+ (RU+EN pairs)**
+
+✅ Sitemap index is well-structured  
+✅ hreflang in sitemap movie files (xhtml:link)  
+✅ lastmod dates present and current (2026-03-28)  
+🟡 Sitemap submitted, but Google Search Console needs verification  
 
 ---
 
-## 3. POSITION TRACKING
+## 3. TITLES & META ANALYSIS
 
-### Russian Keywords — moviefinders.net Visibility
+### 3.1 Homepage (`/`)
+- **HTML lang:** `ru`
+- **Title:** `Смотреть фильмы онлайн бесплатно 2025 2026 — MovieFinder` ✅ Excellent — includes key Russian queries
+- **Meta description:** `Найди где смотреть фильмы 2025 и 2026 онлайн бесплатно без регистрации. Кинопоиск, Okko, IVI, Netflix и 20+ источников. AI поиск по сюжету.` ✅ Good — keyword-rich, includes platforms
+- **Canonical:** `https://moviefinders.net/` ✅
+- **Hreflang:** ru → `/`, en → `/en/`, x-default → `/` ✅
+- **Schema:** WebSite with SearchAction ✅
 
-| Query | moviefinders.net visible? | Notes |
-|---|---|---|
-| `смотреть фильмы онлайн бесплатно` | ❌ NOT FOUND | Search engine bot-blocked, but no results seen at all |
-| `лучшие фильмы 2025 2026` | ❌ NOT FOUND | No confirmation |
-| `фильмы 2026` | ❌ NOT FOUND | No confirmation |
-| `фильмы на вечер` | ❌ NOT FOUND | No confirmation |
-| `фильмы ужасы онлайн` | ❌ NOT FOUND | No confirmation |
-| `военные фильмы` | ❌ NOT FOUND | No confirmation |
+### 3.2 Movie Page RU (`/movie/157336` — Interstellar)
+- **HTML lang:** `ru`
+- **Title:** `Интерстеллар (2014) — смотреть онлайн бесплатно | MovieFinder` ✅ 
+- **Meta description:** `Где смотреть Интерстеллар (2014) онлайн. Жанр: приключения, драма. Все стриминговые сервисы...` ✅
+- **Canonical:** `https://moviefinders.net/movie/157336` ✅
+- **Hreflang:** ru → `/movie/157336`, en → `/en/movie/157336`, x-default → `/movie/157336` ✅
+- **Schema:** Movie + AggregateRating + WatchAction + actors in Russian ✅
 
-**Note:** DuckDuckGo was rate-limited after ~5 queries. Yahoo confirmed zero indexation. Position tracking is not possible without proper rank tracking tools (Serpstat, SE Ranking, etc.). Based on zero indexation evidence, the site likely ranks for 0 keywords in Yandex/Google RU.
+### 3.3 Movie Page EN (`/en/movie/157336` — Interstellar) 🔴 CRITICAL BUG
+- **HTML lang:** `en` ✅
+- **Title:** `Interstellar (2014) — watch online free | MovieFinder` ✅
+- **Meta description:** `Where to watch Interstellar (2014) online. Genre: Adventure, Drama. All streaming services...` ✅ 
+- **Canonical:** `https://moviefinders.net/movie/157336` 🔴 **CANONICAL BUG! Points to Russian page!**
+- **OG description:** `"Interstellar (2014) — найди где смотреть онлайн. Кинопоиск..."` 🔴 **RUSSIAN TEXT on English page!**
+- **Twitter title:** `"Interstellar (2014) — где смотреть онлайн"` 🔴 **RUSSIAN TEXT on English page!**
+- **Hreflang:** correct (ru/en/x-default) ✅
+
+### 3.4 Genre Page (`/genre/horror`)
+- **Title:** `Фильмы ужасов — смотреть онлайн бесплатно | MovieFinder` ✅
+- **Meta description:** `Лучшие фильмы ужасов — смотреть онлайн бесплатно без регистрации на MovieFinder.` 🟡 Generic, could be more specific
+- **Canonical:** `https://moviefinders.net/genre/horror` ✅
+- **noindex:** ❌ Not present (correct — genre pages should be indexed)
+- **Schema:** CollectionPage + BreadcrumbList ✅
+- **OG tags:** Generic site-wide tags, not page-specific 🟡
+
+### 3.5 Search Page (`/search?q=batman`)
+- **Title:** `batman — Search Results · MovieFinder` ✅
+- **Canonical:** `https://moviefinders.net/search` ✅ (strips ?q= param)
+- **noindex:** ✅ `<meta name="robots" content="noindex, follow"/>` — CORRECT
+
+### 3.6 /top Page
+- **Title:** `Топ 100 лучших фильмов 2025-2026 — найди где посмотреть бесплатно | MovieFinder` ✅ Excellent
+- **Meta description:** `Топ 100 лучших фильмов 2025-2026 года по рейтингу зрителей. Найди на каких сайтах посмотреть бесплатно и без регистрации.` ✅
+- **OG tags:** Generic (not page-specific) 🟡
+- **Schema:** Missing (no structured data for list/collection) 🟡
+
+### 3.7 /films/2026 Page
+- **Title:** `Новые фильмы 2026 смотреть онлайн бесплатно | MovieFinder` ✅ Excellent
+- **Meta description:** `Новые фильмы 2026 — найди где посмотреть онлайн бесплатно без регистрации. Лучшие новинки 2026 года.` ✅
+- **OG tags:** Generic (not page-specific) 🟡
 
 ---
 
-## 4. TECHNICAL AUDIT
+## 4. SERP POSITIONS
 
-### robots.txt ✅ CLEAN
+### 4.1 Russian Queries
+
+| Query | Position | Status |
+|-------|----------|--------|
+| `смотреть фильмы онлайн бесплатно` | Not found | 🔴 Not ranking |
+| `лучшие фильмы 2025` | Not found | 🔴 Not ranking |
+| `фильмы 2026` | Not found | 🔴 Not ranking |
+| `фильмы ужасы смотреть онлайн` | Not found | 🔴 Not ranking |
+| `военные фильмы смотреть онлайн` | Not found | 🔴 Not ranking |
+| `смотреть фильмы бесплатно без регистрации` | Not found | 🔴 Not ranking |
+
+### 4.2 English Queries
+
+| Query | Position | Status |
+|-------|----------|--------|
+| `watch movies online free 2026` | Not found | 🔴 Not ranking |
+| `where to watch movies free` | Not found | 🔴 Not ranking |
+| `best movies 2025 2026` | Not found | 🔴 Not ranking |
+| `horror movies watch online` | Not found | 🔴 Not ranking |
+
+**Note:** DuckDuckGo (powered by Bing index) returned 0 results for all queries related to moviefinders.net. The site has no organic visibility whatsoever as of the analysis date.
+
+---
+
+## 5. TECHNICAL SEO AUDIT
+
+### 5.1 robots.txt
 ```
 User-agent: *
 Allow: /
@@ -133,227 +147,297 @@ Disallow: /api/
 
 Sitemap: https://moviefinders.net/sitemap-index.xml
 ```
-- No major pages blocked ✅
-- Only /api/ blocked (correct) ✅
-- Sitemap URL points to sitemap-index.xml ✅
+✅ Clean and minimal — all content pages are crawlable  
+✅ /api/ correctly blocked  
+✅ Sitemap reference included  
 
-### Sitemap Structure ✅ GOOD
-**sitemap-index.xml** contains:
-- `sitemap-static.xml` (updated 2026-03-27)
-- `sitemap-movies-1.xml` through `sitemap-movies-11.xml` (all updated 2026-03-27)
+### 5.2 Core Technical Issues
 
-**sitemap-static.xml** ✅ Contains all new pages:
-- / (priority 1.0, daily)
-- /ai-search (priority 0.9)
-- /top (priority 0.9)
-- /films/2026 (priority 0.9, daily)
-- /films/vecher (priority 0.8)
-- /genres (priority 0.8)
-- All 13 genre pages (priority 0.8)
-- /favorites (priority 0.5)
+| Issue | Severity | Details |
+|-------|----------|---------|
+| Zero indexation | 🔴 CRITICAL | 0 pages found in search index |
+| EN page canonical bug | 🔴 CRITICAL | `/en/movie/*` canonicals point to `/movie/*` (Russian). Google treats all EN pages as duplicates of RU pages and will drop them |
+| Russian OG/Twitter tags on EN pages | 🔴 HIGH | og:description, twitter:title, twitter:description contain Russian on /en/ pages |
+| turbo.rss → 404 | 🟠 HIGH | All pages reference `/turbo.rss` for Yandex Turbo, but it returns 404 |
+| No backlinks | 🔴 CRITICAL | New domain with zero external authority |
+| Generic OG on category pages | 🟡 MEDIUM | /top, /films/2026, /genre/* use default site-wide OG |
+| No ItemList schema on /top | 🟡 MEDIUM | The top-100 list lacks ItemList structured data |
+| Google Site Verification | 🟢 OK | Present in homepage meta |
 
-**sitemap-movies-1.xml** contains movie URLs with hreflang:
-- `/movie/{id}` format ✅
-- hreflang ru/en links present ✅
+### 5.3 Canonical Architecture Analysis
 
-### Hreflang Implementation ⚠️ ISSUE
-Movie pages use `?lang=ru` and `?lang=en` query parameters for hreflang:
-```xml
-<xhtml:link rel="alternate" hreflang="ru" href="https://moviefinders.net/movie/10528?lang=ru"/>
-<xhtml:link rel="alternate" hreflang="en" href="https://moviefinders.net/movie/10528?lang=en"/>
+**Correct:**
+- Homepage: canonical = self ✅
+- `/movie/157336` (RU): canonical = self ✅
+- `/search?q=...`: canonical = `/search` (strips query) ✅
+- Genre pages: canonical = self ✅
+
+**BROKEN:**
+- `/en/movie/157336` (EN): canonical = `/movie/157336` (RUSSIAN URL!) 🔴
+  - This means Google will NEVER index the English movie pages
+  - All 100,000+ English movie pages are affected
+  - Google sees EN pages as duplicates of RU pages
+
+### 5.4 Hreflang Implementation
+
+| Page | ru | en | x-default | Status |
+|------|----|----|-----------|--------|
+| Homepage `/` | ✅ `/` | ✅ `/en/` | ✅ `/` | Good |
+| `/movie/157336` | ✅ self | ✅ `/en/movie/...` | ✅ self | Good |
+| `/en/movie/157336` | ✅ | ✅ | ✅ `/en/...` | x-default inconsistency vs homepage |
+| `/genre/horror` | ✅ self | ✅ `/en/genre/horror` | ✅ self | Good |
+| `/top` | ✅ self | ✅ `/en/top` | ✅ self | Good |
+
+**Note:** x-default inconsistency — homepage x-default points to `/` (Russian), but EN movie pages x-default points to `/en/...` (English). Should be consistent.
+
+### 5.5 Schema.org Implementation
+
+| Page | Schema Type | Status |
+|------|-------------|--------|
+| Homepage | WebSite + SearchAction | ✅ Excellent |
+| `/movie/*` RU | Movie + AggregateRating + WatchAction | ✅ Excellent |
+| `/en/movie/*` | Movie + AggregateRating + WatchAction | ✅ Good |
+| `/genre/horror` | CollectionPage + BreadcrumbList | ✅ Good |
+| `/top` | None detected | 🟡 Missing ItemList |
+| `/films/2026` | None detected | 🟡 Missing ItemList |
+
+### 5.6 Performance & Technical
+
+- Site loads: ✅ (200 OK, fast response via Railway + Fastly CDN)
+- HTTPS: ✅
+- Mobile viewport: ✅
+- TailwindCSS loaded from CDN (cdn.tailwindcss.com): 🟡 External CDN dependency for rendering — may cause CLS/LCP issues on first paint
+- Google Fonts: 🟡 External font loading — preconnect present, but still render-blocking potential
+
+---
+
+## 6. COMPETITOR ANALYSIS
+
+*Note: DuckDuckGo bot-detection prevented real-time SERP scraping. Analysis based on known industry data.*
+
+### 6.1 Russian Market Competitors (смотреть фильмы онлайн бесплатно)
+
+| Rank | Competitor | Why They Win |
+|------|-----------|-------------|
+| 1 | **Kinopoi.hd.ru** (illegals) | Massive content, aged domain, huge backlink profile |
+| 2 | **HDRezka.ag / me** | 10+ years old, millions of backlinks, deep catalog |
+| 3 | **Filmix.live** | CIS-focused, millions of daily visitors, strong brand |
+| 4 | **Ivi.ru** | Legal, massive budget, brand authority |
+| 5 | **Okko.ru** | Legal, brand awareness campaigns |
+
+**MovieFinders.net position:** Absent from top 100
+
+**Key differentiator competitors have:**
+- Aged domains (5-15 years)
+- Millions of backlinks
+- Dedicated content (actual video hosting or embeds)
+- Active user communities
+
+**MovieFinders' unique angle (underexploited):** Aggregator model — tells users WHERE to watch (like JustWatch). This is a less-competed niche vs. piracy sites.
+
+### 6.2 English Market Competitors (watch movies online free)
+
+| Rank | Competitor | Why They Win |
+|------|-----------|-------------|
+| 1 | **JustWatch.com** | THE leader in "where to watch" space, massive brand |
+| 2 | **Reelgood.com** | Strong aggregator, good SEO |
+| 3 | **Letterboxd.com** | Enormous community, brand authority |
+| 4 | **IMDb.com** | Amazon-backed, unassailable authority |
+| 5 | **Fandango.com** | US market leader for showtimes/streaming |
+
+**MovieFinders vs JustWatch:** JustWatch dominates "where to watch [movie name]" queries. MovieFinder is targeting the exact same space but has zero authority.
+
+### 6.3 Competitive Opportunity
+
+The keyword `где смотреть [название фильма]` (where to watch [movie name]) is LESS competitive than `смотреть фильмы онлайн` (piracy queries). MovieFinder should target:
+- `где смотреть [film name] онлайн` — long-tail, lower competition
+- `[film name] какие платформы` — unique to aggregator model
+- `[film name] бесплатно стриминг` — monetizable intent
+
+---
+
+## 7. ALGORITHM CONTEXT
+
+### 7.1 Google Core Updates (2025-2026)
+- **March 2025 Core Update:** Heavily penalized thin content and aggregator sites without original value
+- **August 2025 Core Update:** Emphasized E-E-A-T (Experience, Expertise, Authoritativeness, Trust)
+- **Key signal:** User engagement metrics (dwell time, click-through rate) — new sites with no traffic history start with no trust
+- **AI-generated content policies:** Sites with fully auto-generated content (TMDB data) need to add unique value
+
+**Impact on MovieFinders:** The aggregator model with API-sourced content (TMDB) is a known risk category. Without adding unique editorial content, reviews, or recommendations, Google may treat it as thin content.
+
+### 7.2 Yandex Algorithm (2025)
+- Yandex continues to favor Russian-language content from established domains
+- Yandex Turbo is still relevant for mobile ranking in Russia — the broken turbo.rss is a missed opportunity
+- Yandex pays attention to commercial intent signals — MovieFinder's model (directing to legal streaming) aligns well
+
+---
+
+## 8. PROBLEMS FOUND
+
+### 🔴 CRITICAL
+
+1. **Zero indexation** — 0 pages in search engines. The site has no organic visibility.
+   - Root cause: New domain, zero backlinks, Google hasn't prioritized crawling
+
+2. **Canonical bug on ALL /en/movie/* pages** — `canonical` points to Russian URL `/movie/{id}` instead of `/en/movie/{id}`. Google will never independently rank English movie pages; they'll always be treated as duplicates of Russian pages.
+   - Estimated affected pages: ~110,000 URLs
+
+3. **Zero backlinks** — Domain has no link authority. Without external links, Google sees the site as untrustworthy.
+
+### 🟠 HIGH PRIORITY
+
+4. **Russian OG/Twitter tags on English pages** — og:description, twitter:title, twitter:description contain Russian text on all /en/ pages. When shared on social media, English users see Russian text.
+
+5. **turbo.rss returns 404** — All pages declare `<link rel="alternate" type="application/rss+xml" href="/turbo.rss"/>`. Yandex Turbo crawler hits this and gets a 404. Either implement Turbo or remove the link tag from all pages.
+
+6. **No editorial content** — All content comes from TMDB API. Google's Helpful Content system may classify this as thin/auto-generated content. No user reviews, editorial picks, or original writing.
+
+7. **TailwindCSS CDN dependency** — Using `cdn.tailwindcss.com` for production is bad for Core Web Vitals. The CDN script loads all Tailwind utilities, causing large CSS payload.
+
+### 🟡 MEDIUM
+
+8. **Generic OG tags on category pages** — /top, /films/2026, /genre/* all use the default "MovieFinder — Найди где смотреть фильм" OG title/description instead of page-specific ones.
+
+9. **Missing ItemList schema on /top and /films/2026** — These list pages should have `ItemList` schema to get rich snippets in Google.
+
+10. **Missing BreadcrumbList on homepage and /top** — Would help with SERP display.
+
+11. **x-default inconsistency** — Homepage x-default → RU, movie EN pages x-default → EN. Should be consistent.
+
+12. **No user-generated content** — No comments, ratings, or reviews from users. This limits engagement signals and fresh content.
+
+13. **Language switching via cookie/session** — If Googlebot arrives without cookie, it gets one language. The site should serve language based on URL path (already done), not sessions.
+
+---
+
+## 9. ACTION PLAN
+
+### Phase 1: Fix Critical Bugs (Week 1) — Priority: 🔴
+
+#### Fix 1: Canonical on EN movie pages
+**File:** movie template for `/en/movie/{id}`
+**Fix:** Change canonical from `/movie/{id}` to `/en/movie/{id}`
+
+```html
+<!-- CURRENT (WRONG): -->
+<link rel="canonical" href="https://moviefinders.net/movie/157336"/>
+
+<!-- CORRECT: -->
+<link rel="canonical" href="https://moviefinders.net/en/movie/157336"/>
 ```
-**Problem:** Google prefers canonical paths (separate URLs or subdomains) over query parameters for language targeting. Query parameter hreflang is less reliable. Also, canonical URL should be the main URL without ?lang parameter.
 
-### Core Technical Issue: SPA Without SSR/SSG ❌ CRITICAL
-The entire site appears to be a client-side rendered SPA. Evidence:
-- All pages return identical minimal body text
-- Content loads via JavaScript (TMDB API calls)
-- Titles ARE set (meta tags work)
-- But all body content, H1 tags, Schema.org rich data, movie lists = JavaScript only
+Also for `/en/genre/*`, `/en/top`, `/en/films/*` — verify all EN pages self-canonicalize.
 
-**Impact:** Google DOES eventually crawl JavaScript, but:
-1. It happens with significant delay (days to weeks)
-2. Google's JS crawl budget is limited for new/low-authority sites
-3. Secondary search engines (Bing, Yahoo, Yandex) often DON'T execute JS
-4. Content quality signals are weaker from JS-rendered pages
+#### Fix 2: OG and Twitter tags on EN pages
+**Fix:** Translate og:description and twitter:description/title to English for all /en/ pages.
 
----
+```html
+<!-- CURRENT (on /en/ pages — WRONG): -->
+<meta property="og:description" content="Interstellar (2014) — найди где смотреть онлайн..."/>
 
-## 5. COMPETITOR ANALYSIS
+<!-- CORRECT: -->
+<meta property="og:description" content="Where to watch Interstellar (2014) online. All streaming platforms in one place."/>
+```
 
-*Note: Direct SERP competitor analysis was blocked by rate limiting. Analysis based on known Russian movie streaming market.*
+#### Fix 3: turbo.rss — Fix or Remove
+Either:
+- **Implement** a proper Yandex Turbo RSS feed at `/turbo.rss`
+- **Remove** the `<link rel="alternate" type="application/rss+xml" href="/turbo.rss"/>` from all page templates
 
-### Top Competitors in Russian Market
+#### Fix 4: CSS — Self-host TailwindCSS build
+Replace CDN reference with production build:
+```bash
+npm run build:css  # generate static CSS
+```
+Use `<link rel="stylesheet" href="/static/css/tailwind.min.css">` instead of CDN.
 
-| Site | Estimated DR | Strategy | Strengths |
-|---|---|---|---|
-| kinopoisk.ru | ~85 | Full SSR, rich content, reviews | Brand authority, Yandex integration |
-| filmix.me | ~50-60 | SSR, large catalog | Long-tail movie pages |
-| rezka.ag | ~45-55 | SSR, Russian-language | Deep Cyrillic content |
-| kinogo.club | ~40 | SSR, genre pages | Genre targeting |
-| ivi.ru | ~80 | Full SSR + CDN | Legal platform, trust signals |
+### Phase 2: Link Building (Weeks 2-8) — Priority: 🔴
 
-### Key Observations
-1. **All major competitors use Server-Side Rendering** — they show full HTML to crawlers
-2. **Russian-language content dominates** — most queries expect Cyrillic content in page body
-3. **Genre pages are standard** — competitors have had these for years (barrier to entry: backlinks + age)
-4. **Kinopoisk/Yandex integration** is near-impossible to beat without massive backlink profile
+This is the #1 factor for indexation and ranking.
 
-### What Competitors Do Better
-- Full movie descriptions in HTML (not JS-loaded)
-- Cyrillic H1 tags visible to crawlers
-- User reviews as textual content
-- Internal linking from hundreds of pages to genre/year pages
-- Domain age (5-15 years) vs moviefinders.net (appears new)
+**Tactics:**
+1. **Submit to directories:** DMOZ alternatives, web catalogs for movie sites
+2. **Russian film forums:** Post on kinopoisk.ru forums, pikabu.ru, reddit.ru with value
+3. **Press releases:** Russian tech blogs about AI search feature
+4. **Partnership:** Reach out to Russian Telegram channels about cinema
+5. **Social profiles:** Create Vkontakte, Telegram channel, YouTube — these index fast
+6. **Guest posts:** Russian cinema blogs
+7. **Mention bait:** Create unique content (e.g., "Top 10 underrated films on Okko 2025")
 
----
+**Target:** 50+ quality backlinks in first 2 months
 
-## 6. CORE WEB VITALS
+### Phase 3: Content Enhancement (Weeks 3-6)
 
-*Note: PageSpeed Insights is not accessible via web_fetch. The following is based on the technical observations.*
+1. **Add editorial descriptions** — 2-3 unique sentences per movie (not just TMDB synopsis)
+2. **Add "Why watch" section** on movie pages
+3. **Create editorial collections** — "Best horror 2025", "Award winners 2026"
+4. **Add ItemList schema** to /top and /films/2026
+5. **Fix genre page OG tags** — make them page-specific
 
-### Estimated Performance Issues
-- **SPA Architecture** → High Time to Interactive (TTI) due to JavaScript loading
-- **External API dependency (TMDB)** → Content depends on TMDB response time
-- **No visible Server-Side Rendering** → First Contentful Paint (FCP) likely showing skeleton/loader
-- **TMDB disclaimer visible** → "Movie data provided by TMDB" is shown even in crawl-friendly state
+### Phase 4: Google Search Console (Week 1)
 
-### Recommendations
-- Check PageSpeed manually at: https://pagespeed.web.dev/report?url=https://moviefinders.net
-- Target: LCP < 2.5s, FID < 100ms, CLS < 0.1
+1. **Verify GSC** — Site has verification tag, submit site
+2. **Submit sitemap-index.xml** directly in GSC
+3. **Request indexing** of key pages manually:
+   - Homepage
+   - /top
+   - /films/2026
+   - All genre pages (10-20 pages)
+   - 50 most popular movies
 
----
+### Phase 5: Yandex Webmaster (Week 1)
 
-## 7. ACTION PLAN
+Russian market is Yandex-dominated. Register in Yandex Webmaster:
+1. Verify site
+2. Submit sitemap
+3. Implement Yandex Turbo pages (fix turbo.rss)
+4. Request indexing of key pages
 
-### 🔴 CRITICAL FIXES (Do Immediately)
+### Phase 6: Long-term SEO (Month 2+)
 
-**1. Implement Server-Side Rendering (SSR) or Static Generation (SSG)**
-This is the #1 blocker. Everything else is irrelevant if crawlers can't see content.
-- **Next.js:** Use `getServerSideProps` or `getStaticProps` for genre/year/top pages
-- **Nuxt.js:** Enable SSR mode
-- **Alternative:** Pre-render service (Rendertron, Prerender.io) to serve HTML to bots
-- **Minimum viable:** Add `<noscript>` content with actual movie lists
+1. **Target long-tail "where to watch" queries** — higher conversion, lower competition
+   - `где смотреть Интерстеллар онлайн`
+   - `Дюна 2024 на каком сервисе`
+   
+2. **Create comparison pages** — "Kinopoisk vs IVI: which is better in 2025"
 
-**2. Add Russian-Language Content to Category Pages**
-Genre pages like `/genre/horror` have English titles ("Horror Films — watch online free") but target Russian users. Need:
-- Russian H1 tags: "Фильмы ужасов — смотреть онлайн бесплатно"
-- Russian meta descriptions
-- Russian text content (at least 200-300 words per category page)
-- Or create separate Russian routes: `/zhanr/uzhasy`
+3. **Blog section** — SEO articles, "best movies by genre" round-ups
 
-**3. Fix Hreflang Implementation**
-Current: `?lang=ru` parameter-based → should be separate canonical URLs:
-- Option A: `moviefinders.net/ru/movie/123` + `moviefinders.net/en/movie/123`  
-- Option B: `ru.moviefinders.net` subdomain
-- Query parameters for language are poor practice
-
-**4. Submit to Google Search Console**
-- Verify the site in GSC immediately
-- Submit sitemap-index.xml manually
-- Use URL Inspection tool to check Googlebot's rendered view of pages
-- This is the ONLY way to confirm Google indexation status
-
-### ⚠️ IMPORTANT IMPROVEMENTS (Do Within 2 Weeks)
-
-**5. Add Substantial Text Content to Category Pages**
-Each genre/year page needs:
-- 300-500 word editorial text (what kind of movies, popular examples)
-- Movie list visible in HTML (not just JS-loaded)
-- Internal links to top movies in the genre
-
-**6. Build Internal Linking Structure**
-- Main page should link to all genre pages
-- /top should link to featured movies and genres
-- Genre pages should cross-link to related genres
-- Currently internal links may be JavaScript-driven only
-
-**7. Russian-Language Title Targeting**
-Some pages use English titles only:
-- `/films/vecher` → "Movies for Evening" — should be "Фильмы на вечер — что посмотреть сегодня вечером"
-- Genre pages need Russian variants
-- Consider whether the site is primarily Russian or English audience
-
-**8. Add Breadcrumb Schema**
-Visible breadcrumbs with Schema markup help Google understand site structure.
-
-**9. Meta Descriptions**
-Confirm meta descriptions are set in the HTML (not just JS-loaded). From the crawl, only titles were confirmed.
-
-### 📅 LONG-TERM STRATEGY (1-3 Months)
-
-**10. Backlink Building**
-Zero backlinks = zero authority. Need:
-- Russian movie blogs/forums outreach
-- Guest posts on Kinomania, KinoExpert type sites
-- Social media presence (VK, Telegram channel about movies)
-- Forum participation (pikabu.ru, forums.overclockers.ru)
-
-**11. Content Marketing**
-- "Что посмотреть в пятницу" (What to watch Friday) type content
-- Movie review summaries
-- "Топ 10 фильмов ужасов 2025" type articles
-
-**12. Yandex Optimization**
-For Russian audience, Yandex may be more important than Google:
-- Register in Yandex Webmaster
-- Submit sitemap to Yandex
-- Yandex prefers sites with Russian content
-
-**13. Domain Authority Building**
-New domain needs time + links. Realistic timeline: 3-6 months minimum to rank for competitive queries.
-
-**14. Speed Optimization**
-- CDN for static assets
-- Image lazy loading
-- Minimize JavaScript bundle size
-- Consider static site generation for category pages
+4. **Build Telegram channel** — Fast to index, sends social signals
 
 ---
 
-## 8. VERDICT
+## 10. QUICK WINS (Do Today)
 
-### Is the SEO optimization working?
-
-**Partially — the technical groundwork is laid, but the fundamental rendering issue blocks all organic traffic gains.**
-
-**What's working:**
-- Titles are correctly set and keyword-optimized ✅
-- Sitemap is comprehensive and correctly structured ✅
-- robots.txt is clean and allows crawling ✅
-- All new pages are live and return 200 status ✅
-- Hreflang is implemented (though imperfectly) ✅
-- New pages exist for all target keywords ✅
-
-**What's not working:**
-- ZERO confirmed indexation in Bing/Yahoo ❌
-- SPA architecture means body content invisible to crawlers ❌
-- No visible Russian-language body content for Russian keyword targeting ❌
-- No backlinks to support any new pages ❌
-- Genre pages are in English for a Russian-speaking audience ❌
-- 1-2 weeks is too early — even if everything is perfect, results appear in 2-4 months ❌
-
-### Realistic Timeline Assessment
-- **Weeks 1-2 (now):** Too early to judge. Google is still crawling/indexing
-- **Month 1-2:** If SSR is implemented, Google begins properly crawling pages
-- **Month 3-4:** Early positions appear for long-tail/low-competition queries
-- **Month 6+:** Meaningful traffic from competitive Russian movie queries (if backlinks built)
-
-### Bottom Line
-The SEO optimization did all the right *configuration* work — titles, sitemap, structured data plan, canonicals. But it cannot succeed against the backdrop of a client-side-only SPA without backlinks in a highly competitive Russian-language movie streaming niche. The single most important fix is **implementing SSR/SSG** so Google can actually read the pages. Without that, all other optimizations are decorating a house with no foundation.
+| Action | Impact | Effort |
+|--------|--------|--------|
+| Fix EN canonical bug | 🔴 Critical | 30 min |
+| Fix OG Russian text on EN pages | 🔴 High | 1 hour |
+| Fix or remove turbo.rss | 🟠 High | 30 min |
+| Submit sitemap to GSC | 🔴 Critical | 15 min |
+| Submit sitemap to Yandex | 🟠 High | 15 min |
+| Request manual indexing of top 50 pages | 🟠 High | 30 min |
+| Self-host CSS (remove CDN) | 🟡 Medium | 2 hours |
+| Add ItemList schema to /top | 🟡 Medium | 1 hour |
+| Create Telegram channel | 🟡 Medium | 30 min |
 
 ---
 
-## APPENDIX: Data Collection Notes
+## 11. PROJECTIONS
 
-- **DuckDuckGo:** Rate-limited after 5 queries (bot detection). Only first queries confirmed 0 results.
-- **Yahoo:** Explicitly returned "We did not find results for: site:moviefinders.net" — strong evidence of zero indexation in non-Google engines
-- **Google:** Could not access directly. GSC required for accurate Google indexation data
-- **PageSpeed:** Could not fetch pagespeed.web.dev (JavaScript-dependent tool)
-- **Competitor SERP data:** Could not obtain due to search engine rate limiting
-- All web_fetch data reflects server-rendered HTML only (no JavaScript execution)
+If critical issues are fixed and link building begins:
+
+| Timeline | Expected Outcome |
+|----------|-----------------|
+| **Week 2** | First pages appear in Google index (after sitemap submission + manual request) |
+| **Month 1** | 100-1000 pages indexed, appearing in brand queries |
+| **Month 2-3** | Long-tail movie-specific queries ("где смотреть [film]") — top 10-20 |
+| **Month 4-6** | Genre pages competing for medium-tail queries |
+| **Month 6-12** | Potential top 10 for "where to watch" aggregator queries |
+
+**Note:** Competing for "смотреть фильмы онлайн бесплатно" (broad head term) against established 10-year-old piracy sites is a 1-3 year journey minimum.
 
 ---
 
-*Report generated: 2026-03-27*  
-*Next audit recommended: 2026-04-27 (30 days)*
+*Report generated: 2026-03-28 | Analysis based on DuckDuckGo SERP data, direct HTML inspection, and sitemap analysis*

@@ -8,7 +8,7 @@
 {% block hreflang_xdefault %}https://moviefinders.net/top{% endblock %}
 
 {% block head %}
-<link rel="canonical" href="https://moviefinders.net/top"/>
+<link rel="canonical" href="{% if lang == 'en' %}https://moviefinders.net/en/top{% else %}https://moviefinders.net/top{% endif %}"/>
 <meta property="og:title" content="{{ t.top_page_title if t else 'Best Movies — Top 100 Movies of All Time | MovieFinder' }}"/>
 <meta property="og:description" content="{{ t.top_page_desc if t else 'TOP-100 best movies of all time by audience rating. Watch online free on MovieFinder.' }}"/>
 <meta property="og:url" content="https://moviefinders.net/top"/>
