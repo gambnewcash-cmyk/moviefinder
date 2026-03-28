@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}
+{% set pfx = '/en' if lang == 'en' else '' %}
 <div class="max-w-5xl mx-auto px-4 py-8">
   <!-- Breadcrumb -->
   <nav class="text-sm text-muted mb-6 flex items-center gap-2">
@@ -21,91 +22,91 @@
   <p class="text-muted mb-8">{% if lang == "ru" %}Выберите жанр и смотрите лучшие фильмы онлайн бесплатно{% else %}Choose a genre and watch the best movies online for free{% endif %}</p>
 
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-    <a href="/genre/drama" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/drama" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🎭</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Драмы{% else %}Drama Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Drama</p>
       </div>
     </a>
-    <a href="/genre/comedy" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/comedy" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">😂</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Комедии{% else %}Comedy Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Comedy</p>
       </div>
     </a>
-    <a href="/genre/horror" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/horror" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">👻</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Фильмы ужасов{% else %}Horror Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Horror</p>
       </div>
     </a>
-    <a href="/genre/action" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/action" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">💥</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Боевики{% else %}Action Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Action</p>
       </div>
     </a>
-    <a href="/genre/thriller" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/thriller" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🔪</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Триллеры{% else %}Thrillers{% endif %}</p>
         <p class="text-muted text-xs mt-1">Thriller</p>
       </div>
     </a>
-    <a href="/genre/romance" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/romance" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">❤️</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Романтические фильмы{% else %}Romance Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Romance</p>
       </div>
     </a>
-    <a href="/genre/animation" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/animation" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🎨</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Мультфильмы{% else %}Animation Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Animation</p>
       </div>
     </a>
-    <a href="/genre/documentary" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/documentary" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">📽️</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Документальные фильмы{% else %}Documentary Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Documentary</p>
       </div>
     </a>
-    <a href="/genre/voennye" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/voennye" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">⚔️</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Военные фильмы{% else %}War Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">War</p>
       </div>
     </a>
-    <a href="/genre/fantastika" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/fantastika" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🚀</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Фантастика{% else %}Sci-Fi Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Science Fiction</p>
       </div>
     </a>
-    <a href="/genre/istoricheskie" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/istoricheskie" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🏛️</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Исторические фильмы{% else %}Historical Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">History</p>
       </div>
     </a>
-    <a href="/genre/muzyka" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/muzyka" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🎵</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Музыкальные фильмы{% else %}Music Films{% endif %}</p>
         <p class="text-muted text-xs mt-1">Music</p>
       </div>
     </a>
-    <a href="/genre/crime" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
+    <a href="{{ pfx }}/genre/crime" class="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-accent hover:bg-card/80 transition-all text-center">
       <span class="text-4xl">🕵️</span>
       <div>
         <p class="text-white font-semibold">{% if lang == "ru" %}Криминальные фильмы{% else %}Crime Films{% endif %}</p>

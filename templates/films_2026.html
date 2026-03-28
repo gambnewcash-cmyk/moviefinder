@@ -47,6 +47,7 @@
 {% endblock %}
 
 {% block content %}
+{% set pfx = '/en' if lang == 'en' else '' %}
 <div class="max-w-7xl mx-auto px-4 py-8">
   <!-- Header -->
   <div class="text-center mb-8">
@@ -84,7 +85,7 @@
   <!-- Movie Grid -->
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     {% for m in movies %}
-    <a href="/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}" class="movie-card relative block rounded-xl overflow-hidden bg-card border border-border group cursor-pointer">
+    <a href="{{ pfx }}/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}" class="movie-card relative block rounded-xl overflow-hidden bg-card border border-border group cursor-pointer">
       <div class="relative w-full" style="padding-bottom:150%">
         {% if m.poster_url %}
         <img src="{{ m.poster_url }}" alt="{{ m.display_title }}"

@@ -25,6 +25,7 @@
 {% endblock %}
 
 {% block content %}
+{% set pfx = '/en' if lang == 'en' else '' %}
 
 <!-- HERO SEARCH -->
 <section class="relative py-8 px-4 overflow-hidden">
@@ -48,7 +49,7 @@
           class="search-toggle-btn active-toggle px-5 py-1.5 rounded-full text-sm font-medium transition-all">
           {{ t.regular_search_btn if t else '🔍 Regular' }}
         </button>
-        <a href="/ai-search"
+        <a href="{{ pfx }}/ai-search"
           class="search-toggle-btn px-5 py-1.5 rounded-full text-sm font-medium text-muted transition-all hover:text-white">
           {{ t.smart_search_btn if t else '🤖 Smart Search' }}
         </a>
@@ -146,19 +147,19 @@
 <section class="max-w-7xl mx-auto px-4 mb-8">
   <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">🎬 {{ t.genres_nav_title if t else "Жанры и подборки" }}</h2>
   <div class="flex flex-wrap gap-2">
-    <a href="/genre/horror" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">👻 {{ t.genre_horror if t else "Ужасы" }}</a>
-    <a href="/genre/comedy" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">😂 {{ t.genre_comedy if t else "Комедии" }}</a>
-    <a href="/genre/action" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">💥 {{ t.genre_action if t else "Боевики" }}</a>
-    <a href="/genre/drama" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🎭 {{ t.genre_drama if t else "Драмы" }}</a>
-    <a href="/genre/thriller" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🔪 {{ t.genre_thriller if t else "Триллеры" }}</a>
-    <a href="/genre/romance" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">❤️ {{ t.genre_romance if t else "Романтика" }}</a>
-    <a href="/genre/animation" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🎨 {{ t.genre_animation if t else "Мультфильмы" }}</a>
-    <a href="/genre/fantastika" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🚀 {{ t.genre_fantastika if t else "Фантастика" }}</a>
-    <a href="/genre/voennye" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">⚔️ {{ t.genre_voennye if t else "Военные" }}</a>
-    <a href="/genre/crime" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🕵️ {{ t.genre_crime if t else "Криминал" }}</a>
-    <a href="/top" class="flex items-center gap-1.5 bg-accent/20 border border-accent/40 hover:border-accent px-3 py-2 rounded-full text-sm text-accent hover:text-white transition-all">🏆 {{ t.nav_top if t else "Топ 100" }}</a>
-    <a href="/films/2026" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🆕 {{ t.nav_2026 if t else "Фильмы 2026" }}</a>
-    <a href="/films/vecher" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🌙 {{ t.nav_vecher if t else "На вечер" }}</a>
+    <a href="{{ pfx }}/genre/horror" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">👻 {{ t.genre_horror if t else "Ужасы" }}</a>
+    <a href="{{ pfx }}/genre/comedy" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">😂 {{ t.genre_comedy if t else "Комедии" }}</a>
+    <a href="{{ pfx }}/genre/action" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">💥 {{ t.genre_action if t else "Боевики" }}</a>
+    <a href="{{ pfx }}/genre/drama" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🎭 {{ t.genre_drama if t else "Драмы" }}</a>
+    <a href="{{ pfx }}/genre/thriller" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🔪 {{ t.genre_thriller if t else "Триллеры" }}</a>
+    <a href="{{ pfx }}/genre/romance" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">❤️ {{ t.genre_romance if t else "Романтика" }}</a>
+    <a href="{{ pfx }}/genre/animation" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🎨 {{ t.genre_animation if t else "Мультфильмы" }}</a>
+    <a href="{{ pfx }}/genre/fantastika" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🚀 {{ t.genre_fantastika if t else "Фантастика" }}</a>
+    <a href="{{ pfx }}/genre/voennye" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">⚔️ {{ t.genre_voennye if t else "Военные" }}</a>
+    <a href="{{ pfx }}/genre/crime" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🕵️ {{ t.genre_crime if t else "Криминал" }}</a>
+    <a href="{{ pfx }}/top" class="flex items-center gap-1.5 bg-accent/20 border border-accent/40 hover:border-accent px-3 py-2 rounded-full text-sm text-accent hover:text-white transition-all">🏆 {{ t.nav_top if t else "Топ 100" }}</a>
+    <a href="{{ pfx }}/films/2026" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🆕 {{ t.nav_2026 if t else "Фильмы 2026" }}</a>
+    <a href="{{ pfx }}/films/vecher" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">🌙 {{ t.nav_vecher if t else "На вечер" }}</a>
     <a href="/genres" class="flex items-center gap-1.5 bg-card border border-border hover:border-accent px-3 py-2 rounded-full text-sm text-muted hover:text-white transition-all">📂 {{ t.nav_all_genres if t else "Все жанры" }}</a>
   </div>
 </section>
@@ -295,7 +296,7 @@
 {% endblock %}
 
 {% macro _movie_card(m) %}
-<a href="/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}" class="movie-card relative w-44 shrink-0 rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block">
+<a href="{{ pfx }}/movie/{{ m.tmdb_id }}{% if m.media_type == 'tv' %}?media_type=tv{% endif %}" class="movie-card relative w-44 shrink-0 rounded-xl overflow-hidden bg-card border border-border group cursor-pointer block">
   <!-- Poster -->
   <div class="relative w-full" style="padding-bottom:150%">
     {% if m.poster_url %}
@@ -484,7 +485,7 @@ async function fetchSuggestions(q) {
     const suggestions = data.suggestions || [];
     if (!suggestions.length) { dropdown.classList.add('hidden'); return; }
     dropdown.innerHTML = suggestions.map(s => `
-      <a href="/movie/${s.tmdb_id}${s.media_type === 'tv' ? '?media_type=tv' : ''}" class="flex items-center gap-3 px-4 py-3 hover:bg-border transition-colors first:rounded-t-2xl last:rounded-b-2xl cursor-pointer">
+      <a href="{{ pfx }}/movie/${s.tmdb_id}${s.media_type === 'tv' ? '?media_type=tv' : ''}" class="flex items-center gap-3 px-4 py-3 hover:bg-border transition-colors first:rounded-t-2xl last:rounded-b-2xl cursor-pointer">
         ${s.poster_url ? `<img src="${s.poster_url}" class="w-8 h-12 object-cover rounded shrink-0"/>` : '<div class="w-8 h-12 bg-border rounded shrink-0 flex items-center justify-center text-xs">🎬</div>'}
         <div class="flex-1 min-w-0">
           <p class="text-white text-sm font-medium truncate">${s.title}</p>
