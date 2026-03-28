@@ -350,11 +350,41 @@
           {% set yr = movie.year|int if movie.year else 0 %}
           {% set title_display = (movie.title_ru or movie.title) if lang == 'ru' else (movie.title_en or movie.title) %}
           {% if ai_review %}
-            <p class="text-muted leading-relaxed">{{ ai_review }}</p>
-            {% if movie.director %}
-            <p class="text-muted text-sm">Режиссёр: <strong class="text-white">{{ movie.director }}</strong>{% if movie.cast %} · В ролях: <strong class="text-white">{{ movie.cast[:2]|map(attribute='name')|join(', ') }}</strong>{% endif %}</p>
+            {% set review_parts = ai_review.split('🕯️') %}
+            {% set review_text = review_parts[0].strip() %}
+            {% set atmosphere = review_parts[1].strip() if review_parts|length > 1 else '' %}
+            {% if atmosphere and atmosphere.startswith('Атмосфера для просмотра:') %}
+              {% set atmosphere = atmosphere[24:].strip() %}
+            {% elif atmosphere and atmosphere.startswith('Atmosphere for Watching:') %}
+              {% set atmosphere = atmosphere[24:].strip() %}
             {% endif %}
-            <p class="text-xs text-muted border-t border-border pt-3 mt-1">— Редакция MovieFinder</p>
+
+            {# Main review text - split into paragraphs #}
+            <div class="space-y-3">
+              {% for para in review_text.split('
+
+') %}
+                {% if para.strip() %}
+                <p class="text-muted leading-relaxed">{{ para.strip() }}</p>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            {% if movie.director %}
+            <p class="text-muted text-sm mt-3">{% if lang == 'ru' %}Режиссёр{% else %}Director{% endif %}: <strong class="text-white">{{ movie.director }}</strong></p>
+            {% endif %}
+            <p class="text-xs text-muted border-t border-border pt-3 mt-1">{% if lang == 'ru' %}— Редакция MovieFinder{% else %}— MovieFinder Editorial{% endif %}</p>
+
+            {# Atmosphere block — unique feature #}
+            {% if atmosphere %}
+            <div class="mt-4 rounded-xl p-4 flex gap-3 items-start" style="background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(59,130,246,0.1)); border: 1px solid rgba(139,92,246,0.3);">
+              <span class="text-2xl flex-shrink-0">🕯️</span>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #a78bfa;">{% if lang == 'ru' %}Атмосфера для просмотра{% else %}Best Watched{% endif %}</p>
+                <p class="text-sm text-white/80 leading-relaxed">{{ atmosphere }}</p>
+              </div>
+            </div>
+            {% endif %}
           {% elif lang == 'ru' %}
             {# Абзац 1: Общая оценка #}
             <p class="text-muted leading-relaxed">
