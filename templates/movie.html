@@ -113,6 +113,7 @@
           <span class="text-muted text-sm">/ 10 · TMDB</span>
         </div>
         {% endif %}
+        <div id="mf-score-block" class="mt-2"></div>
         {% if movie.description %}
         <p class="text-muted leading-relaxed max-w-2xl text-base">{{ movie.description }}</p>
         {% endif %}
@@ -659,20 +660,23 @@
   <div class="bg-card border border-border rounded-2xl p-6 mb-6">
     <h3 class="text-lg font-semibold mb-4">{% if lang == 'ru' %}Оставить отзыв{% else %}Write a Review{% endif %}</h3>
     <div class="space-y-3">
-      <!-- Score picker -->
+      <!-- Quick Score (instant, anonymous) -->
       <div>
-        <p class="text-sm text-muted mb-2">{% if lang == 'ru' %}Ваша оценка (необязательно):{% else %}Your score (optional):{% endif %}</p>
-        <div class="flex flex-wrap gap-1.5" id="score-buttons">
+        <p class="text-sm text-muted mb-2">{% if lang == 'ru' %}Быстрая оценка — тапни и готово:{% else %}Quick rating — tap to vote:{% endif %}</p>
+        <div class="flex flex-wrap gap-1.5 items-center" id="score-buttons">
           {% for i in range(1, 11) %}
           <button
             type="button"
-            onclick="selectScore({{ i }})"
+            onclick="quickScore({{ i }})"
             data-score="{{ i }}"
-            class="score-btn w-9 h-9 rounded-lg border border-border text-sm font-bold text-muted hover:border-accent hover:text-accent transition-colors"
+            class="score-btn w-9 h-9 rounded-lg border text-sm font-bold transition-all"
           >{{ i }}</button>
           {% endfor %}
+          <span id="quick-score-flash" class="text-xs text-green-400 font-semibold opacity-0 transition-opacity duration-300 ml-2"></span>
         </div>
       </div>
+      <!-- Divider -->
+      <p class="text-xs text-muted">{% if lang == 'ru' %}Или напишите развёрнутый отзыв:{% else %}Or write a full review:{% endif %}</p>
       <input
         type="text"
         id="review-author"
@@ -716,18 +720,49 @@ const TMDB_ID = {{ movie.tmdb_id }};
 const LANG = "{{ lang }}";
 let selectedScore = null;
 
-window.selectScore = function(val) {
-  selectedScore = (selectedScore === val) ? null : val;
+const SCORE_COLORS = {
+  1:'#ef4444', 2:'#f97316', 3:'#fb923c', 4:'#eab308', 5:'#ca8a04',
+  6:'#84cc16', 7:'#22c55e', 8:'#16a34a', 9:'#15803d', 10:'#166534'
+};
+
+function renderScoreBtns(active) {
   document.querySelectorAll('.score-btn').forEach(btn => {
     const s = parseInt(btn.dataset.score);
-    if (s === selectedScore) {
-      btn.classList.add('bg-accent', 'text-white', 'border-accent');
-      btn.classList.remove('text-muted', 'border-border');
-    } else {
-      btn.classList.remove('bg-accent', 'text-white', 'border-accent');
-      btn.classList.add('text-muted', 'border-border');
-    }
+    const color = SCORE_COLORS[s];
+    btn.style.borderColor = color;
+    btn.style.color = active === s ? '#fff' : color;
+    btn.style.backgroundColor = active === s ? color : 'transparent';
   });
+}
+
+function flashScore(msg) {
+  const el = document.getElementById('quick-score-flash');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 2000);
+}
+
+window.quickScore = async function(val) {
+  selectedScore = val;
+  renderScoreBtns(val);
+  flashScore(LANG === 'ru' ? '✓ Оценка принята' : '✓ Voted!');
+  try {
+    const resp = await fetch(`/api/reviews/${TMDB_ID}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({author: 'Аноним', text: '', score: val, lang: LANG})
+    });
+    if (resp.ok) {
+      await Promise.all([loadScore(), loadMovieScore()]);
+    }
+  } catch(e) {}
+};
+
+// Also expose selectScore for use in full review form (just highlights without submitting)
+window.selectScore = function(val) {
+  selectedScore = (selectedScore === val) ? null : val;
+  renderScoreBtns(selectedScore);
 };
 
 async function loadScore() {
@@ -804,12 +839,12 @@ window.submitReview = async function(tmdbId) {
   const text = document.getElementById('review-text').value.trim();
   const btn = document.getElementById('review-submit-btn');
 
-  if (!author || author.length < 2) {
-    showReviewStatus(LANG === 'ru' ? 'Введите имя (минимум 2 символа)' : 'Enter your name (min 2 chars)', 'error');
+  if (!text || text.length < 3) {
+    showReviewStatus(LANG === 'ru' ? 'Отзыв слишком короткий (минимум 3 символа)' : 'Review too short (min 3 chars)', 'error');
     return;
   }
-  if (!text || text.length < 10) {
-    showReviewStatus(LANG === 'ru' ? 'Отзыв слишком короткий (минимум 10 символов)' : 'Review too short (min 10 chars)', 'error');
+  if (!author || author.length < 2) {
+    showReviewStatus(LANG === 'ru' ? 'Введите имя (минимум 2 символа)' : 'Enter your name (min 2 chars)', 'error');
     return;
   }
 
@@ -830,13 +865,9 @@ window.submitReview = async function(tmdbId) {
       document.getElementById('review-author').value = '';
       document.getElementById('review-text').value = '';
       document.getElementById('review-char-count').textContent = '0/2000';
-      selectedScore = null;
-      document.querySelectorAll('.score-btn').forEach(b => {
-        b.classList.remove('bg-accent', 'text-white', 'border-accent');
-        b.classList.add('text-muted', 'border-border');
-      });
+      // Keep score highlight as-is (quickScore already set it)
       showReviewStatus(LANG === 'ru' ? '✅ Отзыв опубликован!' : '✅ Review published!', 'success');
-      await Promise.all([loadReviews(), loadScore()]);
+      await Promise.all([loadReviews(), loadScore(), loadMovieScore()]);
     } else {
       showReviewStatus(LANG === 'ru' ? 'Ошибка. Попробуйте ещё раз.' : 'Error. Please try again.', 'error');
     }
@@ -860,8 +891,37 @@ document.getElementById('review-text').addEventListener('input', function() {
   document.getElementById('review-char-count').textContent = `${this.value.length}/2000`;
 });
 
+function pluralVotes(n) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'голос';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'голоса';
+  return 'голосов';
+}
+
+async function loadMovieScore() {
+  try {
+    const resp = await fetch(`/api/movie-score/${TMDB_ID}`);
+    const data = await resp.json();
+    if (data.count > 0) {
+      document.getElementById('mf-score-block').innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🎯</span>
+          <span class="text-3xl font-black text-white">${data.avg_score.toFixed(1)}</span>
+          <div>
+            <p class="text-xs text-muted">MovieFinder</p>
+            <p class="text-xs text-muted">${data.count} ${LANG === 'ru' ? pluralVotes(data.count) : 'votes'}</p>
+          </div>
+        </div>
+      `;
+    }
+  } catch(e) {}
+}
+
+// Init score button colors on page load
+renderScoreBtns(null);
 loadReviews();
 loadScore();
+loadMovieScore();
 })();
 </script>
 

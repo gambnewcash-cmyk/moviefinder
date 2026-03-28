@@ -138,7 +138,7 @@ def get_user_reviews(tmdb_id: int, lang: str = None) -> list:
 
 def add_user_review(tmdb_id: int, author: str, review_text: str, score: int = None, lang: str = 'ru') -> bool:
     # Basic validation
-    if not author.strip() or not review_text.strip():
+    if not author.strip():
         return False
     if len(author) > 50 or len(review_text) > 2000:
         return False

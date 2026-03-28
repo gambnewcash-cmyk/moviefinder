@@ -1008,8 +1008,15 @@ async def post_review(tmdb_id: int, request: Request):
     score = data.get("score", None)
     lang = data.get("lang", "ru")
 
+    # Quick anonymous vote: score only, no text, author auto-set
+    has_score = score is not None
+    has_text = len(text) >= 3
+    if has_score and not has_text:
+        author = author or "Аноним"
     # Basic spam protection
-    if len(author) < 2 or len(text) < 10:
+    if not has_score and not has_text:
+        return JSONResponse({"error": "too_short"}, status_code=400)
+    if not has_score and len(author) < 2:
         return JSONResponse({"error": "too_short"}, status_code=400)
     if len(text) > 2000:
         return JSONResponse({"error": "too_long"}, status_code=400)
