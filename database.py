@@ -48,10 +48,16 @@ def init_db():
             review_text TEXT NOT NULL,
             score INTEGER DEFAULT NULL,
             lang TEXT DEFAULT 'ru',
+            ip_address TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         CREATE INDEX IF NOT EXISTS idx_user_reviews_tmdb ON user_reviews(tmdb_id);
         """)
+    with get_db() as conn:
+        try:
+            conn.execute("ALTER TABLE user_reviews ADD COLUMN ip_address TEXT")
+        except Exception:
+            pass  # Column already exists
 
 @contextmanager
 def get_db():
@@ -136,7 +142,7 @@ def get_user_reviews(tmdb_id: int, lang: str = None) -> list:
             ).fetchall()
         return [{"author": r[0], "text": r[1], "score": r[2], "lang": r[3], "date": r[4]} for r in rows]
 
-def add_user_review(tmdb_id: int, author: str, review_text: str, score: int = None, lang: str = 'ru') -> bool:
+def add_user_review(tmdb_id: int, author: str, review_text: str, score: int = None, lang: str = 'ru', ip_address: str = None) -> bool:
     # Basic validation
     if not author.strip():
         return False
@@ -147,8 +153,8 @@ def add_user_review(tmdb_id: int, author: str, review_text: str, score: int = No
             return False
     with get_db() as conn:
         conn.execute(
-            "INSERT INTO user_reviews (tmdb_id, author, review_text, score, lang) VALUES (?, ?, ?, ?, ?)",
-            (tmdb_id, author.strip()[:50], review_text.strip()[:2000], score, lang)
+            "INSERT INTO user_reviews (tmdb_id, author, review_text, score, lang, ip_address) VALUES (?, ?, ?, ?, ?, ?)",
+            (tmdb_id, author.strip()[:50], review_text.strip()[:2000], score, lang, ip_address)
         )
     return True
 

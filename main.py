@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import os
 import sys
 import httpx
@@ -1030,7 +1031,23 @@ async def post_review(tmdb_id: int, request: Request):
         if score < 1 or score > 10:
             return JSONResponse({"error": "invalid_score"}, status_code=400)
 
-    ok = add_user_review(tmdb_id, author, text, score=score, lang=lang)
+    # Hash IP for privacy
+    client_ip = request.client.host if request.client else "unknown"
+    ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+
+    # Quick vote dedup: if score-only, check for existing vote by same IP
+    if has_score and not has_text:
+        from database import get_db
+        with get_db() as conn:
+            existing = conn.execute(
+                "SELECT id FROM user_reviews WHERE tmdb_id=? AND ip_address=? AND review_text=''",
+                (tmdb_id, ip_hash)
+            ).fetchone()
+            if existing:
+                conn.execute("UPDATE user_reviews SET score=? WHERE id=?", (score, existing[0]))
+                return {"status": "updated"}
+
+    ok = add_user_review(tmdb_id, author, text, score=score, lang=lang, ip_address=ip_hash)
     if ok:
         return {"status": "ok"}
     return JSONResponse({"error": "invalid"}, status_code=400)

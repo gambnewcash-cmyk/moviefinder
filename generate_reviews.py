@@ -22,16 +22,33 @@ done_en = set(r[0] for r in cur.fetchall())
 done = done_ru & done_en  # оба языка уже есть
 
 db = sqlite3.connect("/home/moneyfast/projects/moviefinder/data/moviefinder.db")
-movies = db.execute("""
+
+# Считаем общую статистику
+total_all = db.execute("""
+    SELECT COUNT(*) FROM movies
+    WHERE (description IS NOT NULL AND description != '') OR (description_ru IS NOT NULL AND description_ru != '')
+""").fetchone()[0]
+
+done_set_str = ",".join(str(x) for x in done) if done else "0"
+
+# Загружаем весь отсортированный список один раз, фильтруем в Python
+all_movies = db.execute("""
     SELECT tmdb_id, title_ru, title, year, genre, description_ru, description
     FROM movies
     WHERE (description IS NOT NULL AND description != '') OR (description_ru IS NOT NULL AND description_ru != '')
-    ORDER BY CASE WHEN year=2026 THEN 0 WHEN year=2025 THEN 1 WHEN rating>=7.0 THEN 2 ELSE 3 END,
-             year DESC, rating DESC
+    ORDER BY
+      CASE WHEN year=2026 THEN 0
+           WHEN year=2025 THEN 1
+           WHEN rating>=7.0 THEN 2
+           ELSE 3 END ASC,
+      year DESC, rating DESC
 """).fetchall()
 
-todo = [m for m in movies if m[0] not in done]
-print(f"Todo: {len(todo)} films (done_ru={len(done_ru)}, done_en={len(done_en)})")
+todo = [m for m in all_movies if m[0] not in done]
+todo_count = len(todo)
+print(f"Todo: {todo_count} films (done_ru={len(done_ru)}, done_en={len(done_en)})")
+if todo:
+    print(f"First 3: years={[m[3] for m in todo[:3]]}")
 
 
 # ─── ЖАНРОВЫЕ МАППИНГИ ────────────────────────────────────────
@@ -647,12 +664,23 @@ BATCH = 30
 total_done = 0
 errors = 0
 
-for batch_start in range(0, len(todo), BATCH):
-    batch = todo[batch_start:batch_start + BATCH]
+todo_iter = iter(todo)
+
+while True:
+    batch = []
+    for _ in range(BATCH):
+        try:
+            batch.append(next(todo_iter))
+        except StopIteration:
+            break
+    if not batch:
+        break
+    
     rows = []
+    batch_start = total_done
     
     for i, (tmdb_id, title_ru, title, year, genre, desc_ru, desc) in enumerate(batch):
-        global_idx = batch_start + i
+        global_idx = total_done + i
         
         review_ru = generate_review_ru(tmdb_id, title_ru, title, year, genre, desc_ru, desc, global_idx)
         review_en = generate_review_en(tmdb_id, title_ru, title, year, genre, desc_ru, desc, global_idx)
@@ -661,6 +689,7 @@ for batch_start in range(0, len(todo), BATCH):
         if not check_no_numbers(review_ru) or not check_no_numbers(review_en):
             print(f"WARNING: numbers found in review for {tmdb_id}, skipping")
             errors += 1
+            done.add(tmdb_id)
             continue
         
         rows.append((tmdb_id, 'ru', review_ru))
@@ -673,17 +702,24 @@ for batch_start in range(0, len(todo), BATCH):
             rows
         )
         pg.commit()
+        # Добавляем в done чтобы не выбирать снова
+        for r in rows:
+            done.add(r[0])
         total_done += len(batch)
     except Exception as e:
         pg.rollback()
-        print(f"ERROR batch {batch_start}: {e}")
+        print(f"ERROR batch: {e}")
         errors += 1
+        # Пропускаем этот батч добавляя в done
+        for m in batch:
+            done.add(m[0])
         continue
     
     # Прогресс каждые 300 фильмов
-    if total_done % 300 == 0 or total_done == len(todo):
-        print(f"\n[{total_done}/{len(todo)}] +{len(batch)} films, errors={errors}")
-        # Пример последнего текста
+    if total_done % 300 == 0:
+        # Первый фильм батча для понимания текущего года
+        cur_year = batch[0][3] if batch else "?"
+        print(f"\n[{total_done}/{todo_count}] +{len(batch)} films, current_year={cur_year}, errors={errors}")
         if rows:
             ex = rows[-2]
             print(f"--- EXAMPLE (tmdb_id={ex[0]}, lang={ex[1]}) ---")

@@ -754,6 +754,7 @@ window.quickScore = async function(val) {
       body: JSON.stringify({author: 'Аноним', text: '', score: val, lang: LANG})
     });
     if (resp.ok) {
+      localStorage.setItem(`mf_score_${TMDB_ID}`, val);
       await Promise.all([loadScore(), loadMovieScore()]);
     }
   } catch(e) {}
@@ -917,8 +918,14 @@ async function loadMovieScore() {
   } catch(e) {}
 }
 
-// Init score button colors on page load
-renderScoreBtns(null);
+// Init score button colors — restore from localStorage if previously voted
+const savedScore = localStorage.getItem(`mf_score_${TMDB_ID}`);
+if (savedScore) {
+  selectedScore = parseInt(savedScore);
+  renderScoreBtns(selectedScore);
+} else {
+  renderScoreBtns(null);
+}
 loadReviews();
 loadScore();
 loadMovieScore();
