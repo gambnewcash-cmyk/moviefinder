@@ -158,6 +158,9 @@ async def get_movie_details(tmdb_id: int, media_type: str = "movie", lang: str =
             # Cast
             cast = ru_data.get("credits", {}).get("cast", [])[:10]
             m["cast"] = [{"name": a["name"], "character": a.get("character", ""), "profile": f"https://image.tmdb.org/t/p/w185{a['profile_path']}" if a.get("profile_path") else None} for a in cast]
+            crew = ru_data.get("credits", {}).get("crew", [])
+            director = next((c["name"] for c in crew if c.get("job") == "Director"), None)
+            m["director"] = director
             # Genres as list
             genres_list = ru_data.get("genres", [])
             m["genres_list"] = [g["name"] for g in genres_list]
@@ -180,6 +183,9 @@ async def get_movie_details(tmdb_id: int, media_type: str = "movie", lang: str =
             # Cast
             cast = data.get("credits", {}).get("cast", [])[:10]
             m["cast"] = [{"name": a["name"], "character": a.get("character", ""), "profile": f"https://image.tmdb.org/t/p/w185{a['profile_path']}" if a.get("profile_path") else None} for a in cast]
+            crew = data.get("credits", {}).get("crew", [])
+            director = next((c["name"] for c in crew if c.get("job") == "Director"), None)
+            m["director"] = director
             # Similar
             similar_raw = data.get("similar", {}).get("results", [])[:8]
             # For TV shows, similar items are also TV shows - set media_type

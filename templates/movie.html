@@ -349,7 +349,13 @@
           {% set rating = movie.rating|float if movie.rating else 0 %}
           {% set yr = movie.year|int if movie.year else 0 %}
           {% set title_display = (movie.title_ru or movie.title) if lang == 'ru' else (movie.title_en or movie.title) %}
-          {% if lang == 'ru' %}
+          {% if ai_review %}
+            <p class="text-muted leading-relaxed">{{ ai_review }}</p>
+            {% if movie.director %}
+            <p class="text-muted text-sm">Режиссёр: <strong class="text-white">{{ movie.director }}</strong>{% if movie.cast %} · В ролях: <strong class="text-white">{{ movie.cast[:2]|map(attribute='name')|join(', ') }}</strong>{% endif %}</p>
+            {% endif %}
+            <p class="text-xs text-muted border-t border-border pt-3 mt-1">— Редакция MovieFinder</p>
+          {% elif lang == 'ru' %}
             {# Абзац 1: Общая оценка #}
             <p class="text-muted leading-relaxed">
               {% if rating >= 8.5 %}<strong class="text-white">«{{ title_display }}»</strong> — исключительный фильм с рейтингом <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Входит в число лучших в своём жанре и по праву считается одним из обязательных к просмотру.
@@ -390,7 +396,7 @@
               {% endif %}
             </p>
             <p class="text-xs text-muted border-t border-border pt-3 mt-1">— Редакция MovieFinder</p>
-          {% else %}
+          {% elif lang != 'ru' %}
             {# Paragraph 1: Overall verdict #}
             <p class="text-muted leading-relaxed">
               {% if rating >= 8.5 %}<strong class="text-white">{{ title_display }}</strong> is an exceptional film rated <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. It ranks among the finest in its genre and is an absolute must-watch for any film lover.

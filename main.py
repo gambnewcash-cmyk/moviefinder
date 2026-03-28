@@ -10,7 +10,8 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 
 from database import init_db, log_search, get_trending_searches, save_movie, get_movie_by_tmdb, get_recent_movies, get_top_rated_db, get_movies_by_genre_db, get_vecher_movies_db, get_movies_2026_db
-from services.tmdb import search_movies, get_movie_details, get_trending, get_top_rated, get_now_playing, get_upcoming, get_popular_movies, get_new_2026, get_popular_tv, get_oscar_winners, get_romance_comedy, get_top_horror, get_movies_by_genre, get_top_2025_2026, get_vecher_movies
+from services.tmdb import search_movies, get_movie_details
+from services.ai_review import get_or_generate_review, get_trending, get_top_rated, get_now_playing, get_upcoming, get_popular_movies, get_new_2026, get_popular_tv, get_oscar_winners, get_romance_comedy, get_top_horror, get_movies_by_genre, get_top_2025_2026, get_vecher_movies
 from services.sources import get_all_sources, get_watch_sources
 from services.smart_search import smart_search, get_typo_suggestions
 from translations import get_translations, detect_language
@@ -171,11 +172,14 @@ async def movie_page(request: Request, tmdb_id: int, media_type: str = "movie"):
 
         sources = await get_all_sources(tmdb_id, movie["title"], movie.get("year"), title_ru=movie.get("title_ru"), media_type=media_type)
 
+        ai_review = await get_or_generate_review(movie, lang)
+
         return templates.TemplateResponse(request, "movie.html", {
             "movie": movie,
             "sources": sources,
             "lang": lang,
             "t": t,
+            "ai_review": ai_review,
         })
     except Exception as e:
         print(f"Movie page error: {e}")
