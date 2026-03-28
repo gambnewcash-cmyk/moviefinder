@@ -128,21 +128,26 @@
 <script>
 // Language switcher
 function setLang(lang) {
-  // Save to localStorage as UI hint
   localStorage.setItem('mf_lang', lang);
-  // Set cookie via API then reload
-  fetch('/api/set-language?lang=' + lang)
-    .then(() => location.reload());
+  var path = window.location.pathname;
+  // If on /en/ page and switching to RU → redirect to RU URL
+  if (lang === 'ru' && path.startsWith('/en/')) {
+    window.location.href = path.replace('/en/', '/');
+    return;
+  }
+  // If on RU page and switching to EN → redirect to EN URL
+  if (lang === 'en' && !path.startsWith('/en/')) {
+    window.location.href = '/en' + path;
+    return;
+  }
+  // Otherwise just set cookie and reload
+  fetch('/api/set-language?lang=' + lang).then(() => location.reload());
 }
 
-// On first load: check localStorage preference vs server lang
+// On first load: NO auto-sync to avoid infinite reload loops
 (function() {
-  var storedLang = localStorage.getItem('mf_lang');
-  var serverLang = '{{ lang or "en" }}';
-  if (storedLang && storedLang !== serverLang) {
-    // Sync with stored preference
-    fetch('/api/set-language?lang=' + storedLang).then(() => location.reload());
-  }
+  // Don't auto-redirect based on localStorage - user is already on the right page
+  void 0;
 })();
 </script>
 {% block scripts %}{% endblock %}
