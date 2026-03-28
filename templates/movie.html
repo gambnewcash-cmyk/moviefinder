@@ -345,49 +345,76 @@
       <!-- MovieFinder Take + FAQ Schema -->
       <section class="mb-8">
         <h2 class="text-xl font-bold mb-4">{% if lang == 'ru' %}🎬 Мнение MovieFinder{% else %}🎬 MovieFinder's Take{% endif %}</h2>
-        <div class="bg-card border border-border rounded-2xl p-5">
+        <div class="bg-card border border-border rounded-2xl p-5 space-y-3">
           {% set rating = movie.rating|float if movie.rating else 0 %}
           {% set yr = movie.year|int if movie.year else 0 %}
+          {% set title_display = (movie.title_ru or movie.title) if lang == 'ru' else (movie.title_en or movie.title) %}
           {% if lang == 'ru' %}
+            {# Абзац 1: Общая оценка #}
             <p class="text-muted leading-relaxed">
-              {% if rating >= 8.5 %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — один из лучших фильмов в своём жанре с рейтингом {{ "%.1f"|format(rating) }}/10. Настоятельно рекомендуем к просмотру.
-              {% elif rating >= 7.0 %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — качественный фильм с рейтингом {{ "%.1f"|format(rating) }}/10, который не разочарует.
-              {% elif rating >= 5.5 %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — неплохой выбор для вечернего просмотра. Рейтинг {{ "%.1f"|format(rating) }}/10.
-              {% else %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — фильм на любителя. Советуем ознакомиться с описанием перед просмотром.
-              {% endif %}
-              {% if yr >= 2025 %} Один из актуальных релизов {{ yr }} года.
-              {% elif yr >= 2020 %} Фильм вышел в {{ yr }} году и до сих пор пользуется популярностью.
-              {% elif yr > 0 and yr <= 2000 %} Классика кино {{ yr }} года, которую стоит посмотреть каждому.
-              {% endif %}
-              {% if 'Horror' in (movie.genre or '') %} Подходит для любителей острых ощущений и атмосферного хоррора.
-              {% elif 'Comedy' in (movie.genre or '') %} Отличный выбор для поднятия настроения.
-              {% elif 'Action' in (movie.genre or '') %} Для тех кто любит динамичные сцены и захватывающий экшн.
-              {% elif 'Drama' in (movie.genre or '') %} Глубокое кино о людях и их судьбах — для вдумчивого зрителя.
-              {% elif 'Science Fiction' in (movie.genre or '') %} Фантастика с идеями, которые заставят задуматься о будущем.
-              {% elif 'Thriller' in (movie.genre or '') %} Держит в напряжении от первого до последнего кадра.
+              {% if rating >= 8.5 %}<strong class="text-white">«{{ title_display }}»</strong> — исключительный фильм с рейтингом <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Входит в число лучших в своём жанре и по праву считается одним из обязательных к просмотру.
+              {% elif rating >= 7.5 %}<strong class="text-white">«{{ title_display }}»</strong> — очень достойное кино с рейтингом <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Отличная работа режиссёра и актёров, которую точно стоит включить в список просмотра.
+              {% elif rating >= 7.0 %}<strong class="text-white">«{{ title_display }}»</strong> — крепкий фильм с рейтингом <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Не шедевр, но качественная работа, которая не разочарует.
+              {% elif rating >= 5.5 %}<strong class="text-white">«{{ title_display }}»</strong> — фильм со смешанными отзывами, рейтинг <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Подойдёт для расслабленного просмотра без высоких ожиданий.
+              {% else %}<strong class="text-white">«{{ title_display }}»</strong> — фильм на любителя, рейтинг {{ "%.1f"|format(rating) }}/10. Рекомендуем ознакомиться с описанием и трейлером перед просмотром.
               {% endif %}
             </p>
-            <p class="text-xs text-muted mt-3">— Редакция MovieFinder</p>
+            {# Абзац 2: Про жанр и атмосферу #}
+            <p class="text-muted leading-relaxed">
+              {% if 'Horror' in (movie.genre or '') %}Хоррор часто эксплуатирует одни и те же приёмы — но лучшие фильмы жанра умеют по-настоящему зацепить. Смотрите с выключенным светом и хорошим звуком.
+              {% elif 'Comedy' in (movie.genre or '') %}Хорошая комедия — редкость. Здесь важно не только смешно, но и тепло. Отличный выбор для вечера с друзьями или семьёй.
+              {% elif 'Action' in (movie.genre or '') %}Экшн — это про адреналин, темп и зрелище. Если ищете кино чтобы отключить голову и получить удовольствие от картинки — попали по адресу.
+              {% elif 'Drama' in (movie.genre or '') %}Хорошая драма не развлекает — она заставляет думать и чувствовать. Именно за этим сюда приходят те, кто устал от пустых блокбастеров.
+              {% elif 'Science Fiction' in (movie.genre or '') %}Научная фантастика в лучшем виде — не про спецэффекты, а про идеи. Фильмы этого жанра часто предсказывают то, что происходит с нами сейчас.
+              {% elif 'Thriller' in (movie.genre or '') %}Хороший триллер держит в напряжении даже тогда, когда на экране ничего не происходит. Атмосфера здесь решает не меньше, чем сюжет.
+              {% elif 'Romance' in (movie.genre or '') or 'Мелодрама' in (movie.genre or '') %}Мелодрама — жанр который легко сделать банальным. Хорошие же образцы остаются с вами надолго после финальных титров.
+              {% elif 'Animation' in (movie.genre or '') %}Анимация давно перестала быть только детским жанром. Лучшие мультфильмы говорят о серьёзных вещах языком, который понятен всем.
+              {% elif 'Documentary' in (movie.genre or '') %}Документальное кино — это реальность, которая иногда оказывается невероятнее любого вымысла. Расширяет кругозор и меняет точку зрения.
+              {% else %}Каждый фильм — это отдельный мир со своими правилами. Дайте ему шанс и посмотрите хотя бы первые 20 минут — они обычно всё решают.
+              {% endif %}
+            </p>
+            {# Абзац 3: Временной контекст + для кого #}
+            <p class="text-muted leading-relaxed">
+              {% if yr >= 2025 %}Это свежий релиз {{ yr }} года — фильм ещё не успел обрасти легендами, но уже собрал свою аудиторию. {% elif yr >= 2015 %}Вышел в {{ yr }} году, когда индустрия переживала интересный период. Сегодня смотрится не менее актуально. {% elif yr >= 2000 %}Кино {{ yr }} года — эпоха когда многое ещё снималось по-настоящему. Без CGI-перегруза и с живыми актёрами в кадре. {% elif yr > 0 %}Классика {{ yr }} года. Такое кино уже не снимают — и именно поэтому его стоит посмотреть. {% endif %}
+              {% if rating >= 7.5 %}Подходит для: любого вечера, особенно когда хочется качественного кино без компромиссов.
+              {% elif rating >= 6.0 %}Подходит для: тех кто хочет посмотреть что-то новое и не слишком требователен к качеству.
+              {% else %}Подходит для: поклонников жанра и тех кто готов к экспериментам.
+              {% endif %}
+            </p>
+            <p class="text-xs text-muted border-t border-border pt-3 mt-1">— Редакция MovieFinder</p>
           {% else %}
+            {# Paragraph 1: Overall verdict #}
             <p class="text-muted leading-relaxed">
-              {% if rating >= 8.5 %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is one of the best films in its genre, rated {{ "%.1f"|format(rating) }}/10. Highly recommended.
-              {% elif rating >= 7.0 %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is a solid film rated {{ "%.1f"|format(rating) }}/10 that won't disappoint.
-              {% elif rating >= 5.5 %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is a decent choice for an evening watch. Rated {{ "%.1f"|format(rating) }}/10.
-              {% else %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is an acquired taste. Check the description before watching.
-              {% endif %}
-              {% if yr >= 2025 %} One of the notable releases of {{ yr }}.
-              {% elif yr >= 2020 %} Released in {{ yr }} and still drawing viewers.
-              {% elif yr > 0 and yr <= 2000 %} A {{ yr }} classic every film lover should see.
-              {% endif %}
-              {% if 'Horror' in (movie.genre or '') %} Perfect for fans of thrills and atmospheric horror.
-              {% elif 'Comedy' in (movie.genre or '') %} A great pick for a lighthearted evening.
-              {% elif 'Action' in (movie.genre or '') %} For those who love dynamic action sequences.
-              {% elif 'Drama' in (movie.genre or '') %} Thoughtful cinema about people and their stories.
-              {% elif 'Science Fiction' in (movie.genre or '') %} Sci-fi with ideas that will make you think about the future.
-              {% elif 'Thriller' in (movie.genre or '') %} Keeps you on the edge of your seat from start to finish.
+              {% if rating >= 8.5 %}<strong class="text-white">{{ title_display }}</strong> is an exceptional film rated <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. It ranks among the finest in its genre and is an absolute must-watch for any film lover.
+              {% elif rating >= 7.5 %}<strong class="text-white">{{ title_display }}</strong> is a very strong film rated <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Great direction and performances make this one well worth adding to your watchlist.
+              {% elif rating >= 7.0 %}<strong class="text-white">{{ title_display }}</strong> is a solid entry rated <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Not a masterpiece, but quality work that won't leave you disappointed.
+              {% elif rating >= 5.5 %}<strong class="text-white">{{ title_display }}</strong> has mixed reviews with a rating of <strong class="text-yellow-400">{{ "%.1f"|format(rating) }}/10</strong>. Good for a relaxed evening without high expectations.
+              {% else %}<strong class="text-white">{{ title_display }}</strong> is an acquired taste at {{ "%.1f"|format(rating) }}/10. We recommend checking the trailer and synopsis before diving in.
               {% endif %}
             </p>
-            <p class="text-xs text-muted mt-3">— MovieFinder Editorial</p>
+            {# Paragraph 2: Genre & mood #}
+            <p class="text-muted leading-relaxed">
+              {% if 'Horror' in (movie.genre or '') %}Horror films often rely on familiar tricks — but the best ones genuinely get under your skin. Watch with lights off and good sound for full effect.
+              {% elif 'Comedy' in (movie.genre or '') %}A good comedy is rarer than it sounds. The best ones are not just funny but warm. Perfect for an evening with friends or family.
+              {% elif 'Action' in (movie.genre or '') %}Action is about adrenaline, pace and spectacle. If you want to switch off and enjoy the ride, you're in the right place.
+              {% elif 'Drama' in (movie.genre or '') %}Great drama doesn't just entertain — it makes you think and feel. This is what film lovers come to when they're tired of empty blockbusters.
+              {% elif 'Science Fiction' in (movie.genre or '') %}The best sci-fi is not about special effects — it's about ideas. These films often predict what's happening to us right now.
+              {% elif 'Thriller' in (movie.genre or '') %}A good thriller keeps you tense even when nothing is happening on screen. Atmosphere matters as much as plot here.
+              {% elif 'Romance' in (movie.genre or '') %}Romance is easy to do badly. The good ones stay with you long after the credits roll.
+              {% elif 'Animation' in (movie.genre or '') %}Animation has long outgrown being just for kids. The best animated films tackle serious themes in a language everyone understands.
+              {% elif 'Documentary' in (movie.genre or '') %}Documentary cinema shows reality that is sometimes stranger than fiction. It broadens horizons and shifts perspectives.
+              {% else %}Every film is its own world with its own rules. Give it a chance — watch the first 20 minutes and you'll know if it's for you.
+              {% endif %}
+            </p>
+            {# Paragraph 3: Context + who it's for #}
+            <p class="text-muted leading-relaxed">
+              {% if yr >= 2025 %}A fresh {{ yr }} release — still building its audience and reputation. {% elif yr >= 2015 %}Released in {{ yr }}, this film holds up just as well today. {% elif yr >= 2000 %}A {{ yr }} film from an era before CGI overload, with real performances that still hit hard. {% elif yr > 0 %}A classic from {{ yr }}. They don't make them like this anymore — which is exactly why you should watch it. {% endif %}
+              {% if rating >= 7.5 %}Best for: any evening when you want quality cinema with no compromises.
+              {% elif rating >= 6.0 %}Best for: viewers looking to try something new without being too demanding.
+              {% else %}Best for: genre fans and those open to something unconventional.
+              {% endif %}
+            </p>
+            <p class="text-xs text-muted border-t border-border pt-3 mt-1">— MovieFinder Editorial</p>
           {% endif %}
         </div>
       </section>
