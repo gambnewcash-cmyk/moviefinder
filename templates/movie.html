@@ -640,4 +640,229 @@
 })();
 </script>
 
+<!-- User Reviews Section -->
+<section class="mt-10" id="user-reviews">
+  <h2 class="text-2xl font-bold mb-6">💬 {% if lang == 'ru' %}Отзывы зрителей{% else %}Audience Reviews{% endif %}</h2>
+
+  <!-- Audience Score Summary -->
+  <div id="audience-score-block" class="hidden bg-card border border-border rounded-2xl p-5 mb-6 flex items-center gap-4">
+    <div class="text-4xl font-bold text-accent" id="audience-avg">—</div>
+    <div>
+      <p class="text-white font-semibold text-sm" id="audience-label">
+        {% if lang == 'ru' %}Оценка зрителей{% else %}Audience Score{% endif %}
+      </p>
+      <p class="text-xs text-muted" id="audience-count"></p>
+    </div>
+  </div>
+
+  <!-- Review Form -->
+  <div class="bg-card border border-border rounded-2xl p-6 mb-6">
+    <h3 class="text-lg font-semibold mb-4">{% if lang == 'ru' %}Оставить отзыв{% else %}Write a Review{% endif %}</h3>
+    <div class="space-y-3">
+      <!-- Score picker -->
+      <div>
+        <p class="text-sm text-muted mb-2">{% if lang == 'ru' %}Ваша оценка (необязательно):{% else %}Your score (optional):{% endif %}</p>
+        <div class="flex flex-wrap gap-1.5" id="score-buttons">
+          {% for i in range(1, 11) %}
+          <button
+            type="button"
+            onclick="selectScore({{ i }})"
+            data-score="{{ i }}"
+            class="score-btn w-9 h-9 rounded-lg border border-border text-sm font-bold text-muted hover:border-accent hover:text-accent transition-colors"
+          >{{ i }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      <input
+        type="text"
+        id="review-author"
+        maxlength="50"
+        placeholder="{% if lang == 'ru' %}Ваше имя{% else %}Your name{% endif %}"
+        class="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-white placeholder-muted focus:outline-none focus:border-accent transition"
+      />
+      <textarea
+        id="review-text"
+        maxlength="2000"
+        rows="4"
+        placeholder="{% if lang == 'ru' %}Поделитесь впечатлением о фильме...{% else %}Share your thoughts about this film...{% endif %}"
+        class="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-white placeholder-muted focus:outline-none focus:border-accent transition resize-none"
+      ></textarea>
+      <div class="flex items-center justify-between">
+        <span id="review-char-count" class="text-xs text-muted">0/2000</span>
+        <button
+          onclick="submitReview({{ movie.tmdb_id }})"
+          id="review-submit-btn"
+          class="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-2.5 rounded-full transition-colors"
+        >
+          {% if lang == 'ru' %}Отправить{% else %}Submit{% endif %}
+        </button>
+      </div>
+      <p id="review-status" class="text-sm hidden"></p>
+    </div>
+  </div>
+
+  <!-- Reviews List -->
+  <div id="reviews-list" class="space-y-4">
+    <!-- Loaded by JS -->
+  </div>
+  <p id="reviews-empty" class="text-muted text-center py-8 hidden">
+    {% if lang == 'ru' %}Пока нет отзывов. Будьте первым!{% else %}No reviews yet. Be the first!{% endif %}
+  </p>
+</section>
+
+<script>
+(function() {
+const TMDB_ID = {{ movie.tmdb_id }};
+const LANG = "{{ lang }}";
+let selectedScore = null;
+
+window.selectScore = function(val) {
+  selectedScore = (selectedScore === val) ? null : val;
+  document.querySelectorAll('.score-btn').forEach(btn => {
+    const s = parseInt(btn.dataset.score);
+    if (s === selectedScore) {
+      btn.classList.add('bg-accent', 'text-white', 'border-accent');
+      btn.classList.remove('text-muted', 'border-border');
+    } else {
+      btn.classList.remove('bg-accent', 'text-white', 'border-accent');
+      btn.classList.add('text-muted', 'border-border');
+    }
+  });
+};
+
+async function loadScore() {
+  try {
+    const resp = await fetch(`/api/movie-score/${TMDB_ID}`);
+    const data = await resp.json();
+    if (data.count > 0) {
+      const block = document.getElementById('audience-score-block');
+      block.classList.remove('hidden');
+      document.getElementById('audience-avg').textContent = `${data.avg_score} / 10`;
+      const countEl = document.getElementById('audience-count');
+      countEl.textContent = LANG === 'ru'
+        ? `${data.count} ${pluralRu(data.count, 'голос', 'голоса', 'голосов')}`
+        : `${data.count} vote${data.count !== 1 ? 's' : ''}`;
+    }
+  } catch(e) {}
+}
+
+function pluralRu(n, one, few, many) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+}
+
+async function loadReviews() {
+  try {
+    const resp = await fetch(`/api/reviews/${TMDB_ID}?lang=${LANG}`);
+    const data = await resp.json();
+    renderReviews(data.reviews);
+  } catch(e) {}
+}
+
+function renderReviews(reviews) {
+  const list = document.getElementById('reviews-list');
+  const empty = document.getElementById('reviews-empty');
+
+  if (!reviews || reviews.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  list.innerHTML = reviews.map(r => {
+    const date = new Date(r.date).toLocaleDateString(LANG === 'ru' ? 'ru-RU' : 'en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+    const scoreBadge = r.score ? `<span class="ml-auto text-xs font-bold bg-accent/20 text-accent px-2 py-0.5 rounded-full">⭐ ${r.score}/10</span>` : '';
+    return `
+      <div class="bg-card border border-border rounded-2xl p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm flex-shrink-0">
+            ${r.author.charAt(0).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-white text-sm">${escHtml(r.author)}</p>
+            <p class="text-xs text-muted">${date}</p>
+          </div>
+          ${scoreBadge}
+        </div>
+        <p class="text-muted leading-relaxed text-sm">${escHtml(r.text)}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+window.submitReview = async function(tmdbId) {
+  const author = document.getElementById('review-author').value.trim();
+  const text = document.getElementById('review-text').value.trim();
+  const btn = document.getElementById('review-submit-btn');
+
+  if (!author || author.length < 2) {
+    showReviewStatus(LANG === 'ru' ? 'Введите имя (минимум 2 символа)' : 'Enter your name (min 2 chars)', 'error');
+    return;
+  }
+  if (!text || text.length < 10) {
+    showReviewStatus(LANG === 'ru' ? 'Отзыв слишком короткий (минимум 10 символов)' : 'Review too short (min 10 chars)', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = LANG === 'ru' ? 'Отправка...' : 'Sending...';
+
+  try {
+    const body = {author, text, lang: LANG};
+    if (selectedScore !== null) body.score = selectedScore;
+
+    const resp = await fetch(`/api/reviews/${tmdbId}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+
+    if (resp.ok) {
+      document.getElementById('review-author').value = '';
+      document.getElementById('review-text').value = '';
+      document.getElementById('review-char-count').textContent = '0/2000';
+      selectedScore = null;
+      document.querySelectorAll('.score-btn').forEach(b => {
+        b.classList.remove('bg-accent', 'text-white', 'border-accent');
+        b.classList.add('text-muted', 'border-border');
+      });
+      showReviewStatus(LANG === 'ru' ? '✅ Отзыв опубликован!' : '✅ Review published!', 'success');
+      await Promise.all([loadReviews(), loadScore()]);
+    } else {
+      showReviewStatus(LANG === 'ru' ? 'Ошибка. Попробуйте ещё раз.' : 'Error. Please try again.', 'error');
+    }
+  } catch(e) {
+    showReviewStatus(LANG === 'ru' ? 'Ошибка сети.' : 'Network error.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = LANG === 'ru' ? 'Отправить' : 'Submit';
+};
+
+function showReviewStatus(msg, type) {
+  const el = document.getElementById('review-status');
+  el.textContent = msg;
+  el.className = `text-sm ${type === 'success' ? 'text-green-400' : 'text-red-400'}`;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+document.getElementById('review-text').addEventListener('input', function() {
+  document.getElementById('review-char-count').textContent = `${this.value.length}/2000`;
+});
+
+loadReviews();
+loadScore();
+})();
+</script>
+
 {% endblock %}

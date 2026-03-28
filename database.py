@@ -40,6 +40,17 @@ def init_db():
             query TEXT,
             searched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS user_reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tmdb_id INTEGER NOT NULL,
+            author TEXT NOT NULL,
+            review_text TEXT NOT NULL,
+            score INTEGER DEFAULT NULL,
+            lang TEXT DEFAULT 'ru',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_user_reviews_tmdb ON user_reviews(tmdb_id);
         """)
 
 @contextmanager
@@ -109,6 +120,51 @@ def get_watch_sources(movie_db_id: int):
             SELECT * FROM watch_sources WHERE movie_id = ? AND is_available = 1
         """, (movie_db_id,)).fetchall()
         return [dict(r) for r in rows]
+
+
+def get_user_reviews(tmdb_id: int, lang: str = None) -> list:
+    with get_db() as conn:
+        if lang:
+            rows = conn.execute(
+                "SELECT author, review_text, score, lang, created_at FROM user_reviews WHERE tmdb_id=? AND lang=? ORDER BY created_at DESC LIMIT 50",
+                (tmdb_id, lang)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT author, review_text, score, lang, created_at FROM user_reviews WHERE tmdb_id=? ORDER BY created_at DESC LIMIT 50",
+                (tmdb_id,)
+            ).fetchall()
+        return [{"author": r[0], "text": r[1], "score": r[2], "lang": r[3], "date": r[4]} for r in rows]
+
+def add_user_review(tmdb_id: int, author: str, review_text: str, score: int = None, lang: str = 'ru') -> bool:
+    # Basic validation
+    if not author.strip() or not review_text.strip():
+        return False
+    if len(author) > 50 or len(review_text) > 2000:
+        return False
+    if score is not None:
+        if not isinstance(score, int) or score < 1 or score > 10:
+            return False
+    with get_db() as conn:
+        conn.execute(
+            "INSERT INTO user_reviews (tmdb_id, author, review_text, score, lang) VALUES (?, ?, ?, ?, ?)",
+            (tmdb_id, author.strip()[:50], review_text.strip()[:2000], score, lang)
+        )
+    return True
+
+def get_movie_score(tmdb_id: int) -> dict:
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT score FROM user_reviews WHERE tmdb_id=? AND score IS NOT NULL",
+            (tmdb_id,)
+        ).fetchall()
+        scores = [r[0] for r in rows]
+        count = len(scores)
+        avg = round(sum(scores) / count, 1) if count > 0 else None
+        distribution = {str(i): 0 for i in range(1, 11)}
+        for s in scores:
+            distribution[str(s)] = distribution.get(str(s), 0) + 1
+        return {"avg_score": avg, "count": count, "distribution": distribution}
 
 
 def get_db_connection():

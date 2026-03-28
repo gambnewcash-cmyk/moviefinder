@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-from database import init_db, log_search, get_trending_searches, save_movie, get_movie_by_tmdb, get_recent_movies, get_top_rated_db, get_movies_by_genre_db, get_vecher_movies_db, get_movies_2026_db
+from database import init_db, log_search, get_trending_searches, save_movie, get_movie_by_tmdb, get_recent_movies, get_top_rated_db, get_movies_by_genre_db, get_vecher_movies_db, get_movies_2026_db, get_user_reviews, add_user_review, get_movie_score
 from services.tmdb import search_movies, get_movie_details, get_trending, get_top_rated, get_now_playing, get_upcoming, get_popular_movies, get_new_2026, get_popular_tv, get_oscar_winners, get_romance_comedy, get_top_horror, get_movies_by_genre, get_top_2025_2026, get_vecher_movies
 from services.ai_review import get_or_generate_review
 from services.sources import get_all_sources, get_watch_sources
@@ -993,3 +993,41 @@ async def en_favorites_page(request: Request):
         "hreflang_en": "https://moviefinders.net/en/favorites",
         "canonical_url": "https://moviefinders.net/en/favorites",
     })
+
+
+@app.get("/api/reviews/{tmdb_id}")
+async def get_reviews(tmdb_id: int, lang: str = None):
+    reviews = get_user_reviews(tmdb_id, lang=lang)
+    return {"reviews": reviews}
+
+@app.post("/api/reviews/{tmdb_id}")
+async def post_review(tmdb_id: int, request: Request):
+    data = await request.json()
+    author = data.get("author", "").strip()
+    text = data.get("text", "").strip()
+    score = data.get("score", None)
+    lang = data.get("lang", "ru")
+
+    # Basic spam protection
+    if len(author) < 2 or len(text) < 10:
+        return JSONResponse({"error": "too_short"}, status_code=400)
+    if len(text) > 2000:
+        return JSONResponse({"error": "too_long"}, status_code=400)
+
+    # Validate score
+    if score is not None:
+        try:
+            score = int(score)
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "invalid_score"}, status_code=400)
+        if score < 1 or score > 10:
+            return JSONResponse({"error": "invalid_score"}, status_code=400)
+
+    ok = add_user_review(tmdb_id, author, text, score=score, lang=lang)
+    if ok:
+        return {"status": "ok"}
+    return JSONResponse({"error": "invalid"}, status_code=400)
+
+@app.get("/api/movie-score/{tmdb_id}")
+async def movie_score(tmdb_id: int):
+    return get_movie_score(tmdb_id)
