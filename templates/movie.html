@@ -342,6 +342,80 @@
       })();
       </script>
 
+      <!-- MovieFinder Take + FAQ Schema -->
+      <section class="mb-8">
+        <h2 class="text-xl font-bold mb-4">{% if lang == 'ru' %}🎬 Мнение MovieFinder{% else %}🎬 MovieFinder's Take{% endif %}</h2>
+        <div class="bg-card border border-border rounded-2xl p-5">
+          {% set rating = movie.rating|float if movie.rating else 0 %}
+          {% set yr = movie.year|int if movie.year else 0 %}
+          {% if lang == 'ru' %}
+            <p class="text-muted leading-relaxed">
+              {% if rating >= 8.5 %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — один из лучших фильмов в своём жанре с рейтингом {{ "%.1f"|format(rating) }}/10. Настоятельно рекомендуем к просмотру.
+              {% elif rating >= 7.0 %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — качественный фильм с рейтингом {{ "%.1f"|format(rating) }}/10, который не разочарует.
+              {% elif rating >= 5.5 %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — неплохой выбор для вечернего просмотра. Рейтинг {{ "%.1f"|format(rating) }}/10.
+              {% else %}<strong class="text-white">«{{ movie.title_ru or movie.title }}»</strong> — фильм на любителя. Советуем ознакомиться с описанием перед просмотром.
+              {% endif %}
+              {% if yr >= 2025 %} Один из актуальных релизов {{ yr }} года.
+              {% elif yr >= 2020 %} Фильм вышел в {{ yr }} году и до сих пор пользуется популярностью.
+              {% elif yr > 0 and yr <= 2000 %} Классика кино {{ yr }} года, которую стоит посмотреть каждому.
+              {% endif %}
+              {% if 'Horror' in (movie.genre or '') %} Подходит для любителей острых ощущений и атмосферного хоррора.
+              {% elif 'Comedy' in (movie.genre or '') %} Отличный выбор для поднятия настроения.
+              {% elif 'Action' in (movie.genre or '') %} Для тех кто любит динамичные сцены и захватывающий экшн.
+              {% elif 'Drama' in (movie.genre or '') %} Глубокое кино о людях и их судьбах — для вдумчивого зрителя.
+              {% elif 'Science Fiction' in (movie.genre or '') %} Фантастика с идеями, которые заставят задуматься о будущем.
+              {% elif 'Thriller' in (movie.genre or '') %} Держит в напряжении от первого до последнего кадра.
+              {% endif %}
+            </p>
+            <p class="text-xs text-muted mt-3">— Редакция MovieFinder</p>
+          {% else %}
+            <p class="text-muted leading-relaxed">
+              {% if rating >= 8.5 %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is one of the best films in its genre, rated {{ "%.1f"|format(rating) }}/10. Highly recommended.
+              {% elif rating >= 7.0 %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is a solid film rated {{ "%.1f"|format(rating) }}/10 that won't disappoint.
+              {% elif rating >= 5.5 %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is a decent choice for an evening watch. Rated {{ "%.1f"|format(rating) }}/10.
+              {% else %}<strong class="text-white">{{ movie.title_en or movie.title }}</strong> is an acquired taste. Check the description before watching.
+              {% endif %}
+              {% if yr >= 2025 %} One of the notable releases of {{ yr }}.
+              {% elif yr >= 2020 %} Released in {{ yr }} and still drawing viewers.
+              {% elif yr > 0 and yr <= 2000 %} A {{ yr }} classic every film lover should see.
+              {% endif %}
+              {% if 'Horror' in (movie.genre or '') %} Perfect for fans of thrills and atmospheric horror.
+              {% elif 'Comedy' in (movie.genre or '') %} A great pick for a lighthearted evening.
+              {% elif 'Action' in (movie.genre or '') %} For those who love dynamic action sequences.
+              {% elif 'Drama' in (movie.genre or '') %} Thoughtful cinema about people and their stories.
+              {% elif 'Science Fiction' in (movie.genre or '') %} Sci-fi with ideas that will make you think about the future.
+              {% elif 'Thriller' in (movie.genre or '') %} Keeps you on the edge of your seat from start to finish.
+              {% endif %}
+            </p>
+            <p class="text-xs text-muted mt-3">— MovieFinder Editorial</p>
+          {% endif %}
+        </div>
+      </section>
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "{% if lang == 'ru' %}Где смотреть «{{ (movie.title_ru or movie.title)|replace('"', ' ') }}» онлайн бесплатно?{% else %}Where to watch {{ (movie.title_en or movie.title)|replace('"', ' ') }} online for free?{% endif %}",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "{% if lang == 'ru' %}MovieFinder показывает все доступные платформы: Okko, IVI, Кинопоиск и бесплатные сайты.{% else %}MovieFinder shows all available platforms: Netflix, Prime, HBO and free sites.{% endif %}"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "{% if lang == 'ru' %}Какой рейтинг у фильма «{{ (movie.title_ru or movie.title)|replace('"', ' ') }}»?{% else %}What is the rating of {{ (movie.title_en or movie.title)|replace('"', ' ') }}?{% endif %}",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "{% if lang == 'ru' %}Рейтинг фильма по версии TMDB: {{ "%.1f"|format(movie.rating|float) }}/10.{% else %}TMDB rating: {{ "%.1f"|format(movie.rating|float) }}/10.{% endif %}"
+            }
+          }
+        ]
+      }
+      </script>
+
       <!-- CAST -->
       {% if movie.cast %}
       <section>
