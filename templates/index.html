@@ -300,7 +300,7 @@
   <!-- Poster -->
   <div class="relative w-full" style="padding-bottom:150%">
     {% if m.poster_url %}
-    <img src="{{ m.poster_url | replace('/w500/', '/w342/') }}" alt="{{ m.title }}"
+    <img src="{{ m.poster_url | replace('/w500/', '/w300/') }}" alt="{{ m.title }}"
       class="absolute inset-0 w-full h-full object-cover"
       loading="lazy"
       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
