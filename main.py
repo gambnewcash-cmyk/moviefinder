@@ -177,14 +177,14 @@ async def movie_page(request: Request, tmdb_id: int, media_type: str = "movie"):
 
         # Override description with our unique AI-generated one if available
         try:
-            from services.ai_review import _get_pg
-            pg = _get_pg()
-            if pg:
-                cur = pg.cursor()
-                cur.execute("SELECT description FROM ai_descriptions WHERE tmdb_id=%s AND lang=%s", (tmdb_id, lang))
-                row = cur.fetchone()
-                if row and row[0]:
-                    movie["description"] = row[0]
+            import psycopg2 as _pg2
+            _pg_url = "postgresql://postgres:OLIBHomUThkXFlbrgpJWyeZblHZdJQvj@gondola.proxy.rlwy.net:54122/railway"
+            with _pg2.connect(_pg_url) as _conn:
+                with _conn.cursor() as _cur:
+                    _cur.execute("SELECT description FROM ai_descriptions WHERE tmdb_id=%s AND lang=%s", (tmdb_id, lang))
+                    _row = _cur.fetchone()
+                    if _row and _row[0]:
+                        movie["description"] = _row[0]
         except Exception:
             pass
 
