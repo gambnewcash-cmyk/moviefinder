@@ -130,7 +130,7 @@ function setLang(lang) {
   var path = window.location.pathname;
   
   // Pages that have EN equivalents
-  var enRoutes = ['/movie/', '/genre/', '/top', '/films/2026', '/films/vecher', '/ai-search'];
+  var enRoutes = ['/movie/', '/genre/', '/top', '/films/2026', '/films/vecher', '/ai-search', '/genres'];
   var hasEnVersion = enRoutes.some(function(r) { return path === r || path.startsWith(r); });
   
   if (lang === 'ru' && path.startsWith('/en/')) {

@@ -940,3 +940,15 @@ async def en_homepage(request: Request):
         "hreflang_en": "https://moviefinders.net/en/",
         "canonical_url": "https://moviefinders.net/en/",
     })
+
+
+@app.get("/en/genres", response_class=HTMLResponse)
+async def en_genres_page(request: Request):
+    lang = "en"
+    t = get_translations(lang)
+    return templates.TemplateResponse(request, "genres.html", {
+        "genres": GENRE_MAP, "lang": lang, "t": t,
+        "hreflang_ru": "https://moviefinders.net/genres",
+        "hreflang_en": "https://moviefinders.net/en/genres",
+        "canonical_url": "https://moviefinders.net/en/genres",
+    })

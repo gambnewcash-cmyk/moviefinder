@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block hreflang_ru %}https://moviefinders.net/genres{% endblock %}
+{% block hreflang_en %}https://moviefinders.net/en/genres{% endblock %}
+{% block hreflang_xdefault %}https://moviefinders.net/genres{% endblock %}
+{% block canonical %}{% if lang == "en" %}https://moviefinders.net/en/genres{% else %}https://moviefinders.net/genres{% endif %}{% endblock %}
 
 {% block title %}{% if lang == "ru" %}Все жанры фильмов | MovieFinder{% else %}All Movie Genres | MovieFinder{% endif %}{% endblock %}
 
