@@ -370,7 +370,15 @@
               {% elif 'Romance' in (movie.genre or '') or 'Мелодрама' in (movie.genre or '') %}Мелодрама — жанр который легко сделать банальным. Хорошие же образцы остаются с вами надолго после финальных титров.
               {% elif 'Animation' in (movie.genre or '') %}Анимация давно перестала быть только детским жанром. Лучшие мультфильмы говорят о серьёзных вещах языком, который понятен всем.
               {% elif 'Documentary' in (movie.genre or '') %}Документальное кино — это реальность, которая иногда оказывается невероятнее любого вымысла. Расширяет кругозор и меняет точку зрения.
-              {% else %}Каждый фильм — это отдельный мир со своими правилами. Дайте ему шанс и посмотрите хотя бы первые 20 минут — они обычно всё решают.
+              {% elif 'Family' in (movie.genre or '') or 'Семейн' in (movie.genre or '') %}Семейное кино — редкий жанр, где надо угодить и детям, и взрослым одновременно. Лучшие образцы делают это незаметно.
+              {% elif 'Fantasy' in (movie.genre or '') or 'Фэнтези' in (movie.genre or '') %}Фэнтези — это про побег в другой мир. Хорошее фэнтези строит этот мир так убедительно, что не хочется возвращаться.
+              {% elif 'Mystery' in (movie.genre or '') or 'Детектив' in (movie.genre or '') %}Детективные истории держат интригу до последнего кадра. Здесь важно не угадать финал заранее — лучше позвольте себе удивиться.
+              {% elif 'Western' in (movie.genre or '') %}Вестерн — жанр с характером. Пыльные дороги, честь и дуэли. Классика, которая не устаревает.
+              {% elif 'History' in (movie.genre or '') or 'Истори' in (movie.genre or '') %}Историческое кино позволяет оказаться в эпохе, которую иначе не увидишь. Хорошее — это не учебник, а живые люди в живых обстоятельствах.
+              {% elif 'Music' in (movie.genre or '') or 'Музыкальн' in (movie.genre or '') %}Музыкальные фильмы работают на двух уровнях сразу — история и саундтрек. Когда оба сильные, впечатление остаётся надолго.
+              {% elif 'War' in (movie.genre or '') or 'Военн' in (movie.genre or '') %}Военное кино в лучших своих проявлениях — не про победы, а про людей. Про то, как они держатся и ломаются под давлением.
+              {% elif 'Crime' in (movie.genre or '') or 'Криминал' in (movie.genre or '') %}Криминальное кино устроено просто: ты знаешь что всё закончится плохо, но смотришь до конца. В этом и есть магия жанра.
+              {% else %}{% if rating >= 7.0 %}Высокий рейтинг говорит сам за себя — этот фильм нашёл свою аудиторию и не разочаровал её. Доверьтесь коллективному вкусу.{% else %}Не каждый фильм создан для всех. Прочитайте описание, посмотрите трейлер — и вы сразу поймёте, ваше это или нет.{% endif %}
               {% endif %}
             </p>
             {# Абзац 3: Временной контекст + для кого #}
@@ -403,7 +411,15 @@
               {% elif 'Romance' in (movie.genre or '') %}Romance is easy to do badly. The good ones stay with you long after the credits roll.
               {% elif 'Animation' in (movie.genre or '') %}Animation has long outgrown being just for kids. The best animated films tackle serious themes in a language everyone understands.
               {% elif 'Documentary' in (movie.genre or '') %}Documentary cinema shows reality that is sometimes stranger than fiction. It broadens horizons and shifts perspectives.
-              {% else %}Every film is its own world with its own rules. Give it a chance — watch the first 20 minutes and you'll know if it's for you.
+              {% elif 'Family' in (movie.genre or '') %}Family films have to work for kids and adults at the same time — the best ones do it so naturally you barely notice.
+              {% elif 'Fantasy' in (movie.genre or '') %}Fantasy is about escaping into another world. The best fantasy builds that world so convincingly you don't want to come back.
+              {% elif 'Mystery' in (movie.genre or '') %}Mystery films keep you guessing until the final frame. The trick is not to guess the ending too early — let yourself be surprised.
+              {% elif 'Western' in (movie.genre or '') %}Westerns have a character all their own. Dusty roads, honour, and showdowns. A classic genre that never goes out of style.
+              {% elif 'History' in (movie.genre or '') %}Historical cinema lets you step into an era you could never otherwise visit. The best ones aren't textbooks — they're living people in living circumstances.
+              {% elif 'Music' in (movie.genre or '') %}Music films work on two levels at once — story and soundtrack. When both are strong, the impression lasts long after the credits.
+              {% elif 'War' in (movie.genre or '') %}The best war films aren't about victories — they're about people. About how they hold together and break under pressure.
+              {% elif 'Crime' in (movie.genre or '') %}Crime cinema works on a simple principle: you know it won't end well, but you watch anyway. That's the magic of the genre.
+              {% else %}{% if rating >= 7.0 %}A high rating speaks for itself — this film found its audience and didn't let them down. Trust the collective taste.{% else %}Not every film is made for everyone. Read the synopsis, watch the trailer — you'll know right away if it's for you.{% endif %}
               {% endif %}
             </p>
             {# Paragraph 3: Context + who it's for #}
