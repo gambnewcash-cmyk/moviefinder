@@ -5,6 +5,7 @@ import sys
 import httpx
 from datetime import date
 from fastapi import FastAPI, Request, Query
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -18,6 +19,7 @@ from services.smart_search import smart_search, get_typo_suggestions
 from translations import get_translations, detect_language
 
 app = FastAPI(title="MovieFinder")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.get("/yandex_afadf407fdf7e97f.html")
@@ -30,7 +32,18 @@ async def google_verify():
 
 
 BASE_DIR = os.path.dirname(__file__)
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+# Static files with cache headers
+from starlette.staticfiles import StaticFiles as _StaticFiles
+from starlette.responses import Response as _Response
+
+class CachedStaticFiles(_StaticFiles):
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 200:
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+app.mount("/static", CachedStaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 
