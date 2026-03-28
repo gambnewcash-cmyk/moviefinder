@@ -861,3 +861,55 @@ async def en_films_2026_page(request: Request, page: int = 1, sort: str = "new")
         "hreflang_ru": "https://moviefinders.net/films/2026",
         "hreflang_en": "https://moviefinders.net/en/films/2026",
     })
+
+
+@app.get("/en/ai-search", response_class=HTMLResponse)
+async def en_ai_search_page(request: Request, q: str = ""):
+    lang = "en"
+    t = get_translations(lang)
+    result = {"results": [], "description": "", "count": 0}
+    if q:
+        log_search(q)
+        result = await smart_search(q, lang=lang)
+    return templates.TemplateResponse(request, "ai_search.html", {
+        "query": q,
+        "results": result["results"],
+        "smart_mode": True,
+        "smart_description": result.get("description") or "",
+        "smart_count": result.get("count", 0),
+        "lang": lang,
+        "t": t,
+        "hreflang_ru": "https://moviefinders.net/ai-search",
+        "hreflang_en": "https://moviefinders.net/en/ai-search",
+        "canonical_url": "https://moviefinders.net/en/ai-search",
+    })
+
+
+@app.get("/en/films/vecher", response_class=HTMLResponse)
+async def en_films_vecher_page(request: Request, page: int = 1, sort: str = "popular"):
+    lang = "en"
+    t = get_translations(lang)
+    page = max(1, page)
+    if sort not in ("new", "rating", "popular"):
+        sort = "popular"
+    sort_map = {
+        "popular": ("popularity.desc", {"with_genres": "35,18,10749", "vote_count.gte": 50, "vote_average.gte": 7.0}),
+        "rating":  ("vote_average.desc", {"with_genres": "35,18,10749", "vote_count.gte": 200}),
+        "new":     ("primary_release_date.desc", {"with_genres": "35,18,10749", "vote_count.gte": 10}),
+    }
+    sort_by, extra = sort_map[sort]
+    try:
+        result = await fetch_tmdb_discover(sort_by, lang, page, extra)
+        movies = result["movies"]
+        total_pages = result["total_pages"]
+    except Exception as e:
+        movies = []
+        total_pages = 1
+    return templates.TemplateResponse(request, "films_vecher.html", {
+        "movies": movies, "lang": lang, "t": t,
+        "current_page": page, "total_pages": total_pages,
+        "current_sort": sort, "base_url": "/en/films/vecher",
+        "hreflang_ru": "https://moviefinders.net/films/vecher",
+        "hreflang_en": "https://moviefinders.net/en/films/vecher",
+        "canonical_url": "https://moviefinders.net/en/films/vecher",
+    })
