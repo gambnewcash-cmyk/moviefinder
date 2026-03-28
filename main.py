@@ -175,6 +175,19 @@ async def movie_page(request: Request, tmdb_id: int, media_type: str = "movie"):
 
         ai_review = await get_or_generate_review(movie, lang)
 
+        # Override description with our unique AI-generated one if available
+        try:
+            from services.ai_review import _get_pg
+            pg = _get_pg()
+            if pg:
+                cur = pg.cursor()
+                cur.execute("SELECT description FROM ai_descriptions WHERE tmdb_id=%s AND lang=%s", (tmdb_id, lang))
+                row = cur.fetchone()
+                if row and row[0]:
+                    movie["description"] = row[0]
+        except Exception:
+            pass
+
         return templates.TemplateResponse(request, "movie.html", {
             "movie": movie,
             "sources": sources,
